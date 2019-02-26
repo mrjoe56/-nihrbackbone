@@ -4,8 +4,8 @@
 return array (
   0 => 
   array (
-    'name' => 'NihrStudyInvestigator',
-    'class' => 'CRM_Nihrbackbone_DAO_NihrStudyInvestigator',
-    'table' => 'civicrm_nihr_study_investigator',
+    'name' => 'NihrCampaignResearcher',
+    'class' => 'CRM_Nihrbackbone_DAO_NihrCampaignResearcher',
+    'table' => 'civicrm_nihr_campaign_researcher',
   ),
 );

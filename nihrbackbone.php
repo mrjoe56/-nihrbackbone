@@ -1,7 +1,36 @@
 <?php
-
 require_once 'nihrbackbone.civix.php';
 use CRM_Nihrbackbone_ExtensionUtil as E;
+
+/**
+ * Implements hook_civicrm_buildForm().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_buildForm/
+ */
+function nihrbackbone_civicrm_buildForm($formName, &$form) {
+  if ($form instanceof CRM_Campaign_Form_Campaign) {
+    $campaign = new CRM_Nihrbackbone_Campaign();
+    $campaign->buildForm($form);
+  }
+}
+
+/**
+ * Implements hook_civicrm_navigationMenu().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_navigationMenu/
+ */
+function nihrbackbone_civicrm_navigationMenu(&$menu) {
+  _nihrbackbone_civix_insert_navigation_menu($menu, 'Campaigns', array(
+    'label' => E::ts('NIHR BioResource Studies'),
+    'name' => 'nihrstudies',
+    'url' => 'civicrm/nihrbackbone/page/nihrstudy',
+    'permission' => 'access CiviCRM',
+    'operator' => 'OR',
+    'separator' => 0,
+  ));
+
+  _nihrbackbone_civix_navigationMenu($menu);
+}
 
 /**
  * Implements hook_civicrm_config().

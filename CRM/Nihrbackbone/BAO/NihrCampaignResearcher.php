@@ -1,17 +1,17 @@
 <?php
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
-class CRM_Nihrbackbone_BAO_NihrStudyInvestigator extends CRM_Nihrbackbone_DAO_NihrStudyInvestigator {
+class CRM_Nihrbackbone_BAO_NihrCampaignResearcher extends CRM_Nihrbackbone_DAO_NihrCampaignResearcher {
 
   /**
-   * Create a new NihrStudyInvestigator based on array-data
+   * Create a new NihrCampaignResearcher based on array-data
    *
    * @param array $params key-value pairs
-   * @return CRM_Nihrbackbone_DAO_NihrStudyInvestigator|NULL
+   * @return CRM_Nihrbackbone_DAO_NihrCampaignResearcher|NULL
    *
   public static function create($params) {
-    $className = 'CRM_Nihrbackbone_DAO_NihrStudyInvestigator';
-    $entityName = 'NihrStudyInvestigator';
+    $className = 'CRM_Nihrbackbone_DAO_NihrCampaignResearcher';
+    $entityName = 'NihrCampaignResearcher';
     $hook = empty($params['id']) ? 'create' : 'edit';
 
     CRM_Utils_Hook::pre($hook, $entityName, CRM_Utils_Array::value('id', $params), $params);

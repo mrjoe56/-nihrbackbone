@@ -4,16 +4,17 @@
   <base>CRM/Nihrbackbone</base>
   <class>NihrStudy</class>
   <name>civicrm_nihr_study</name>
-  <comment>FIXME</comment>
-  <add>4.4</add>
+  <comment>NIHR BioResource Study</comment>
+  <add>5.9</add>
   <log>true</log>
 
   <field>
     <name>id</name>
     <type>int unsigned</type>
     <required>true</required>
+    <title>Study ID</title>
     <comment>Unique NihrStudy ID</comment>
-    <add>4.4</add>
+    <add>5.9</add>
   </field>
   <primaryKey>
     <name>id</name>
@@ -21,17 +22,185 @@
   </primaryKey>
 
   <field>
-    <name>contact_id</name>
+    <name>investigator_id</name>
     <type>int unsigned</type>
-    <comment>FK to Contact</comment>
-    <add>4.4</add>
+    <title>Principal Investigator ID</title>
+    <comment>FK to Contact for Principal Investigator</comment>
+    <add>5.9</add>
   </field>
   <foreignKey>
-    <name>contact_id</name>
+    <name>investigator_id</name>
     <table>civicrm_contact</table>
     <key>id</key>
-    <add>4.4</add>
+    <add>5.9</add>
     <onDelete>CASCADE</onDelete>
   </foreignKey>
+
+  <field>
+    <name>title</name>
+    <type>varchar</type>
+    <title>Study Title</title>
+    <length>128</length>
+    <comment>Study Title</comment>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>description</name>
+    <title>Study Description</title>
+    <type>text</type>
+    <html>
+      <type>TextArea</type>
+      <rows>4</rows>
+      <cols>60</cols>
+    </html>
+    <comment>Study Description</comment>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>ethics_number</name>
+    <title>Ethics Number</title>
+    <type>varchar</type>
+    <length>32</length>
+    <comment>Ethics Number</comment>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>ethics_approved_id</name>
+    <title>Ethics Approved</title>
+    <type>int unsigned</type>
+    <comment>Ethics Approved</comment>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>requirements</name>
+    <title>Requirements</title>
+    <type>text</type>
+    <html>
+      <type>TextArea</type>
+      <rows>4</rows>
+      <cols>60</cols>
+    </html>
+    <comment>Requirements</comment>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>start_date</name>
+    <title>Study Start Date</title>
+    <type>date</type>
+    <comment>Study start date</comment>
+    <html>
+      <type>Select Date</type>
+      <formatType>activityDate</formatType>
+    </html>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>end_date</name>
+    <title>Study End Date</title>
+    <type>date</type>
+    <comment>Study end date</comment>
+    <html>
+      <type>Select Date</type>
+      <formatType>activityDate</formatType>
+    </html>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>centre_study_origin_id</name>
+    <type>int unsigned</type>
+    <title>Study Origin Centre</title>
+    <comment>FK to Contact for Study Centre Origin</comment>
+    <add>5.9</add>
+  </field>
+  <foreignKey>
+    <name>centre_study_origin_id</name>
+    <table>civicrm_contact</table>
+    <key>id</key>
+    <add>5.9</add>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>notes</name>
+    <title>Notes</title>
+    <type>text</type>
+    <html>
+      <type>TextArea</type>
+      <rows>4</rows>
+      <cols>60</cols>
+    </html>
+    <comment>Notes</comment>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>status_id</name>
+    <title>Study Status</title>
+    <type>int unsigned</type>
+    <comment>Study Status</comment>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>created_date</name>
+    <title>Date Created</title>
+    <type>datetime</type>
+    <comment>Date Created</comment>
+    <html>
+      <type>Select Date</type>
+      <formatType>activityDateTime</formatType>
+    </html>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>created_by_id</name>
+    <type>int unsigned</type>
+    <title>Created By</title>
+    <comment>FK to Contact for Created By</comment>
+    <add>5.9</add>
+  </field>
+  <foreignKey>
+    <name>created_by_id</name>
+    <table>civicrm_contact</table>
+    <key>id</key>
+    <add>5.9</add>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>modified_date</name>
+    <title>Date Modified</title>
+    <type>datetime</type>
+    <comment>Date Modified</comment>
+    <html>
+      <type>Select Date</type>
+      <formatType>activityDateTime</formatType>
+    </html>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>modified_by_id</name>
+    <type>int unsigned</type>
+    <title>Modified By</title>
+    <comment>FK to Contact for Modified By</comment>
+    <add>5.9</add>
+  </field>
+  <foreignKey>
+    <name>modified_by_id</name>
+    <table>civicrm_contact</table>
+    <key>id</key>
+    <add>5.9</add>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
 
 </table>

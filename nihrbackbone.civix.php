@@ -456,5 +456,17 @@ function _nihrbackbone_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NU
 
 function _nihrbackbone_civix_civicrm_entityTypes(&$entityTypes) {
   $entityTypes = array_merge($entityTypes, array (
+    'CRM_Nihrbackbone_DAO_NihrCampaignResearcher' => 
+    array (
+      'name' => 'NihrCampaignResearcher',
+      'class' => 'CRM_Nihrbackbone_DAO_NihrCampaignResearcher',
+      'table' => 'civicrm_nihr_campaign_researcher',
+    ),
+    'CRM_Nihrbackbone_DAO_NihrStudy' => 
+    array (
+      'name' => 'NihrStudy',
+      'class' => 'CRM_Nihrbackbone_DAO_NihrStudy',
+      'table' => 'civicrm_nihr_study',
+    ),
   ));
 }
