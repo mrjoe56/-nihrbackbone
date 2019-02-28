@@ -12,4 +12,10 @@
     <title>NihrStudy</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/nihrbackbone/page/nihrprojectvolunteer</path>
+    <page_callback>CRM_Nihrbackbone_Page_NihrProjectVolunteer</page_callback>
+    <title>NihrProjectVolunteer</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>

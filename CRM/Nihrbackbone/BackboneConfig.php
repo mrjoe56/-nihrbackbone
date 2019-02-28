@@ -21,12 +21,51 @@ class CRM_Nihrbackbone_BackboneConfig {
   // property for project campaign type
   private $_projectCampaignTypeId = NULL;
 
+  // properties for custom groups
+  private $_projectDataCustomGroup = [];
+
   /**
    * CRM_Nihrbackbone_BackboneConfig constructor.
    */
   public function __construct() {
     $this->setOptionGroups();
     $this->setCampaignTypes();
+    $this->setCustomData();
+  }
+
+  /**
+   * Getter for project data custom group
+   *
+   * @param null $key
+   * @return array|mixed
+   */
+  public function getProjectDataCustomGroup($key = NULL) {
+    if ($key && isset($this->_projectDataCustomGroup[$key])) {
+      return $this->_projectDataCustomGroup[$key];
+    }
+    else {
+      return $this->_projectDataCustomGroup;
+    }
+  }
+
+  /**
+   * Getter for project study custom field
+   *
+   * @param null $key
+   * @return bool
+   */
+  public function getProjectStudyCustomField($key = NULL) {
+    foreach ($this->_projectDataCustomGroup['custom_fields'] as $customFieldId => $customField) {
+      if ($customField['name'] == 'npd_study_id') {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
   }
 
   /**
@@ -84,9 +123,10 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   private function setCampaignTypes() {
     try {
-      $this->_projectCampaignTypeId = civicrm_api3('OptionGroup', 'getvalue', [
-        'return' => "id",
-        'name' => 'campaign_type',
+      $this->_projectCampaignTypeId = civicrm_api3('OptionValue', 'getvalue', [
+        'option_group_id' => 'campaign_type',
+        'return' => "value",
+        'name' => 'nihr_project',
       ]);
     }
     catch (CiviCRM_API3_Exception $ex) {
@@ -121,6 +161,42 @@ class CRM_Nihrbackbone_BackboneConfig {
       }
     }
     return $property;
+  }
+
+  /**
+   * Method to set the custom data
+   */
+  private function setCustomData() {
+    $relevantCustomGroups = ['nihr_project_data'];
+    try {
+      $customGroups = civicrm_api3('CustomGroup', 'get', [
+        'options' => ['limit' => 0],
+      ]);
+      foreach ($customGroups['values'] as $customGroupId => $customGroup) {
+        if (in_array($customGroup['name'], $relevantCustomGroups)) {
+          $name = str_replace('nihr_', '', $customGroup['name']);
+          $parts = explode('_', $name);
+          foreach ($parts as $partId => $part) {
+            if ($partId == 0) {
+              $parts[$partId] = strtolower($part);
+            }
+            else {
+              $parts[$partId] = ucfirst(strtolower($part));
+            }
+          }
+          $property = '_' . implode('', $parts) . 'CustomGroup';
+          // add custom fields
+          $customFields = civicrm_api3('CustomField', 'get', [
+            'custom_group_id' => $customGroup['id'],
+            'options' => ['limit' => 0],
+          ]);
+          $customGroup['custom_fields'] = $customFields['values'];
+          $this->$property = $customGroup;
+        }
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
   }
 
   /**

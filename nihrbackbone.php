@@ -3,14 +3,48 @@ require_once 'nihrbackbone.civix.php';
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /**
+ * Implements hook_civicrm_postProcess().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postProcess/
+ */
+function nihrbackbone_civicrm_postProcess($formName, &$form) {
+  // postProcess voor CRM_Campaign_Form_Campaign
+  if ($form instanceof CRM_Campaign_Form_Campaign) {
+    $project = new CRM_Nihrbackbone_NihrProject();
+    $project->postProcess($form);
+  }
+}
+
+/**
  * Implements hook_civicrm_buildForm().
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_buildForm/
  */
 function nihrbackbone_civicrm_buildForm($formName, &$form) {
+  // buildForm voor CRM_Campaign_Form_Campaign
   if ($form instanceof CRM_Campaign_Form_Campaign) {
-    $campaign = new CRM_Nihrbackbone_Campaign();
-    $campaign->buildForm($form);
+    $project = new CRM_Nihrbackbone_NihrProject();
+    $project->buildForm($form);
+  }
+}
+/**
+ * Implements hook_civicrm_links().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_links/
+ */
+function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$values) {
+  if ($op == 'campaign.dashboard.row' && $objectName == "Campaign") {
+    $project = new CRM_Nihrbackbone_NihrProject();
+    if ($project->isNihrProject($objectId)) {
+      // only if the campaign is a project
+      $links[] = [
+        'name' => ts('Volunteer(s)'),
+        'url' => 'civicrm/nihrbackbone/page/nihrprojectvolunteer',
+        'title' => 'Volunteers',
+        'class' => 'no-popup',
+        'qs' => 'reset=1&pid=%%id%%',
+      ];
+    }
   }
 }
 
