@@ -1,13 +1,10 @@
 <div class="crm-content-block crm-block">
   <div id="help">
-    {ts}This overview shows you the current volunteer selection on project {/ts}{$project_code}
+    {ts}This overview shows you the current volunteer selection on project {/ts}<strong>{$project_code}</strong>
   </div>
   <div class="action-link">
-    <a class="button new-option" href="{$import_file_url}">
-      <span><div class="icon add-icon ui-icon-circle-plus"></div>{ts}Import from CSV File(s){/ts}</span>
-    </a>
-    <a class="button new-option" href="{$import_group_url}">
-      <span><div class="icon add-icon ui-icon-circle-plus"></div>{ts}Import from Group(s){/ts}</span>
+    <a class="button import-option" href="{$import_file_url}">
+      <span><div class="icon ui-icon-folder-open"></div>{ts}Import from CSV File(s){/ts}</span>
     </a>
   </div>
   <div id="nihr_project_volunteer_wrapper" class="dataTables_wrapper">
@@ -16,11 +13,9 @@
       <tr>
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Name{/ts}</th>
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}BioResource ID{/ts}</th>
-        <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Sample ID{/ts}</th>
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}ID in Project{/ts}</th>
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Sex{/ts}</th>
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Age{/ts}</th>
-        <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Recall Group{/ts}</th>
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Ethnicity{/ts}</th>
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Location{/ts}</th>
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Status in Project{/ts}</th>
@@ -34,11 +29,9 @@
         <tr id="nihr_project_volunteer-{$volunteer.case_id}" class="crm-entity {cycle values="odd-row,even-row"} {$row.class}">
           <td>{$volunteer.volunteer_name}</td>
           <td>{$volunteer.bioresource_id}</td>
-          <td>{$volunteer.sample_id}</td>
           <td>{$volunteer.anon_project_id}</td>
           <td>{$volunteer.sex}</td>
           <td>{$volunteer.age}</td>
-          <td>{$volunteer.recall_group}</td>
           <td>{$volunteer.ethnicity}</td>
           <td>{$volunteer.location}</td>
           <td>{$volunteer.volunteer_project_status}</td>
@@ -50,11 +43,8 @@
     </table>
   </div>
   <div class="action-link">
-    <a class="button new-option" href="{$import_file_url}">
-      <span><div class="icon add-icon ui-icon-circle-plus"></div>{ts}Import from CSV File(s){/ts}</span>
-    </a>
-    <a class="button new-option" href="{$import_group_url}">
-      <span><div class="icon add-icon ui-icon-circle-plus"></div>{ts}Import from Group(s){/ts}</span>
+    <a class="button import-option" href="{$import_file_url}">
+      <span><div class="icon ui-icon-folder-open"></div>{ts}Import from CSV File(s){/ts}</span>
     </a>
   </div>
 </div>

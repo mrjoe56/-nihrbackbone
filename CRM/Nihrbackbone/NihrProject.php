@@ -161,7 +161,7 @@ class CRM_Nihrbackbone_NihrProject {
    */
   public function getProjectStudyId($projectId) {
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectDataCustomGroup('table_name');
-    $studyColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectStudyCustomField('column_name');
+    $studyColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectDataCustomGroup('npd_study_id', 'column_name');
     $query = "SELECT " . $studyColumn . " FROM " . $tableName . " WHERE entity_id = %1";
     $studyId = CRM_Core_DAO::singleValueQuery($query, [1 => [$projectId, 'Integer']]);
     if ($studyId) {
@@ -180,7 +180,7 @@ class CRM_Nihrbackbone_NihrProject {
   public function setProjectStudyId($studyId, $projectId) {
     Civi::log()->debug('in set functie study is ' . $studyId . ' en project is ' . $projectId);
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectDataCustomGroup('table_name');
-    $studyColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectStudyCustomField('column_name');
+    $studyColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'column_name');
     $query = "UPDATE " . $tableName . " SET " . $studyColumn . " = %1 WHERE entity_id = %2";
     Civi::log()->debug('query is ' . $query);
     try {

@@ -1,8 +1,8 @@
 <?php
-use CRM_Nihrprototype_ExtensionUtil as E;
+use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /**
- * Page NihrProject to show the project/volunteer data
+ * Page NihrProjectVolunteer to show the project/volunteer data
  *
  * @author Erik Hommel <erik.hommel@civicoop.org>
  * @date 28 Feb 2019
@@ -46,7 +46,6 @@ class CRM_Nihrbackbone_Page_NihrProjectVolunteer extends CRM_Core_Page {
         $volunteerUrl = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $volunteer['bioresource_id']);
         $volunteers[$volunteerId]['volunteer_name'] = '<a href="' . $volunteerUrl . '">' . $volunteer['volunteer_name'] . '</a>';
         $volunteers[$volunteerId]['bioresource_id'] = '<a href="' . $volunteerUrl . '">' . $volunteer['bioresource_id'] . '</a>';
-        $volunteers[$volunteerId]['sample_id'] = '<a href="' . $volunteerUrl . '">' . $volunteer['sample_id'] . '</a>';
       }
     }
   }
@@ -69,22 +68,22 @@ class CRM_Nihrbackbone_Page_NihrProjectVolunteer extends CRM_Core_Page {
     if (!$this->_projectId) {
       throw new API_Exception(E::ts('Could not find a project id in the request URL in ') . __METHOD__, 2001);
     }
-    $this->assign('import_file_url', CRM_Utils_System::url('civicrm/nihrprototype/form/npfileimport',
+    $this->assign('import_file_url', CRM_Utils_System::url('#',
       'reset=1&action=import', TRUE));
-    $this->assign('import_group_url', CRM_Utils_System::url('civicrm/contact/search',
-      'reset=1', TRUE));
     // get project code
+    $projectCodeCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_project_code', 'id');
     try {
-      $projectCode = civicrm_api3('NihrProject', 'getvalue', [
+      $projectCode = civicrm_api3('Campaign', 'getvalue', [
         'id' => $this->_projectId,
-        'return' => 'project_code',
+        'campaign_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCampaignTypeId(),
+        'return' => $projectCodeCustomField,
       ]);
     }
     catch (CiviCRM_API3_Exception $ex) {
+      CRM_Core_Error::debug('ex', $ex);
       $projectCode = '';
     }
-    $projectUrl = CRM_Utils_System::url('civicrm/nihrprototype/form/nihrproject', 'reset=1&action=update&id=' . $this->_projectId, TRUE);
-    $this->assign('project_code', '<a href="' . $projectUrl . '">' . $projectCode . '</a>');
+    $this->assign('project_code', $projectCode);
   }
 
 }

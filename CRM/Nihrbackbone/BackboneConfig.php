@@ -17,12 +17,20 @@ class CRM_Nihrbackbone_BackboneConfig {
   // properties for option group ids
   private $_studyStatusOptionGroupId = NULL;
   private $_ethicsApprovedOptionGroupId = NULL;
+  private $_eligibleStatusOptionGroupId = NULL;
+  private $_genderOptionGroupId = NULL;
+  private $_volunteerProjectStatusOptionGroupId = NULL;
+  private $_ethnicityOptionGroupId = NULL;
+  private $_consentStatusOptionGroupId = NULL;
 
   // property for project campaign type
   private $_projectCampaignTypeId = NULL;
 
   // properties for custom groups
   private $_projectDataCustomGroup = [];
+  private $_participationDataCustomGroup = [];
+  private $_volunteerDataCustomGroup = [];
+  private $_sampleDataCustomGroup = [];
 
   /**
    * CRM_Nihrbackbone_BackboneConfig constructor.
@@ -49,14 +57,123 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
-   * Getter for project study custom field
+   * Getter for volunteer data custom group
    *
    * @param null $key
-   * @return bool
+   * @return array|mixed
    */
-  public function getProjectStudyCustomField($key = NULL) {
-    foreach ($this->_projectDataCustomGroup['custom_fields'] as $customFieldId => $customField) {
-      if ($customField['name'] == 'npd_study_id') {
+  public function getVolunteerDataCustomGroup($key = NULL) {
+    if ($key && isset($this->_volunteerDataCustomGroup[$key])) {
+      return $this->_volunteerDataCustomGroup[$key];
+    }
+    else {
+      return $this->_volunteerDataCustomGroup;
+    }
+  }
+
+  /**
+   * Getter for participation data custom group
+   *
+   * @param null $key
+   * @return array|mixed
+   */
+  public function getParticipationDataCustomGroup($key = NULL) {
+    if ($key && isset($this->_participationDataCustomGroup[$key])) {
+      return $this->_participationDataCustomGroup[$key];
+    }
+    else {
+      return $this->_participationDataCustomGroup;
+    }
+  }
+
+  /**
+   * Getter for sample data custom group
+   *
+   * @param null $key
+   * @return array|mixed
+   */
+  public function getSampleDataCustomGroup($key = NULL) {
+    if ($key && isset($this->_sampleDataCustomGroup[$key])) {
+      return $this->_sampleDataCustomGroup[$key];
+    }
+    else {
+      return $this->_sampleDataCustomGroup;
+    }
+  }
+
+  /**
+   * Getter for project data custom field
+   *
+   * @param $customFieldName
+   * @param $key
+   * @return mixed
+   */
+  public function getProjectCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_projectDataCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Getter for sample data custom field
+   *
+   * @param $customFieldName
+   * @param $key
+   * @return mixed
+   */
+  public function getSampleCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_sampleDataCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Getter for volunteer data custom field
+   *
+   * @param $customFieldName
+   * @param $key
+   * @return mixed
+   */
+  public function getVolunteerCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_volunteerDataCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Getter for participation data custom field
+   *
+   * @param $customFieldName
+   * @param $key
+   * @return mixed
+   */
+  public function getParticipationCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_participationDataCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
         if ($key && isset($customField[$key])) {
           return $customField[$key];
         }
@@ -87,11 +204,55 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for consent status option group id
+   *
+   * @return null
+   */
+  public function getConsentStatusOptionGroupId() {
+    return $this->_consentStatusOptionGroupId;
+  }
+
+  /**
+   * Getter for volunteer project status option group id
+   *
+   * @return null
+   */
+  public function getVolunteerProjectStatusOptionGroupId() {
+    return $this->_volunteerProjectStatusOptionGroupId;
+  }
+
+  /**
+   * Getter for eligible status option group id
+   *
+   * @return null
+   */
+  public function getEligibleStatusOptionGroupId() {
+    return $this->_eligibleStatusOptionGroupId;
+  }
+
+  /**
+   * Getter for ethnicity option group id
+   *
+   * @return null
+   */
+  public function getEthnicityOptionGroupId() {
+    return $this->_ethnicityOptionGroupId;
+  }
+
+  /**
    * Getter for ethics approved option group id
    * @return null
    */
   public function getEthicsApprovedOptionGroupId() {
     return $this->_ethicsApprovedOptionGroupId;
+  }
+
+  /**
+   * Getter for gender option group id
+   * @return null
+   */
+  public function getGenderOptionGroupId() {
+    return $this->_genderOptionGroupId;
   }
 
   /**
@@ -101,6 +262,11 @@ class CRM_Nihrbackbone_BackboneConfig {
     $optionGroupNames = [
       'nihr_study_status',
       'nihr_ethics_approved',
+      'nihr_eligible_status',
+      'nihr_volunteer_project_status',
+      'nihr_ethnicity',
+      'nihr_consent_status',
+      'gender',
     ];
     try {
       $foundOptionGroups = civicrm_api3('OptionGroup', 'get', [
@@ -167,7 +333,12 @@ class CRM_Nihrbackbone_BackboneConfig {
    * Method to set the custom data
    */
   private function setCustomData() {
-    $relevantCustomGroups = ['nihr_project_data'];
+    $relevantCustomGroups = [
+      'nihr_project_data',
+      'nihr_participation_data',
+      'nihr_volunteer_data',
+      'nihr_sample_data',
+      ];
     try {
       $customGroups = civicrm_api3('CustomGroup', 'get', [
         'options' => ['limit' => 0],
