@@ -36,6 +36,6 @@ function _civicrm_api3_nihr_project_volunteer_Create_spec(&$spec) {
  * @throws API_Exception
  */
 function civicrm_api3_nihr_project_volunteer_Create($params) {
-  $pv = new CRM_Nihrprototype_NihrProjectVolunteer($params['project_id']);
+  $pv = new CRM_Nihrbackbone_NihrProjectVolunteer($params['project_id']);
   return civicrm_api3_create_success($pv->createProjectVolunteer($params['contact_id']), $params, 'NihrProjectVolunteer', 'create');
 }

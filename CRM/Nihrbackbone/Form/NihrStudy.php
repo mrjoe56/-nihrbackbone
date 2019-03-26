@@ -3,7 +3,7 @@
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /**
- * Page NihrStudy to show all studies and add new ones
+ * Form NihrStudy to show all studies and add new ones
  *
  * @author Erik Hommel <erik.hommel@civicoop.org>
  * @date 25 Feb 2019
@@ -43,26 +43,26 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
     $this->add('text', 'title', E::ts('Title'), [], TRUE);
     $this->add('textarea', 'description', E::ts('Description'), ['rows' => 4, 'cols' => 50], FALSE);
     $this->add('text', 'ethics_number', E::ts('Ethics Number'), [], FALSE);
-    $this->addEntityRef('ethics_approved_id', ts('Ethics Approved'), [
+    $this->addEntityRef('ethics_approved_id', E::ts('Ethics Approved'), [
       'entity' => 'option_value',
       'api' => [
         'params' => ['option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getEthicsApprovedOptionGroupId()],
       ],
-      'select' => ['minimumInputLength' => 0],
+      'select' => ['minimumInputLength' => 1],
     ]);
     $this->add('textarea', 'requirements', E::ts('Requirements'), ['rows' => 4, 'cols' => 50], FALSE);
-    $this->add('datepicker', 'start_date', ts('Start Date'), ['placeholder' => ts('Start Date')],FALSE, ['time' => FALSE]);
-    $this->add('datepicker', 'end_date', ts('End Date'), ['placeholder' => ts('End Date')],FALSE, ['time' => FALSE]);
+    $this->add('datepicker', 'start_date', E::ts('Start Date'), ['placeholder' => ts('Start Date')],FALSE, ['time' => FALSE]);
+    $this->add('datepicker', 'end_date', E::ts('End Date'), ['placeholder' => ts('End Date')],FALSE, ['time' => FALSE]);
     $this->addEntityRef('centre_study_origin_id', E::ts('Centre Study Origin'), [
       'api' => ['params' => ['group' => 'Study Centres']],
     ], FALSE);
     $this->add('textarea', 'notes', E::ts('Notes'), ['rows' => 4, 'cols' => 50], FALSE);
-    $this->addEntityRef('status_id', ts('Status'), [
+    $this->addEntityRef('status_id', E::ts('Status'), [
       'entity' => 'option_value',
       'api' => [
         'params' => ['option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyStatusOptionGroupId()],
       ],
-      'select' => ['minimumInputLength' => 0],
+      'select' => ['minimumInputLength' => 1],
     ]);
   }
 

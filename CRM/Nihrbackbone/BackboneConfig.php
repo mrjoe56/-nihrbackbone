@@ -32,13 +32,35 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_volunteerDataCustomGroup = [];
   private $_sampleDataCustomGroup = [];
 
+  // properties for case types ids
+  private $_participationCaseTypeId = NULL;
+  private $_recruitmentCaseTypeId = NULL;
+
+  // properties for phone type ids
+  private $_mobilePhoneTypeId = NULL;
+  private $_phonePhoneTypeId = NULL;
+
+  // other properties
+  private $_defaultLocationTypeId = NULL;
+
   /**
    * CRM_Nihrbackbone_BackboneConfig constructor.
    */
   public function __construct() {
     $this->setOptionGroups();
     $this->setCampaignTypes();
+    $this->setCaseTypes();
     $this->setCustomData();
+    $this->setPhoneTypes();
+    try {
+      $this->_defaultLocationTypeId = civicrm_api3('LocationType', 'getvalue', [
+        'return' => "id",
+        'is_default' => 1,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->warning(E::ts('No default location type id found in ') . __METHOD__);
+    }
   }
 
   /**
@@ -99,6 +121,24 @@ class CRM_Nihrbackbone_BackboneConfig {
     else {
       return $this->_sampleDataCustomGroup;
     }
+  }
+
+  /**
+   * Getter for mobile phone type id
+   *
+   * @return null
+   */
+  public function getMobilePhoneTypeId() {
+    return $this->_mobilePhoneTypeId;
+  }
+
+  /**
+   * Getter for phone phone type id
+   *
+   * @return null
+   */
+  public function getPhonePhoneTypeId() {
+    return $this->_phonePhoneTypeId;
   }
 
   /**
@@ -204,6 +244,20 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for participation case type id
+   */
+  public function getParticipationCaseTypeId() {
+    return $this->_participationCaseTypeId;
+  }
+
+  /**
+   * Getter for recruitmnet case type id
+   */
+  public function getRecruitmentCaseTypeId() {
+    return $this->_recruitmentCaseTypeId;
+  }
+
+  /**
    * Getter for consent status option group id
    *
    * @return null
@@ -301,6 +355,32 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Method to set the relevant case types
+   */
+  private function setCaseTypes() {
+    try {
+      $caseTypes = civicrm_api3('CaseType', 'get', [
+        'is_active' => 1,
+        'options' => ['limit' => 0],
+      ]);
+      foreach ($caseTypes['values'] as $caseTypeId => $caseType) {
+        switch ($caseType['name']) {
+          case 'nihr_participation':
+            $this->_participationCaseTypeId = $caseTypeId;
+            break;
+
+          case 'nihr_recruitment':
+            $this->_recruitmentCaseTypeId = $caseTypeId;
+            break;
+        }
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->error(E::ts('Could not find case_types in ') . __METHOD__);
+    }
+  }
+
+  /**
    * Method to set the property from the custom group name
    * @param $customGroupName
    * @return bool|string|null
@@ -368,6 +448,33 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
     catch (CiviCRM_API3_Exception $ex) {
     }
+  }
+
+  /**
+   * Method to set the phone type properties
+   */
+  private function setPhoneTypes() {
+    try {
+      $phoneTypes = civicrm_api3('OptionValue', 'get', [
+        'option_group_id' => 'phone_type',
+        'is_active' => 1,
+        'name' => ['IN' => ["Mobile", "Phone"]],
+        'options' => ['limit' => 0],
+      ]);
+      foreach ($phoneTypes['values'] as $phoneType) {
+        switch ($phoneType['name']) {
+          case "Mobile":
+            $this->_mobilePhoneTypeId = $phoneType['value'];
+            break;
+          case "Phone":
+            $this->_phonePhoneTypeId = $phoneType['value'];
+            break;
+        }
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+
   }
 
   /**

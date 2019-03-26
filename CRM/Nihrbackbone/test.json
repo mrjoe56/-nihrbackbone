@@ -1,0 +1,1079 @@
+{
+  "vvp_options_kerntaken_verplicht": {
+    "name": "vvp_options_kerntaken_verplicht",
+    "title": "Vrijwilligersportret: Kerntaken (verplichte functies)",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "vvp_kerntaak_coordinator": {
+        "name": "vvp_kerntaak_coordinator",
+        "label": "Coördinator",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_kerntaak_aanspreekpunt": {
+        "name": "vvp_kerntaak_aanspreekpunt",
+        "label": "Aanspreekpunt",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_kerntaak_schatbewaarder": {
+        "name": "vvp_kerntaak_schatbewaarder",
+        "label": "Schatbewaarder",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "vvp_options_kerntaken_aangeraden": {
+    "name": "vvp_options_kerntaken_aangeraden",
+    "title": "Vrijwilligersportret: Kerntaken (sterk aangeraden)",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "vvp_kerntaak_activiteitorganisator": {
+        "name": "vvp_kerntaak_activiteitorganisator",
+        "label": "Activiteitorganisator",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_kerntaak_vrijwilligersmanager": {
+        "name": "vvp_kerntaak_vrijwilligersmanager",
+        "label": "Vrijwilligersmanager",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_kerntaak_veltbeweegtbeheerder": {
+        "name": "vvp_kerntaak_veltbeweegtbeheerder",
+        "label": "Velt Beweegt-beheerder",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "vvp_options_communicatoren": {
+    "name": "vvp_options_communicatoren",
+    "title": "Vrijwilligersportret: Communicatoren",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "vvp_communicator_nieuwsbrief": {
+        "name": "vvp_communicator_nieuwsbrief",
+        "label": "Nieuwsbrief",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_communicator_website": {
+        "name": "vvp_communicator_website",
+        "label": "Website",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_communicator_sociale_media": {
+        "name": "vvp_communicator_sociale_media",
+        "label": "Sociale media",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_communicator_tijdschrift": {
+        "name": "vvp_communicator_tijdschrift",
+        "label": "Tijdschrift",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_communicator_pers": {
+        "name": "vvp_communicator_pers",
+        "label": "Pers & Media",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_communicator_marktkramer": {
+        "name": "vvp_communicator_marktkramer",
+        "label": "Marktkramer",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_communicator_intern": {
+        "name": "vvp_communicator_intern",
+        "label": "Interne berichten",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "vvp_options_servicepunten": {
+    "name": "vvp_options_servicepunten",
+    "title": "Vrijwilligersportret: Servicepunten",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "vvp_service_zaden": {
+        "name": "vvp_service_zaden",
+        "label": "Zaden",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_service_biobloembollen": {
+        "name": "vvp_service_biobloembollen",
+        "label": "Biobloembollen",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_service_publicaties": {
+        "name": "vvp_service_publicaties",
+        "label": "Publicaties",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_service_hulpmiddelen": {
+        "name": "vvp_service_hulpmiddelen",
+        "label": "Hulpmiddelen",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "vvp_service_biobloem-meel": {
+        "name": "vvp_service_biobloem",
+        "label": "Biobloem/-meel",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "vvp_options_extra_taken": {
+    "name": "vvp_options_extra_taken",
+    "title": "Vrijwilligersportret: extra taken",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_extrataak_gastheervrouw": {
+        "name": "velt_extrataak_gastheervrouw",
+        "label": "Gastheer/Gastvrouw",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_extrataak_ecotuinregisseur": {
+        "name": "velt_extrataak_ecotuinregisseur",
+        "label": "Ecotuinregisseur",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_extrataak_aanspreekpunt_gemeente": {
+        "name": "velt_extrataak_aanspreekpunt_gemeente",
+        "label": "Aanspreekpunt gemeente...",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_extrataak_verslagnemer": {
+        "name": "velt_extrataak_verslagnemer",
+        "label": "Verslagnemer",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_extrataak_materiaalmeester": {
+        "name": "velt_extrataak_materiaalmeester",
+        "label": "Materiaalmeester",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_extrataak_netwerker": {
+        "name": "velt_extrataak_netwerker",
+        "label": "Netwerker",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_extrataak_vertegenwoordiger_gemeentelijke_raad": {
+        "name": "velt_extrataak_vertegenwoordiger_gemeentelijke_raad",
+        "label": "Vertegenwoordiger gemeentelijke raad...",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_extrataak_petermeter": {
+        "name": "velt_extrataak_petermeter",
+        "label": "Peter/Meter...",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_extrataak_voorzitter_overlegmomenten": {
+        "name": "velt_extrataak_voorzitter_overlegmomenten",
+        "label": "Voorzitter overlegmomenten",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "vvp_options_ondersteunend_algemeen": {
+    "name": "vvp_options_ondersteunend_algemeen",
+    "title": "Vrijwilligersportret: ondersteunende taken algemeen",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_ondersteunend_afwasser": {
+        "name": "velt_ondersteunend_afwasser",
+        "label": "Afwasser",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_feestplanner": {
+        "name": "velt_ondersteunend_feestplanner",
+        "label": "Feestplanner",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_sleutelhaler": {
+        "name": "velt_ondersteunend_sleutelhaler",
+        "label": "Sleutelhaler",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_logistiekzaal": {
+        "name": "velt_ondersteunend_logistiekzaal",
+        "label": "Logistiek zaal",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_brouwer": {
+        "name": "velt_ondersteunend_brouwer",
+        "label": "Brouwer",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_keukenbakhulp": {
+        "name": "velt_ondersteunend_keukenbakhulp",
+        "label": "Keuken-/Bakhulp",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_postbode": {
+        "name": "velt_ondersteunend_postbode",
+        "label": "Postbode",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_aankoperverzamelaar": {
+        "name": "velt_ondersteunend_aankoperverzamelaar",
+        "label": "Aankoper/Verzamelaar",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_poetser": {
+        "name": "velt_ondersteunend_poetser",
+        "label": "Poetser",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_taxi": {
+        "name": "velt_ondersteunend_taxi",
+        "label": "Taxi/Chauffeur",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_barkeeper": {
+        "name": "velt_ondersteunend_barkeeper",
+        "label": "Barkeeper",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_klusser": {
+        "name": "velt_ondersteunend_klusser",
+        "label": "Klusser",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_compostmeester": {
+        "name": "velt_ondersteunend_compostmeester",
+        "label": "Compostmeester",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_helper": {
+        "name": "velt_ondersteunend_helper",
+        "label": "Helper",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_chefkok": {
+        "name": "velt_ondersteunend_chefkok",
+        "label": "Chefkok",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_bar_drank": {
+        "name": "velt_ondersteunend_bar_drank",
+        "label": "Bar (drank)",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ondersteunend_kassa": {
+        "name": "velt_ondersteunend_kassa",
+        "label": "Kassa",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "vvp_options_ondersteunend_samentuinen": {
+    "name": "vvp_options_ondersteunend_samentuinen",
+    "title": "Vrijwilligersportret: ondersteunende taken samentuinen",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_taak_samentuinen_bloemenverzorger": {
+        "name": "velt_taak_samentuinen_bloemenverzorger",
+        "label": "Bloemenverzorger",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_taak_samentuinen_tuinier": {
+        "name": "velt_taak_samentuinen_tuinier",
+        "label": "Tuinier",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_taak_samentuinen_zaadmanager": {
+        "name": "velt_taak_samentuinen_zaadmanager",
+        "label": "Zaadmanager",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_taak_samentuinen_dierenverzorger": {
+        "name": "velt_taak_samentuinen_dierenverzorger",
+        "label": "Dierenverzorger",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_taak_samentuinen_sleutelbewaarder": {
+        "name": "velt_taak_samentuinen_sleutelbewaarder",
+        "label": "Sleutelbewaarder",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_taak_samentuinen_grasmaaier": {
+        "name": "velt_taak_samentuinen_grasmaaier",
+        "label": "Grasmaaier",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_taak_samentuinen_tuinadviseur": {
+        "name": "velt_taak_samentuinen_tuinadviseur",
+        "label": "Tuinadviseur",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_taak_samentuinen_snoeier": {
+        "name": "velt_taak_samentuinen_snoeier",
+        "label": "Snoeier",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+
+  "velt_types_velt_groep": {
+    "name": "velt_types_velt_groep",
+    "title": "Types Velt-groepen",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_groep_type_afdeling": {
+        "name": "velt_groep_type_afdeling",
+        "label": "Afdeling",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_groep_type_provincie": {
+        "name": "velt_groep_type_provincie",
+        "label": "Provincie",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_groep_type_kern": {
+        "name": "velt_groep_type_kern",
+        "label": "Kern",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_groep_type_samentuin": {
+        "name": "velt_groep_type_samentuin",
+        "label": "Samentuin",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_groep_type_samenkookgroep": {
+        "name": "velt_groep_type_samenkookgroep",
+        "label": "Samenkookgroep",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_groep_type_thema_werkgroep": {
+        "name": "velt_groep_type_thema_werkgroep",
+        "label": "Thematische werkgroep",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_types_externe_groep": {
+    "name": "velt_types_externe_groep",
+    "title": "Types externe groepen",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_ext_groep_type_eco_ondernemer": {
+        "name": "velt_ext_groep_type_eco_ondernemer",
+        "label": "Eco-ondernemer",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ext_groep_type_bibliotheek": {
+        "name": "velt_ext_groep_type_bibliotheek",
+        "label": "Bibliotheek",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ext_groep_type_school": {
+        "name": "velt_ext_groep_type_school",
+        "label": "School",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ext_groep_type_gemeente": {
+        "name": "velt_ext_groep_type_gemeente",
+        "label": "Gemeente",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ext_groep_type_volkstuinvereniging": {
+        "name": "velt_ext_groep_type_volkstuinvereniging",
+        "label": "Volkstuinvereniging",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ext_groep_type_andere_vereniging": {
+        "name": "velt_ext_groep_type_andere_vereniging",
+        "label": "Andere vereniging",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ext_groep_type_andere_persredactie": {
+        "name": "velt_ext_groep_type_andere_persredactie",
+        "label": "Persredactie",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_ext_groep_type_andere_samentuin": {
+        "name": "velt_ext_groep_type_andere_samentuin",
+        "label": "Samentuin",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_types_lesgever": {
+    "name": "velt_types_lesgever",
+    "title": "Types lesgever",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_lesgever_moestuin": {
+        "name": "velt_lesgever_moestuin",
+        "label": "Lesgever moestuin",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_lesgever_siertuin": {
+        "name": "velt_lesgever_siertuin",
+        "label": "Lesgever siertuin",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_lesgever_voeding": {
+        "name": "velt_lesgever_voeding",
+        "label": "Lesgever voeding",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_lesgever_fruit": {
+        "name": "velt_lesgever_fruit",
+        "label": "Lesgever fruit",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_lesgever_praktijkbegeleider": {
+        "name": "velt_lesgever_praktijkbegeleider",
+        "label": "Praktijkbegeleider",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_lesgever_ecokok": {
+        "name": "velt_lesgever_ecokok",
+        "label": "Ecokok",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_lesgever_ander": {
+        "name": "velt_lesgever_ander",
+        "label": "Andere lesgever",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_les_provincies": {
+    "name": "velt_les_provincies",
+    "title": "Provincies voor lesgeven",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_les_prov_antwerpen": {
+        "name": "velt_les_prov_antwerpen",
+        "label": "Antwerpen",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_les_prov_vlaams_brabant": {
+        "name": "velt_les_prov_vlaams_brabant",
+        "label": "Vlaams-Brabant",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_les_prov_oost_vlaanderen": {
+        "name": "velt_les_prov_oost_vlaanderen",
+        "label": "Oost-Vlaanderen",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_les_prov_west_vlaanderen": {
+        "name": "velt_les_prov_west_vlaanderen",
+        "label": "West-Vlaanderen",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_les_prov_limburg": {
+        "name": "velt_les_prov_limburg",
+        "label": "Limburg",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_les_prov_nederland": {
+        "name": "velt_les_prov_nederland",
+        "label": "Nederland",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_lesaanbod_moestuin": {
+    "name": "velt_lesaanbod_moestuin",
+    "title": "Aanbod moestuin",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_moestuin_eco": {
+        "name": "velt_moestuin_eco",
+        "label": "Basiscursus ecologische moestuin",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_moestuin_ten_huize_van": {
+        "name": "velt_moestuin_ten_huize_van",
+        "label": "Moestuin ten huize van",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_moestuin_potvers_eigen": {
+        "name": "velt_moestuin_potvers_eigen",
+        "label": "Potverse groenten uit je eigen minimoestuin",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_moestuin_kip": {
+        "name": "velt_moestuin_kip",
+        "label": "Voor elke tuin een geschikte kip",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_moestuin_school": {
+        "name": "velt_moestuin_school",
+        "label": "Een bloeiende schoolmoestuin, ook op jouw school!",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_moestuin_smoes": {
+        "name": "velt_moestuin_smoes",
+        "label": "De Smoestuinier",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_moestuin_onkruid": {
+        "name": "velt_moestuin_onkruid",
+        "label": "Sierlijk en kruidig: genieten van (on)kruid",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_moestuin_pest_vrij": {
+        "name": "velt_moestuin_pest_vrij",
+        "label": "Pesticidevrij tuinieren",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_lesaanbod_siertuin": {
+    "name": "velt_lesaanbod_siertuin",
+    "title": "Aanbod siertuin",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_siertuin_geveltuintjes": {
+        "name": "velt_siertuin_geveltuintjes",
+        "label": "Inspiratie voor geveltuintjes",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_siertuin_zonder_groenafval": {
+        "name": "velt_siertuin_zonder_groenafval",
+        "label": "Een tuin zonder groenafval",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_siertuin_verhardingen": {
+        "name": "velt_siertuin_verhardingen",
+        "label": "Milieuvriendelijk onderhoud van tuinverhardingen",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_siertuin_ongewenste_gasten": {
+        "name": "velt_siertuin_ongewenste_gasten",
+        "label": "Siertuinen zonder gif en ongewenste gasten",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_siertuin_ten_huize_van": {
+        "name": "velt_siertuin_ten_huize_van",
+        "label": "Siertuin ten huize van",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_lesaanbod_voeding": {
+    "name": "velt_lesaanbod_voeding",
+    "title": "Aanbod voeding",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_voeding_basic_eco": {
+        "name": "velt_voeding_basic_eco",
+        "label": "Basiscursus eclogisch koken",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_ecosmos": {
+        "name": "velt_voeding_ecosmos",
+        "label": "De ecosmos, maak je eigen broodbeleg",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_ecosmos_junior": {
+        "name": "velt_voeding_ecosmos_junior",
+        "label": "Ecosmos junior (12-18 jaar)",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_biobabbel": {
+        "name": "velt_voeding_biobabbel",
+        "label": "Biobabbel met proevertjes",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_biobabbel_junior": {
+        "name": "velt_voeding_biobabbel_junior",
+        "label": "Biobabbel junior (12-18 jaar)",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_oogst": {
+        "name": "velt_voeding_oogst",
+        "label": "Lang leve de oogst (milieuvriendelijk bewaren)",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_ecosmos_pim_pompoen": {
+        "name": "velt_voeding_ecosmos_pim_pompoen",
+        "label": "Ecosmos met Pim Pompoen (6-12 jaar)",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_appel": {
+        "name": "velt_voeding_appel",
+        "label": "Lang leve de appel!",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_seizoen": {
+        "name": "velt_voeding_seizoen",
+        "label": "Eten volgens het seizoen met en/of voor kinderen",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_vegetarisch": {
+        "name": "velt_voeding_vegetarisch",
+        "label": "Vegetarisch koken",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_ecozoet": {
+        "name": "velt_voeding_ecozoet",
+        "label": "Ecozoet: Koken met zoet, zonder suiker",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_restjes": {
+        "name": "velt_voeding_restjes",
+        "label": "Koken met restjes",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_duurzaam_klas": {
+        "name": "velt_voeding_duurzaam_klas",
+        "label": "Duurzame voeding in de klas",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_kampkippen": {
+        "name": "velt_voeding_kampkippen",
+        "label": "Kampkippen en kikkererwten",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_kruidig": {
+        "name": "velt_voeding_kruidig",
+        "label": "Lekker en kruidig: (on)kruiden op je bord",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_improvisatie": {
+        "name": "velt_voeding_improvisatie",
+        "label": "Improvisatiekoken",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_samenkoken": {
+        "name": "velt_voeding_samenkoken",
+        "label": "Traject samenkoken",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_voeding_ecozoet_junior": {
+        "name": "velt_voeding_ecozoet_junior",
+        "label": "Ecozoet junior (12-18 jaar)",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_lesaanbod_fruit": {
+    "name": "velt_lesaanbod_fruit",
+    "title": "Aanbod fruit",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_fruit_basis_groot": {
+        "name": "velt_fruit_basis_groot",
+        "label": "Basiscursus groot fruit",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_fruit_snoeien_lei": {
+        "name": "velt_fruit_snoeien_lei",
+        "label": "Het snoeien van leifruit",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_statuut": {
+    "name": "velt_statuut",
+    "title": "Statuut",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_statuut_factuur": {
+        "name": "velt_statuut_factuur",
+        "label": "Ik stuur Velt een factuur",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_statuut_be_vrijwillig": {
+        "name": "velt_statuut_be_vrijwillig",
+        "label": "B-Vrijwilliger: forfaitaire onkostenvergoeding België",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_statuut_interim": {
+        "name": "velt_statuut_interim",
+        "label": "Velt krijgt een factuur via een interimkantoor",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_statuut_nl_vrijwillig": {
+        "name": "velt_statuut_nl_vrijwillig",
+        "label": "NL-Vrijwilliger: forfaitaire onkostenvergoeding",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_statuut_aangetoond": {
+        "name": "velt_statuut_aangetoond",
+        "label": "Vrijwilliger vergoeding aangetoonde kosten",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_statuut_onbelast": {
+        "name": "velt_statuut_onbelast",
+        "label": "in kom in aanmerking voor 'onbelast bijklussen'",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_thema": {
+    "name": "velt_thema",
+    "title": "Thema",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_thema_moestuin": {
+        "name": "velt_thema_moestuin",
+        "label": "Moestuin",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_thema_siertuin": {
+        "name": "velt_thema_siertuin",
+        "label": "Siertuin",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_thema_permacultuur": {
+        "name": "velt_thema_permacultuur",
+        "label": "Permacultuur",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_thema_voeding": {
+        "name": "velt_thema_voeding",
+        "label": "Voeding",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_thema_kruiden": {
+        "name": "velt_thema_kruiden",
+        "label": "Kruiden",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_thema_fruit": {
+        "name": "velt_thema_fruit",
+        "label": "Fruit",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_thema_zaden": {
+        "name": "velt_thema_zaden",
+        "label": "Zaden",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_thema_ander": {
+        "name": "velt_thema_ander",
+        "label": "Andere",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_doelgroepen": {
+    "name": "velt_doelgroepen",
+    "title": "Doelgroepen",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_doelgroep_leden_van_velt": {
+        "name": "velt_doelgroep_leden_van_velt",
+        "label": "Leden van Velt",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_doelgroep_niet_leden": {
+        "name": "velt_doelgroep_niet_leden",
+        "label": "Niet-leden",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_doelgroep_scholen": {
+        "name": "velt_doelgroep_scholen",
+        "label": "Scholen",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_doelgroep_kansengroepen": {
+        "name": "velt_doelgroep_kansengroepen",
+        "label": "Kansengroepen",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_doelgroep_politiek": {
+        "name": "velt_doelgroep_politiek",
+        "label": "Politiek",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_doelgroep_buurtbewoners": {
+        "name": "velt_doelgroep_buurtbewoners",
+        "label": "Buurtbewoners",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_doelgroep_andere": {
+        "name": "velt_doelgroep_andere",
+        "label": "Andere",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_decretale_functie": {
+    "name": "velt_decretale_functie",
+    "title": "Decretale functie",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_decretale_gemeenschap": {
+        "name": "velt_decretale_gemeenschap",
+        "label": "Gemeenschapsvormende functie",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_decretale_educatief": {
+        "name": "velt_decretale_educatief",
+        "label": "Educatieve functie",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_decretale_cultureel": {
+        "name": "velt_decretale_cultureel",
+        "label": "Culturele functie",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_decretale_maatschappelijk": {
+        "name": "velt_decretale_maatschappelijk",
+        "label": "Maatschappelijk activerende functie",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_decretale_verbindend": {
+        "name": "velt_decretale_verbindend",
+        "label": "Verbindende functie",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_decretale_lab": {
+        "name": "velt_decretale_lab",
+        "label": "Laboratoriumfunctie",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_communicatiekanaal": {
+    "name": "velt_communicatiekanaal",
+    "title": "Communicatiekanalen van Velt",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_comm_kanaal_afdelingssite": {
+        "name": "velt_comm_kanaal_afdelingssite",
+        "label": "Afdelingswebsite",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_comm_kanaal_seizoenen": {
+        "name": "velt_comm_kanaal_seizoenen",
+        "label": "Seizoenen",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_comm_kanaal_velt_nu": {
+        "name": "velt_comm_kanaal_velt_nu",
+        "label": "Velt.nu",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_comm_kanaal_uiv": {
+        "name": "velt_comm_kanaal_uiv",
+        "label": "Uit in Vlaanderen",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_ondersteunende_voorkeurs_taken": {
+    "name": "velt_ondersteunende_voorkeurs_taken",
+    "title": "Ondersteunende of voorkeurstaken",
+    "is_active": 1,
+    "is_reserved": 0
+  },
+  "velt_herkomst_lidmaatschap": {
+    "name": "velt_herkomst_lidmaatschap",
+    "title": "Herkomst lidmaatschap",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_herkomst_eigen_aanmelding": {
+        "name": "velt_herkomst_eigen_aanmelding",
+        "label": "Eigen aanmelding",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_herkomst_cadeaulidmaatschap": {
+        "name": "velt_herkomst_cadeaulidmaatschap",
+        "label": "Cadeaulidmaatschap",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  },
+  "velt_evenement_toegankelijkheid": {
+    "name": "velt_evenement_toegankelijkheid",
+    "title": "Toegankelijkheid",
+    "is_active": 1,
+    "is_reserved": 0,
+    "option_values": {
+      "velt_rolstoeltoegankelijk": {
+        "name": "velt_rolstoeltoegankelijk",
+        "label": "Vrij rolstoeltoegankelijk",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_openbaar_vervoer": {
+        "name": "velt_openbaar_vervoer",
+        "label": "Nabij openbaar vervoer",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_fiets_wandel": {
+        "name": "velt_fiets_wandel",
+        "label": "Nabij fiets- of wandelroutenetwerk",
+        "is_active": 1,
+        "is_reserved": 0
+      },
+      "velt_kinderen_welkom": {
+        "name": "velt_kinderen_welkom",
+        "label": "Kinderen welkom",
+        "is_active": 1,
+        "is_reserved": 0
+      }
+    }
+  }
+}

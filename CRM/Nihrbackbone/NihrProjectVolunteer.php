@@ -140,14 +140,16 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
       throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty contactId in ') . __METHOD__, 3003);
     }
     // check if project exists and retrieve project code
-    if (CRM_Nihrbackbone_BAO_NihrProject::projectExists($this->_projectId)) {
-      $projectCode = CRM_Nihrbackbone_BAO_NihrProject::getProjectAttributeWithId($this->_projectId, 'project_code');
+    $nihrProject = new CRM_Nihrbackbone_NihrProject();
+    if ($nihrProject->projectExists($this->_projectId)) {
+      $projectCode = $nihrProject->getProjectAttributeWithId($this->_projectId, 'npd_project_code');
       if (!$projectCode) {
         Civi::log()->warning(E::ts('Could not find a project code for project with ID ') . $this->_projectId . E::ts(' in ') . __METHOD__);
         $projectCode = E::ts('Could not find project code!');
       }
       // check if contact exists and has contact sub type Volunteer and does not have a case for this project yet
-      if (CRM_Nihrbackbone_NihrVolunteer::isValidVolunteer($contactId) && !$this->isAlreadyOnProject($contactId)) {
+      $nihrVolunteer = new CRM_Nihrbackbone_NihrVolunteer();
+      if ($nihrVolunteer->isValidVolunteer($contactId) && !$this->isAlreadyOnProject($contactId)) {
         // create new case linked to project
         try {
           $case = civicrm_api3('Case', 'create', $this->setCaseCreateData($contactId));
@@ -168,24 +170,23 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
    * @return array
    */
   private function setCaseCreateData($contactId) {
-    $projectIdCustomFieldId = 'custom_' . CRM_Nihrbackbone_NihrConfig::singleton()->getParticipationCustomField('nbpd_project_id', 'id');
-    $projectCodeCustomFieldId = 'custom_' . CRM_Nihrbackbone_NihrConfig::singleton()->getParticipationCustomField('nbpd_project_code', 'id');
-    $projectCode = CRM_Nihrbackbone_BAO_NihrProject::getProjectAttributeWithId($this->_projectId, 'project_code');
-    $anonCustomFieldId = 'custom_' . CRM_Nihrbackbone_NihrConfig::singleton()->getParticipationCustomField('nbpd_project_anon_id', 'id');
-    $pvStatusCustomFieldId = 'custom_'. CRM_Nihrbackbone_NihrConfig::singleton()->getParticipationCustomField('nbpd_pv_status_id', 'id');
-    $recallCustomFieldId = 'custom_'. CRM_Nihrbackbone_NihrConfig::singleton()->getParticipationCustomField('nbpd_recall_group', 'id');
-    $consentCustomFieldId = 'custom_' . CRM_Nihrbackbone_NihrConfig::singleton()->getParticipationCustomField('nbpd_project_consent_status_id', 'id');
+    $nihrProject = new CRM_Nihrbackbone_NihrProject();
+    $projectIdCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'id');
+    $projectCodeCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_code', 'id');
+    $projectCode = $nihrProject->getProjectAttributeWithId($this->_projectId, 'npd_project_code');
+    $anonCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_anon_project_id', 'id');
+    $pvStatusCustomFieldId = 'custom_'. CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_volunteer_project_status_id', 'id');
+    $consentCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_consent_status_id', 'id');
     $caseCreateData =  [
       'contact_id' => $contactId,
-      'case_type_id' => CRM_Nihrbackbone_NihrConfig::singleton()->getParticipationCaseTypeId(),
+      'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(),
       'subject' => "Selected for project " . $projectCode,
       'status_id' => "Open",
       $projectIdCustomFieldId => $this->_projectId,
       $projectCodeCustomFieldId => $projectCode,
       $anonCustomFieldId => "3294yt71L",
       $pvStatusCustomFieldId => 1,
-      $recallCustomFieldId => 3,
-      $consentCustomFieldId => 1,
+      $consentCustomFieldId => 6,
       ];
     return $caseCreateData;
   }
@@ -197,10 +198,11 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
    * @return bool
    */
   public function isAlreadyOnProject($contactId) {
-    $projectIdColumn = CRM_Nihrbackbone_NihrConfig::singleton()->getParticipationCustomField('nbpd_project_id', 'column_name');
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+    $projectIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
     $query = "SELECT COUNT(*)
       FROM civicrm_case_contact AS a JOIN civicrm_case AS b ON a.case_id = b.id
-      LEFT JOIN civicrm_value_nihr_participation_data AS c ON a.case_id = c.entity_id
+      LEFT JOIN " . $tableName ." AS c ON a.case_id = c.entity_id
       WHERE a.contact_id = %1 AND " . $projectIdColumn . " = %2 AND b.is_deleted = %3";
     $count = CRM_Core_DAO::singleValueQuery($query, [
       1 => [$contactId, 'Integer'],

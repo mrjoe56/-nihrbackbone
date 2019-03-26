@@ -27,6 +27,18 @@ function nihrbackbone_civicrm_buildForm($formName, &$form) {
     $project->buildForm($form);
   }
 }
+
+/**
+ * Implements hook_civicrm_validateForm().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_validateForm/
+ */
+function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  if ($form instanceof CRM_Nihrbackbone_Form_ImportCsvMap) {
+    CRM_Nihrbackbone_Form_ImportCsvMap::validateForm($fields, $form, $errors);
+  }
+}
+
 /**
  * Implements hook_civicrm_links().
  *

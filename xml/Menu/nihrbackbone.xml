@@ -18,4 +18,16 @@
     <title>NihrProjectVolunteer</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/nihrbackbone/form/importcsvselect</path>
+    <page_callback>CRM_Nihrbackbone_Form_ImportCsvSelect</page_callback>
+    <title>ImportCsvSelect</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nihrbackbone/form/importcsvmap</path>
+    <page_callback>CRM_Nihrbackbone_Form_ImportCsvMap</page_callback>
+    <title>ImportCsvMap</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>

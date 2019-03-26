@@ -197,4 +197,58 @@ class CRM_Nihrbackbone_NihrProject {
     }
   }
 
+  /**
+   * Method to check if a project exists
+   *
+   * @param $projectId
+   * @return bool
+   */
+  public function projectExists($projectId) {
+    try {
+      $result = civicrm_api3('Campaign', 'getcount', [
+        'campaign_type_id' => $this->_projectCampaignTypeId,
+        'id' => $projectId,
+      ]);
+      if ($result == 0) {
+        return FALSE;
+      }
+      else {
+        return TRUE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->warning(E::ts('Unexpected error using API Campaign getcount in ') . __METHOD__ . E::ts(', error from API: ') . $ex->getMessage());
+      return FALSE;
+    }
+
+  }
+
+  /**
+   * Method to get the project attribute with id
+   *
+   * @param int $projectId
+   * @param string $attribute
+   * @return bool|array
+   */
+  public function getProjectAttributeWithId($projectId, $attribute) {
+    $customFieldId = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField($attribute, 'id');
+    if ($customFieldId) {
+      try {
+        return civicrm_api3('Campaign', 'getvalue', [
+          'id' => $projectId,
+          'campaign_type_id' => $this->_projectCampaignTypeId,
+          'return' => 'custom_' . $customFieldId,
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+        Civi::log()->warning(E::ts('Error retrieving ') . $attribute . E::ts(' for project ') . $projectId . E::ts(' in ') . __METHOD__ . E::ts(', error from API Campaign getvalue"') . $ex->getMessage());
+        return FALSE;
+      }
+    }
+    else {
+      Civi::log()->error(E::ts('No attribute with name ') . $attribute . E::ts(' for project in ') . __METHOD__);
+      return FALSE;
+    }
+  }
+
 }
