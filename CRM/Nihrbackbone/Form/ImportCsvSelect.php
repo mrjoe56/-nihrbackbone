@@ -118,7 +118,7 @@ class CRM_Nihrbackbone_Form_ImportCsvSelect extends CRM_Core_Form {
     $data = fgetcsv($csv, 0, $this->_separator);
     if ($this->_firstRowHeaders) {
       foreach ($data as $rowId => $fieldName) {
-        $this->_columnHeaders[] = strtolower(stripslashes(trim($fieldName)));
+        $this->_columnHeaders[] = str_replace(' ', '_', strtolower(stripslashes(trim($fieldName))));
       }
     }
     else {
@@ -127,7 +127,7 @@ class CRM_Nihrbackbone_Form_ImportCsvSelect extends CRM_Core_Form {
         $this->_columnHeaders[] = 'field_' . $x;
       }
     }
-    $this->_tempTableName = 'nihr_csv_import' . md5(uniqid(rand()));
+    $this->_tempTableName = 'nihr_csvi_' . md5(uniqid(rand(0, 999999)));
     $query = "CREATE TABLE " . $this->_tempTableName . " (" . implode(' VARCHAR(256),', $this->_columnHeaders) . " VARCHAR(256))";
     CRM_Core_DAO::executeQuery($query);
   }

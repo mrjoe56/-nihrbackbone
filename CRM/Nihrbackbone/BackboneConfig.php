@@ -40,8 +40,15 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_mobilePhoneTypeId = NULL;
   private $_phonePhoneTypeId = NULL;
 
+  // properties for communication styles
+  private $_defaultCommunicationStyleId = NULL;
+  private $_defaultIndEmailGreetingId = NULL;
+  private $_defaultIndPostalGreetingId = NULL;
+  private $_defaultIndAddresseeId = NULL;
+
   // other properties
   private $_defaultLocationTypeId = NULL;
+  private $_skypeProviderId = NULL;
 
   /**
    * CRM_Nihrbackbone_BackboneConfig constructor.
@@ -52,6 +59,7 @@ class CRM_Nihrbackbone_BackboneConfig {
     $this->setCaseTypes();
     $this->setCustomData();
     $this->setPhoneTypes();
+    $this->setDefaultCommunicationStyles();
     try {
       $this->_defaultLocationTypeId = civicrm_api3('LocationType', 'getvalue', [
         'return' => "id",
@@ -61,6 +69,69 @@ class CRM_Nihrbackbone_BackboneConfig {
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->warning(E::ts('No default location type id found in ') . __METHOD__);
     }
+    try {
+      $this->_skypeProviderId = civicrm_api3('OptionValue', 'getvalue', [
+        'return' => "value",
+        'option_group_id' => "instant_messenger_service",
+        'name' => "Skype",
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->warning(E::s('No instant messenger with name Skype found in ') . __METHOD__);
+    }
+  }
+
+  /**
+   * Getter for Skype provider id
+   *
+   * @return array|null
+   */
+  public function getSkypeProviderId() {
+    return $this->_skypeProviderId;
+  }
+
+  /**
+   * Getter for default location type id
+   *
+   * @return array|null
+   */
+  public function getDefaultLocationTypeId() {
+    return $this->_defaultLocationTypeId;
+  }
+  /**
+   * Getter for default communication style id
+   *
+   * @return null
+   */
+  public function getDefaultCommmunicationStyleId() {
+    return $this->_defaultCommunicationStyleId;
+  }
+
+  /**
+   * Getter for default individual addressee id
+   *
+   * @return null
+   */
+  public function getDefaultIndAddresseeId() {
+    return $this->_defaultIndAddresseeId;
+  }
+
+  /**
+   * Getter for default individual email greeting id
+   *
+   * @return null
+   */
+  public function getDefaultIndEmailGreetingId() {
+    return $this->_defaultIndEmailGreetingId;
+  }
+
+  /**
+   * Getter for default individual postal greeting id
+   *
+   * @return null
+   */
+  public function getDefaultIndPostalGreetingId() {
+    return $this->_defaultIndPostalGreetingId;
   }
 
   /**
@@ -475,6 +546,39 @@ class CRM_Nihrbackbone_BackboneConfig {
     catch (CiviCRM_API3_Exception $ex) {
     }
 
+  }
+
+  /**
+   * Method to set the default communication style and greetings
+   */
+  private function setDefaultCommunicationStyles() {
+    try {
+      $this->_defaultCommunicationStyleId = (int) civicrm_api3('OptionValue', 'getvalue', [
+        'return' => "value",
+        'option_group_id' => "communication_style",
+        'is_default' => 1,
+      ]);
+      $this->_defaultIndAddresseeId = civicrm_api3('OptionValue', 'getvalue', [
+        'return' => "value",
+        'option_group_id' => "addressee",
+        'is_default' => 1,
+        'filter' => 1,
+      ]);
+      $this->_defaultIndEmailGreetingId = civicrm_api3('OptionValue', 'getvalue', [
+        'return' => "value",
+        'option_group_id' => "email_greeting",
+        'is_default' => 1,
+        'filter' => 1,
+      ]);
+      $this->_defaultIndPostalGreetingId = civicrm_api3('OptionValue', 'getvalue', [
+        'return' => "value",
+        'option_group_id' => "postal_greeting",
+        'is_default' => 1,
+        'filter' => 1,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
   }
 
   /**
