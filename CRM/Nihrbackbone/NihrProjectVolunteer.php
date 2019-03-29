@@ -130,7 +130,7 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
    *
    * @param $contactId
    * @throws API_Exception
-   * @return int
+   * @return array
    */
   public function createProjectVolunteer($contactId) {
     if (empty($this->_projectId)) {
@@ -142,11 +142,6 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
     // check if project exists and retrieve project code
     $nihrProject = new CRM_Nihrbackbone_NihrProject();
     if ($nihrProject->projectExists($this->_projectId)) {
-      $projectCode = $nihrProject->getProjectAttributeWithId($this->_projectId, 'npd_project_code');
-      if (!$projectCode) {
-        Civi::log()->warning(E::ts('Could not find a project code for project with ID ') . $this->_projectId . E::ts(' in ') . __METHOD__);
-        $projectCode = E::ts('Could not find project code!');
-      }
       // check if contact exists and has contact sub type Volunteer and does not have a case for this project yet
       $nihrVolunteer = new CRM_Nihrbackbone_NihrVolunteer();
       if ($nihrVolunteer->isValidVolunteer($contactId) && !$this->isAlreadyOnProject($contactId)) {

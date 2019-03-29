@@ -53,19 +53,26 @@ class CRM_Nihrbackbone_NihrImport {
   public function importPVCsvFile() {
     // check if we can import (is there a project_id, do we have a temp file, do we have data)
     if ($this->canImportPVCsvFile()) {
+      $this->_importLog->logMessage(E::ts('Starting to import csv file with project volunteers for project ID ') . $this->_projectId, 'Info');
       // retrieve columns and values to import from -> into
       $this->retrievePVCsvSourcesAndValues();
       $selectQuery = $this->buildPVSelectQuery();
       if ($selectQuery) {
         $dao = CRM_Core_DAO::executeQuery($selectQuery);
+        $lineNo = 0;
         // process all records from temp table with csv file data
         while ($dao->fetch()) {
+          $lineNo++;
+          $this->_importLog->logMessage(E::ts('Importing line number ') . $lineNo, 'Info');
           $contactId = $this->getOrCreateVolunteer($dao);
           // if volunteer is not already in project, add to project
           $vp = new CRM_Nihrbackbone_NihrProjectVolunteer($this->_projectId);
           $vp->createProjectVolunteer($contactId);
         }
       }
+      // remove temp table because import was successful
+      CRM_Core_Session::setStatus(E::ts('Successfully imported csv file into project ') . $this->_projectId, E::ts('CSV File Imported'), 'success');
+      CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS " . $this->_tempTable);
     }
   }
 
@@ -85,6 +92,7 @@ class CRM_Nihrbackbone_NihrImport {
           $nhsIdValue = $this->_sourceColumns[$importId];
           $contactId = $volunteer->findVolunteerByIdentity($dao->$nhsIdValue, 'nihr_nhs_id');
           if ($contactId) {
+            $this->_importLog->logMessage(E::ts('Found existing volunteer ') . $contactId .E::ts(' with NHS number ') . $dao->$nhsIdValue, 'Info');
             return $contactId;
           }
         }
@@ -95,14 +103,17 @@ class CRM_Nihrbackbone_NihrImport {
       $sampleIdValue = $this->_sourceColumns[$importId];
       $contactId = $volunteer->findVolunteerByIdentity($dao->$sampleIdValue, 'nihr_sample_id');
       if ($contactId) {
+        $this->_importLog->logMessage(E::ts('Found existing volunteer ') . $contactId .E::ts(' with sample Id ') . $dao->$sampleIdValue, 'Info');
         return $contactId;
       }
     }
     // check if we have blood donor Ids and if so, use to get contact
+    // todo check if this is correct
     foreach ($this->_bloodDonorIds as $importId) {
       $bloodDonorIdValue = $this->_sourceColumns[$importId];
       $contactId = $volunteer->findVolunteerByIdentity($dao->$bloodDonorIdValue, 'nihr_blood_donor_id');
       if ($contactId) {
+        $this->_importLog->logMessage(E::ts('Found existing volunteer ') . $contactId .E::ts(' with blood donor Id ') . $dao->$bloodDonorIdValue, 'Info');
         return $contactId;
       }
     }
@@ -122,38 +133,78 @@ class CRM_Nihrbackbone_NihrImport {
       // create volunteer
       $contactParams = $this->buildContactParams($dao);
       $contact = CRM_Contact_BAO_Contact::add($contactParams);
-      $volunteerId = $contact->id;
-      // add volunteer data
-      $processVolunteer = $this->processVolunteerData($dao, $volunteerId);
-      if ($processVolunteer) {
-        CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
+      if ($contact->id) {
+        $this->_importLog->logMessage(E::ts('Created new volunteer with ID ') . $contact->id, 'Info');
+        $volunteerId = $contact->id;
+        // add volunteer data
+        $processVolunteer = $this->processVolunteerData($dao, $volunteerId);
+        if ($processVolunteer) {
+          CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
+        }
+        // add address data
+        $processAddress = $this->processAddressData($dao, $volunteerId);
+        if ($processAddress) {
+          CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
+        }
+        // add phone data
+        $processMobile = $this->processPhoneData($dao, $volunteerId, CRM_Nihrbackbone_BackboneConfig::singleton()->getMobilePhoneTypeId());
+        if ($processMobile) {
+          CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
+        }
+        $processPhone = $this->processPhoneData($dao, $volunteerId, CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
+        if ($processPhone) {
+          CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
+        }
+        // add email
+        $processEmail = $this->processEmailData($dao, $volunteerId);
+        if ($processEmail) {
+          CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
+        }
+        // add Skype IM
+        $processSkype = $this->processSkypeData($dao, $volunteerId);
+        if ($processSkype) {
+          CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
+        }
+        // add sampleIds
+        $this->processSampleIds($dao, $volunteerId);
+        // todo blood donor Ids - is also multiple group? or custom field for volunteer?
       }
-      // add address data
-      $processAddress = $this->processAddressData($dao, $volunteerId);
-      if ($processAddress) {
-        CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
-      }
-      // add phone data
-      $processMobile = $this->processPhoneData($dao, $volunteerId, CRM_Nihrbackbone_BackboneConfig::singleton()->getMobilePhoneTypeId());
-      if ($processMobile) {
-        CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
-      }
-      $processPhone = $this->processPhoneData($dao, $volunteerId, CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
-      if ($processPhone) {
-        CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
-      }
-      // add email
-      $processEmail = $this->processEmailData($dao, $volunteerId);
-      if ($processEmail) {
-        CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
-      }
-      // add Skype IM
-      $processSkype = $this->processSkypeData($dao, $volunteerId);
-      if ($processSkype) {
-        CRM_Core_DAO::executeQuery($this->_query, $this->_queryParams);
+      else {
+        $this->_importLog->logMessage(E::ts('Could not find or create a contact'), 'Error');
       }
     }
     return $volunteerId;
+  }
+
+  /**
+   * Method to add sample ids if they do not exist yet
+   * @param $dao
+   * @param $volunteerId
+   */
+  private function processSampleIds($dao, $volunteerId) {
+    if (!empty($dao) && !empty($volunteerId)) {
+      if (!empty($this->_sampleIds)) {
+        $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSampleDataCustomGroup('table_name');
+        $sampleIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSampleCustomField('nsd_sample_id', 'column_name');
+        foreach ($this->_sampleIds as $key => $fieldName) {
+          if (isset($dao->$fieldName) && !empty($dao->$fieldName)) {
+            // insert sample id if it does not exist yet
+            $query = "SELECT COUNT(*) FROM " . $tableName . " WHERE " . $sampleIdColumn . " = %1 AND entity_id = %2";
+            $count = CRM_Core_DAO::singleValueQuery($query, [
+              1 => [$dao->$fieldName, 'String'],
+              2 => [$volunteerId, 'Integer'],
+            ]);
+            if ($count == 0) {
+              $insert = "INSERT INTO " . $tableName . " (entity_id, " . $sampleIdColumn . ") VALUES(%1, %2)";
+              CRM_Core_DAO::executeQuery($insert, [
+                1 => [$volunteerId, 'Integer'],
+                2 => [$dao->$fieldName, 'String'],
+              ]);
+            }
+          }
+        }
+      }
+    }
   }
 
   /**
