@@ -25,7 +25,6 @@ class CRM_Nihrbackbone_Form_ImportCsvSelect extends CRM_Core_Form {
     // get project id from request
     $this->_projectId = CRM_Utils_Request::retrieveValue('pid', 'Integer');
     // set user context to return to when page and all related actions done
-    CRM_Core_Session::singleton()->pushUserContext(CRM_Utils_System::url('civicrm/nihrbackbone/page/nihrprojectvolunteer', 'reset=1&pid=' . $this->_projectId, TRUE));
     CRM_Utils_System::setTitle(E::ts('NIHR BioResouce - Select CSV File to Import'));
     // no action if delete
     if ($this->_action != CRM_Core_Action::DELETE) {

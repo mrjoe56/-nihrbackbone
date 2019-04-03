@@ -73,6 +73,7 @@ class CRM_Nihrbackbone_NihrImport {
       // remove temp table because import was successful
       CRM_Core_Session::setStatus(E::ts('Successfully imported csv file into project ') . $this->_projectId, E::ts('CSV File Imported'), 'success');
       CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS " . $this->_tempTable);
+      CRM_Core_Session::singleton()->pushUserContext(CRM_Utils_System::url('civicrm/nihrbackbone/page/nihrprojectvolunteer', 'reset=1&pid=' . $this->_projectId, TRUE));
     }
   }
 

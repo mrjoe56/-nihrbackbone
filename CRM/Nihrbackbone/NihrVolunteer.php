@@ -95,7 +95,12 @@ class CRM_Nihrbackbone_NihrVolunteer {
         'identifier' => $identifier,
         'identifier_type' => $identifierType,
       ]);
-      return $result['id'];
+      if (isset($result['id'])) {
+        return $result['id'];
+      }
+      else {
+        return FALSE;
+      }
     }
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->error(E::ts('Could not find a volunteer with API Contact findbyidentity in ') . __METHOD__

@@ -54,7 +54,7 @@ class CRM_Nihrbackbone_Page_NihrProjectVolunteer extends CRM_Core_Page {
    * Function to set the page configuration
    *
    * @access protected
-   * @throws API_Exception
+   * @throws CiviCRM_API3_Exception
    */
   private function setPageConfiguration() {
     CRM_Utils_System::setTitle(ts('NIHR BioResource Project Volunteers'));
@@ -62,11 +62,11 @@ class CRM_Nihrbackbone_Page_NihrProjectVolunteer extends CRM_Core_Page {
       $this->_projectId = CRM_Utils_Request::retrieve('pid', 'Integer');
     }
     catch (Exception $ex) {
-      throw new API_Exception(E::ts('Could not retrieve pid from the request URL in ') . __METHOD__
+      throw new CiviCRM_API3_Exception(E::ts('Could not retrieve pid from the request URL in ') . __METHOD__
         . E::ts(', error message: ') . $ex->getMessage(), 2000);
     }
     if (!$this->_projectId) {
-      throw new API_Exception(E::ts('Could not find a project id in the request URL in ') . __METHOD__, 2001);
+      throw new CiviCRM_API3_Exception(E::ts('Could not find a project id in the request URL in ') . __METHOD__, 2001);
     }
     $this->assign('import_file_url', CRM_Utils_System::url('civicrm/nihrbackbone/form/importcsvselect',
       'reset=1&pid=' . $this->_projectId, TRUE));
@@ -80,7 +80,6 @@ class CRM_Nihrbackbone_Page_NihrProjectVolunteer extends CRM_Core_Page {
       ]);
     }
     catch (CiviCRM_API3_Exception $ex) {
-      CRM_Core_Error::debug('ex', $ex);
       $projectCode = '';
     }
     $this->assign('project_code', $projectCode);
