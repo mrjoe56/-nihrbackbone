@@ -3,32 +3,6 @@ require_once 'nihrbackbone.civix.php';
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /**
- * Implements hook_civicrm_postProcess().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postProcess/
- */
-function nihrbackbone_civicrm_postProcess($formName, &$form) {
-  // postProcess voor CRM_Campaign_Form_Campaign
-  if ($form instanceof CRM_Campaign_Form_Campaign) {
-    $project = new CRM_Nihrbackbone_NihrProject();
-    $project->postProcess($form);
-  }
-}
-
-/**
- * Implements hook_civicrm_buildForm().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_buildForm/
- */
-function nihrbackbone_civicrm_buildForm($formName, &$form) {
-  // buildForm voor CRM_Campaign_Form_Campaign
-  if ($form instanceof CRM_Campaign_Form_Campaign) {
-    $project = new CRM_Nihrbackbone_NihrProject();
-    $project->buildForm($form);
-  }
-}
-
-/**
  * Implements hook_civicrm_validateForm().
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_validateForm/

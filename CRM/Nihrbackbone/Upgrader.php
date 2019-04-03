@@ -6,6 +6,29 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  */
 class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
 
+  /**
+   * Upgrade 1000 (add option values for studies)
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1000() {
+  $this->ctx->log->info(E::ts('Applying update 1000'));
+  $studies = civicrm_api3('NihrStudy', 'get', ['options' => ['limit' => 0]]);
+  foreach ($studies['values'] as $studyId => $study) {
+    civicrm_api3('OptionValue', 'create', [
+      'option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'option_group_id'),
+      'label' => $study['title'],
+      'name' => $study['title'],
+      'value' => $studyId,
+      'is_active' => 1,
+    ]);
+  }
+  return TRUE;
+  }
+
+
+
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).
 
@@ -54,19 +77,6 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
   public function disable() {
     CRM_Core_DAO::executeQuery('UPDATE foo SET is_active = 0 WHERE bar = "whiz"');
   }
-
-  /**
-   * Example: Run a couple simple queries.
-   *
-   * @return TRUE on success
-   * @throws Exception
-   *
-  public function upgrade_4200() {
-    $this->ctx->log->info('Applying update 4200');
-    CRM_Core_DAO::executeQuery('UPDATE foo SET bar = "whiz"');
-    CRM_Core_DAO::executeQuery('DELETE FROM bang WHERE willy = wonka(2)');
-    return TRUE;
-  } // */
 
 
   /**
