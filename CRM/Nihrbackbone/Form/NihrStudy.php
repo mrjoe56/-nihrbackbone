@@ -1,5 +1,4 @@
 <?php
-
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /**
@@ -40,6 +39,7 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
     $this->addEntityRef('investigator_id', E::ts('Principal Investigator'), [
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
     ], FALSE);
+    $this->add('text', 'study_number', E::ts('Study Number'), [], TRUE);
     $this->add('text', 'title', E::ts('Title'), [], TRUE);
     $this->add('textarea', 'description', E::ts('Description'), ['rows' => 4, 'cols' => 50], FALSE);
     $this->add('text', 'ethics_number', E::ts('Ethics Number'), [], FALSE);
@@ -49,8 +49,7 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
         'params' => ['option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getEthicsApprovedOptionGroupId()],
       ],
       'select' => ['minimumInputLength' => 1],
-    ]);
-    $this->add('textarea', 'requirements', E::ts('Requirements'), ['rows' => 4, 'cols' => 50], FALSE);
+    ]);$this->add('textarea', 'requirements', E::ts('Requirements'), ['rows' => 4, 'cols' => 50], FALSE);
     $this->add('datepicker', 'start_date', E::ts('Start Date'), ['placeholder' => ts('Start Date')],FALSE, ['time' => FALSE]);
     $this->add('datepicker', 'end_date', E::ts('End Date'), ['placeholder' => ts('End Date')],FALSE, ['time' => FALSE]);
     $this->addEntityRef('centre_study_origin_id', E::ts('Centre Study Origin'), [
@@ -74,12 +73,11 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
   public function preProcess() {
     // retrieve study id from request if update or delete
     if ($this->_action == CRM_Core_Action::UPDATE) {
-      $studyId = CRM_Utils_Request::retrieveValue('id', 'Integer');
-      if (!$studyId) {
-        $studyId = CRM_Utils_Request::retrieveValue('study_id', 'Integer');
+      $this->_studyId = CRM_Utils_Request::retrieveValue('id', 'Integer');
+      if (!$this->_studyId) {
+        $this->_studyId = CRM_Utils_Request::retrieveValue('study_id', 'Integer');
       }
     }
-    $this->_studyId = $studyId;
     // if action update, retrieve current data
     if ($this->_action == CRM_Core_Action::UPDATE) {
       try {
@@ -166,6 +164,7 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
   public function addRules() {
     $this->addFormRule(array('CRM_Nihrbackbone_Form_NihrStudy', 'validateDates'));
     $this->addFormRule(array('CRM_Nihrbackbone_Form_NihrStudy', 'validateTitle'));
+    $this->addFormRule(array('CRM_Nihrbackbone_Form_NihrStudy', 'validateStudyNumber'));
   }
 
   /**
@@ -202,6 +201,30 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
           $errors['end_date'] = E::ts('End date can not be earlier than start date');
           return $errors;
         }
+      }
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to validate the study number
+   * - can not already exist in the database
+   * - has to follow pattern "NBR" or "CBR" and numeric values (for example NBR123)
+   *
+   * @param $fields
+   * @return array|bool
+   */
+  public static function validateStudyNumber($fields) {
+    if (isset($fields['study_number']) && !empty($fields['study_number'])) {
+      // check if study number is unique
+      if (!CRM_Nihrbackbone_BAO_NihrStudy::isUniqueStudyNumber($fields['study_number'], $fields['study_id'])) {
+        $errors['study_number'] = E::ts('Study number ') . $fields['study_number'] . E::ts(' already exists in the database!');
+        return $errors;
+      }
+      // check if pattern is valid
+      if (!CRM_Nihrbackbone_BAO_NihrStudy::isValidStudyNumberPattern($fields['study_number'])) {
+        $errors['study_number'] = E::ts('Study number ') . $fields['study_number'] . E::ts(' is invalid, pattern should be NBR or CBR followed by numbers only!');
+        return $errors;
       }
     }
     return TRUE;

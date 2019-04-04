@@ -63,7 +63,6 @@
 SET FOREIGN_KEY_CHECKS=0;
 
 DROP TABLE IF EXISTS `civicrm_nihr_study`;
-DROP TABLE IF EXISTS `civicrm_nihr_campaign_researcher`;
 
 SET FOREIGN_KEY_CHECKS=1;
 -- /*******************************************************
@@ -71,26 +70,6 @@ SET FOREIGN_KEY_CHECKS=1;
 -- * Create new tables
 -- *
 -- *******************************************************/
-
--- /*******************************************************
--- *
--- * civicrm_nihr_campaign_researcher
--- *
--- * NIHR Researcher(s) for Project
--- *
--- *******************************************************/
-CREATE TABLE `civicrm_nihr_campaign_researcher` (
-
-
-     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique NihrCampaignResearcher ID',
-     `project_id` int unsigned    COMMENT 'FK to Campaign for Project',
-     `researcher_id` int unsigned    COMMENT 'FK to Contact for Researcher' 
-,
-        PRIMARY KEY (`id`)
- 
- 
-,          CONSTRAINT FK_civicrm_nihr_campaign_researcher_project_id FOREIGN KEY (`project_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE CASCADE,          CONSTRAINT FK_civicrm_nihr_campaign_researcher_researcher_id FOREIGN KEY (`researcher_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE  
-)    ;
 
 -- /*******************************************************
 -- *
@@ -103,6 +82,7 @@ CREATE TABLE `civicrm_nihr_study` (
 
 
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique NihrStudy ID',
+     `study_number` varchar(24)    COMMENT 'Specific Study Number in NIHR BioResource',
      `investigator_id` int unsigned    COMMENT 'FK to Contact for Principal Investigator',
      `title` varchar(128)    COMMENT 'Study Title',
      `description` text    COMMENT 'Study Description',

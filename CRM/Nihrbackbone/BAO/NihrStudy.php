@@ -101,4 +101,60 @@ class CRM_Nihrbackbone_BAO_NihrStudy extends CRM_Nihrbackbone_DAO_NihrStudy {
     }
   }
 
+  /**
+   * Method to check if a study number already exists in the database
+   *
+   * @param string $studyNumber
+   * @param int $studyId
+   * @return bool
+   */
+  public static function isUniqueStudyNumber($studyNumber, $studyId) {
+    if (empty($studyNumber)) {
+      return FALSE;
+    }
+    // if study_id is set, we are updating so we need to include the id in our check
+    if (!empty($studyId)) {
+      $getParams = [
+        'study_number' => $studyNumber,
+        'id' => ['!=' => $studyId],
+      ];
+    }
+    else {
+      // if study_id is empty, we are creating so we can check just with study number
+      $getParams = [
+        'study_number' => $studyNumber,
+      ];
+    }
+    try {
+      $count = civicrm_api3('NihrStudy', 'getcount', $getParams);
+      if ($count > 0) {
+        return FALSE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->warning(E::ts('Unexpected problem with API NihrStudy getcount in ') . __METHOD__ . E::ts(' error message ') . $ex->getMessage());
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to check if the study number has a valid pattern
+   *
+   * @param string $studyNumber
+   * @return bool
+   */
+  public static function isValidStudyNumberPattern($studyNumber) {
+    $allowedInitials = ['CBR', 'NBR'];
+    // validate the pattern
+    $firstPart = substr($studyNumber, 0, 3);
+    $secondPart = substr($studyNumber, 3);
+    if (!in_array($firstPart, $allowedInitials)) {
+      return FALSE;
+    }
+    if (!is_numeric($secondPart)) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+
 }

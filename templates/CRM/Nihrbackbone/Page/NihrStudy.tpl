@@ -11,6 +11,7 @@
       <thead>
         <tr>
           <th id="sortable">{ts}Study ID{/ts}</th>
+          <th id="sortable">{ts}Study Number{/ts}</th>
           <th id="sortable">{ts}Title{/ts}</th>
           <th id="sortable">{ts}Principal Investigator{/ts}</th>
           <th id="nosort">{ts}Description{/ts}</th>
@@ -32,6 +33,7 @@
       {foreach from=$studies key=study_id item=study}
         <tr id="nihr_study-{$study_id}" class="crm-entity {cycle values="odd-row,even-row"} {$row.class}">
           <td>{$study.id}</td>
+          <td>{$study.study_number}</td>
           <td>{$study.title}</td>
           <td>{$study.investigator}</td>
           <td>{$study.description}</td>

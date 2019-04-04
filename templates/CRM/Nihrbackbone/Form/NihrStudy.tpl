@@ -4,6 +4,12 @@
   </div>
   <input type="hidden" name="study_id" id="study_id" value="{$study_id}" />
 
+  <div class="crm-section study_number_section">
+    <div class="label">{$form.study_number.label}</div>
+    <div class="content">{$form.study_number.html}</div>
+    <div class="clear"></div>
+  </div>
+
   <div class="crm-section investigator_id_section">
     <div class="label">{$form.investigator_id.label}</div>
     <div class="content">{$form.investigator_id.html}</div>

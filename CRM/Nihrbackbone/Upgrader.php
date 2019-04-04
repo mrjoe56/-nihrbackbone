@@ -13,21 +13,33 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
    * @throws Exception
    */
   public function upgrade_1000() {
-  $this->ctx->log->info(E::ts('Applying update 1000'));
-  $studies = civicrm_api3('NihrStudy', 'get', ['options' => ['limit' => 0]]);
-  foreach ($studies['values'] as $studyId => $study) {
-    civicrm_api3('OptionValue', 'create', [
-      'option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'option_group_id'),
-      'label' => $study['title'],
-      'name' => $study['title'],
-      'value' => $studyId,
-      'is_active' => 1,
-    ]);
-  }
-  return TRUE;
+    $this->ctx->log->info(E::ts('Applying update 1000'));
+    $studies = civicrm_api3('NihrStudy', 'get', ['options' => ['limit' => 0]]);
+    foreach ($studies['values'] as $studyId => $study) {
+      civicrm_api3('OptionValue', 'create', [
+        'option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'option_group_id'),
+        'label' => $study['title'],
+        'name' => $study['title'],
+        'value' => $studyId,
+        'is_active' => 1,
+      ]);
+    }
+    return TRUE;
   }
 
-
+  /**
+   * Upgrade 1010 (add column study_number
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1010() {
+    $this->ctx->log->info(E::ts('Applying update 1010 (add study number column)'));
+    if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'study_number')) {
+      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study ADD COLUMN study_number VARCHAR(24) DEFAULT NULL COMMENT 'Specific Study Number in NIHR BioResource' AFTER id");
+    }
+    return TRUE;
+  }
 
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).

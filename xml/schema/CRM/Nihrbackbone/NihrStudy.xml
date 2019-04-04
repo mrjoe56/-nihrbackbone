@@ -22,6 +22,15 @@
   </primaryKey>
 
   <field>
+    <name>study_number</name>
+    <type>varchar</type>
+    <length>24</length>
+    <title>Study Number</title>
+    <comment>Specific Study Number in NIHR BioResource</comment>
+    <add>5.9</add>
+  </field>
+
+  <field>
     <name>investigator_id</name>
     <type>int unsigned</type>
     <title>Principal Investigator ID</title>

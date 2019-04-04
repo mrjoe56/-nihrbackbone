@@ -7,7 +7,6 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  * @author Erik Hommel <erik.hommel@civicoop.org>
  * @date 26 Mar 2019
  * @license AGPL-3.0
-
  */
 class CRM_Nihrbackbone_NihrImport {
 

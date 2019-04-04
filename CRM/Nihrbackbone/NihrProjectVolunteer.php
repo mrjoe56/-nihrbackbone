@@ -181,7 +181,7 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
       $projectCodeCustomFieldId => $projectCode,
       $anonCustomFieldId => "3294yt71L",
       $pvStatusCustomFieldId => 1,
-      $consentCustomFieldId => 6,
+      $consentCustomFieldId => 7,
       ];
     return $caseCreateData;
   }
