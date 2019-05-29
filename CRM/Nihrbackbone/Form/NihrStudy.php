@@ -218,12 +218,12 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
     if (isset($fields['study_number']) && !empty($fields['study_number'])) {
       // check if study number is unique
       if (!CRM_Nihrbackbone_BAO_NihrStudy::isUniqueStudyNumber($fields['study_number'], $fields['study_id'])) {
-        $errors['study_number'] = E::ts('Study number ') . $fields['study_number'] . E::ts(' already exists in the database!');
+        $errors['study_number'] = E::ts('Study number ') . $fields['study_number'] . E::ts(' already exists in the database.');
         return $errors;
       }
       // check if pattern is valid
       if (!CRM_Nihrbackbone_BAO_NihrStudy::isValidStudyNumberPattern($fields['study_number'])) {
-        $errors['study_number'] = E::ts('Study number ') . $fields['study_number'] . E::ts(' is invalid, pattern should be NBR or CBR followed by numbers only!');
+        $errors['study_number'] = E::ts('Study number ') . $fields['study_number'] . E::ts(' is invalid, pattern should be NBR or CBR followed by numbers only.');
         return $errors;
       }
     }
@@ -237,26 +237,20 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
    * @return array|bool
    */
   public static function validateTitle($fields) {
-    try {
-      // if there is at least 1 study with title
-      $count = civicrm_api3('NihrStudy', 'getcount', ['title' => $fields['title']]);
-      if ($count > 0) {
-        // check if any other id than the one we are dealing with
-        $studies = civicrm_api3('NihrStudy', 'get', [
-          'return' => "id",
-          'title' => $fields['title'],
-          'options' => ['limit' => 0],
-          'sequential' => 1,
-        ]);
-        foreach ($studies['values'] as $study) {
-          if ($study['id'] != $fields['study_id']) {
-            $errors['title'] = E::ts('There is already a study with this title, please change.');
-            return $errors;
-          }
-        }
+    if (isset($fields['title']) && !empty($fields['title'])) {
+      // set parameters for study get count for create (no id) and edit (id)
+      $getParams = ['title' => $fields['title']];
+      if (isset($fields['study_id']) && !empty($fields['study_id'])) {
+        $getParams['id'] = ['!=' => $fields['study_id']];
       }
-    }
-    catch (CiviCRM_API3_Exception $ex) {
+      try {
+        $count = civicrm_api3('NihrStudy', 'getcount', $getParams);
+        if ($count > 0) {
+          $errors['title'] = E::ts('There is already a study with this title, please change.');
+          return $errors;
+        }
+      } catch (CiviCRM_API3_Exception $ex) {
+      }
     }
     return TRUE;
   }

@@ -17,6 +17,13 @@ function _civicrm_api3_nihr_study_create_spec(&$spec) {
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_INT,
   ];
+  $spec['study_number'] = [
+    'name' => 'study_number',
+    'title' => 'Study Number',
+    'description' => 'Study Number',
+    'api.required' => 0,
+    'type' => CRM_Utils_Type::T_STRING,
+  ];
   $spec['investigator_id'] = [
     'name' => 'investigator_id',
     'title' => 'Investigator ID',
