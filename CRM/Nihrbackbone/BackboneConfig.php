@@ -22,6 +22,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_volunteerProjectStatusOptionGroupId = NULL;
   private $_ethnicityOptionGroupId = NULL;
   private $_consentStatusOptionGroupId = NULL;
+  private $_consentVersionOptionGroupId = NULL;
 
   // property for project campaign type
   private $_projectCampaignTypeId = NULL;
@@ -81,6 +82,14 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
   }
 
+  /**
+   * Getter for consent version option group id
+   * @return null
+   */
+  public function getConsentVersionOptionGroupId() {
+    return $this->_consentVersionOptionGroupId;
+
+  }
   /**
    * Getter for Skype provider id
    *
@@ -392,6 +401,7 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_ethnicity',
       'nihr_consent_status',
       'gender',
+      'nbr_consent_version'
     ];
     try {
       $foundOptionGroups = civicrm_api3('OptionGroup', 'get', [
@@ -463,7 +473,7 @@ class CRM_Nihrbackbone_BackboneConfig {
     $property = NULL;
     $parts = explode('_', $customGroupName);
     $count = count($parts);
-    if ($parts[0] == 'nihr') {
+    if ($parts[0] == 'nihr' || $parts[0] == 'nbr') {
       $start = 1;
     }
     else {
