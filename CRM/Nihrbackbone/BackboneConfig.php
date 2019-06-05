@@ -32,6 +32,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_participationDataCustomGroup = [];
   private $_volunteerDataCustomGroup = [];
   private $_sampleDataCustomGroup = [];
+  private $_volunteerGeneralObservationsCustomGroup = [];
 
   // properties for case types ids
   private $_participationCaseTypeId = NULL;
@@ -155,6 +156,21 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
     else {
       return $this->_projectDataCustomGroup;
+    }
+  }
+
+  /**
+   * Getter for volunteer general observations custom group
+   *
+   * @param null $key
+   * @return array|mixed
+   */
+  public function getVolunteerGeneralObservationsCustomGroup($key = NULL) {
+    if ($key && isset($this->_volunteerGeneralObservationsCustomGroup[$key])) {
+      return $this->_volunteerGeneralObservationsCustomGroup[$key];
+    }
+    else {
+      return $this->_volunteerGeneralObservationsCustomGroup;
     }
   }
 
@@ -499,6 +515,7 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_participation_data',
       'nihr_volunteer_data',
       'nihr_sample_data',
+      'nihr_volunteer_general_observations',
       ];
     try {
       $customGroups = civicrm_api3('CustomGroup', 'get', [

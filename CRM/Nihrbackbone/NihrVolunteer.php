@@ -109,4 +109,18 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
 
   }
+  /**
+   * Method to calculate BMI
+   *
+   * @param $weight
+   * @param $height
+   * @return bool|float
+   */
+  public function calculateBmi($weight, $height) {
+    if (empty($weight) || empty($height)) {
+      return FALSE;
+    }
+    return $weight / ($height * $height);
+  }
+
 }
