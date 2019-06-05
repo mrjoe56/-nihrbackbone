@@ -1,6 +1,6 @@
 <div class="crm-content-block crm-block">
   <div id="help">
-    {ts}This overview shows you the current volunteer selection on project {/ts}<strong>{$project_code}</strong>
+    {ts}This overview shows you the current volunteer selection on a project</strong>
   </div>
   <div class="action-link">
     <a class="button import-option" href="{$import_file_url}">

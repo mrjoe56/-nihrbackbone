@@ -87,7 +87,6 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
    */
   private function getVolunteerSelectQuery() {
     $projectIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
-    $projectCodeColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_code', 'column_name');
     $projectAnonIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_anon_project_id', 'column_name');
     $pvStatusIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_volunteer_project_status_id', 'column_name');
     $eligibleColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
@@ -96,8 +95,8 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
     $ethnicityIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerCustomField('nvd_ethnicity_id', 'column_name');
     $volunteerTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerDataCustomGroup('table_name');
     $queryArray = [
-      'query' => "SELECT a.entity_id AS case_id, a." . $projectIdColumn. " AS project_id, a." . $projectCodeColumn
-        . " AS project_code, a." . $projectAnonIdColumn . " AS anon_project_id, a." . $pvStatusIdColumn
+      'query' => "SELECT a.entity_id AS case_id, a." . $projectIdColumn. " AS project_id, a." . $projectAnonIdColumn
+        . " AS anon_project_id, a." . $pvStatusIdColumn
         . " AS project_status_id, g.label AS volunteer_project_status, a." . $eligibleColumn . " AS eligible_id, 
         h.label AS ethnicity, i.label AS project_consent_status, b.contact_id AS bioresource_id, c.display_name AS volunteer_name, 
         c.birth_date, e.label AS sex, f.city AS location, d." . $ethnicityIdColumn . " AS ethnicity_id, 
