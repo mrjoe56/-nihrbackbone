@@ -70,19 +70,6 @@ class CRM_Nihrbackbone_Page_NihrProjectVolunteer extends CRM_Core_Page {
     }
     $this->assign('import_file_url', CRM_Utils_System::url('civicrm/nihrbackbone/form/importcsvselect',
       'reset=1&pid=' . $this->_projectId, TRUE));
-    // get project code
-    $projectCodeCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_project_code', 'id');
-    try {
-      $projectCode = civicrm_api3('Campaign', 'getvalue', [
-        'id' => $this->_projectId,
-        'campaign_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCampaignTypeId(),
-        'return' => $projectCodeCustomField,
-      ]);
-    }
-    catch (CiviCRM_API3_Exception $ex) {
-      $projectCode = '';
-    }
-    $this->assign('project_code', $projectCode);
   }
 
 }

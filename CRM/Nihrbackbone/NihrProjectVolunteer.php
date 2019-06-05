@@ -139,7 +139,7 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
     if (empty($contactId)) {
       throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty contactId in ') . __METHOD__, 3003);
     }
-    // check if project exists and retrieve project code
+    // check if project exists
     $nihrProject = new CRM_Nihrbackbone_NihrProject();
     if ($nihrProject->projectExists($this->_projectId)) {
       // check if contact exists and has contact sub type Volunteer and does not have a case for this project yet
@@ -165,20 +165,16 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
    * @return array
    */
   private function setCaseCreateData($contactId) {
-    $nihrProject = new CRM_Nihrbackbone_NihrProject();
     $projectIdCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'id');
-    $projectCodeCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_code', 'id');
-    $projectCode = $nihrProject->getProjectAttributeWithId($this->_projectId, 'npd_project_code');
     $anonCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_anon_project_id', 'id');
     $pvStatusCustomFieldId = 'custom_'. CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_volunteer_project_status_id', 'id');
     $consentCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_consent_status_id', 'id');
     $caseCreateData =  [
       'contact_id' => $contactId,
       'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(),
-      'subject' => "Selected for project " . $projectCode,
+      'subject' => "Selected for project " . $this->_projectId,
       'status_id' => "Open",
       $projectIdCustomFieldId => $this->_projectId,
-      $projectCodeCustomFieldId => $projectCode,
       $anonCustomFieldId => "3294yt71L",
       $pvStatusCustomFieldId => 1,
       $consentCustomFieldId => 7,
