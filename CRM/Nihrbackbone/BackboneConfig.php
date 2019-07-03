@@ -23,6 +23,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_ethnicityOptionGroupId = NULL;
   private $_consentStatusOptionGroupId = NULL;
   private $_consentVersionOptionGroupId = NULL;
+  private $_caseStatusOptionGroupId = NULL;
 
   // property for project campaign type
   private $_projectCampaignTypeId = NULL;
@@ -51,12 +52,15 @@ class CRM_Nihrbackbone_BackboneConfig {
   // other properties
   private $_defaultLocationTypeId = NULL;
   private $_skypeProviderId = NULL;
+  private $_eligibleStatus  = NULL;
 
   /**
    * CRM_Nihrbackbone_BackboneConfig constructor.
    */
   public function __construct() {
     $this->setOptionGroups();
+    // set eligible status should happen once option groups are done!
+    $this->setEligibleStatus();
     $this->setCampaignTypes();
     $this->setCaseTypes();
     $this->setCustomData();
@@ -81,6 +85,14 @@ class CRM_Nihrbackbone_BackboneConfig {
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->warning(E::s('No instant messenger with name Skype found in ') . __METHOD__);
     }
+  }
+
+  /**
+   * Getter for eligible status
+   * @return null
+   */
+  public function getEligibleStatus() {
+    return $this->_eligibleStatus;
   }
 
   /**
@@ -340,6 +352,15 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for case status option group id
+   *
+   * @return null
+   */
+  public function getCaseStatusOptionGroupId() {
+    return $this->_caseStatusOptionGroupId;
+  }
+
+  /**
    * Getter for participation case type id
    */
   public function getParticipationCaseTypeId() {
@@ -417,7 +438,8 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_ethnicity',
       'nihr_consent_status',
       'gender',
-      'nbr_consent_version'
+      'nbr_consent_version',
+      'case_status',
     ];
     try {
       $foundOptionGroups = civicrm_api3('OptionGroup', 'get', [
@@ -432,6 +454,18 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->error(E::ts('Could not find a unique option group with name gender in ') . __METHOD__);
+    }
+  }
+  private function setEligibleStatus() {
+    try {
+      $this->_eligibleStatus = civicrm_api3('OptionValue', 'getvalue', [
+        'option_group_id' => $this->_eligibleStatusOptionGroupId,
+        'name' => 'nihr_eligible',
+        'return' => 'value',
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->warning(E::ts('Could not find eligile status in ') . __METHOD__ . E::ts(', error message from API OptionValue getvalue: ') . $ex->getMessage());
     }
   }
 

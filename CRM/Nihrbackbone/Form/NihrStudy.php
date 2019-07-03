@@ -49,7 +49,8 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
         'params' => ['option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getEthicsApprovedOptionGroupId()],
       ],
       'select' => ['minimumInputLength' => 1],
-    ]);$this->add('textarea', 'requirements', E::ts('Requirements'), ['rows' => 4, 'cols' => 50], FALSE);
+    ]);
+    $this->add('textarea', 'requirements', E::ts('Requirements'), ['rows' => 4, 'cols' => 50], FALSE);
     $this->add('datepicker', 'start_date', E::ts('Start Date'), ['placeholder' => ts('Start Date')],FALSE, ['time' => FALSE]);
     $this->add('datepicker', 'end_date', E::ts('End Date'), ['placeholder' => ts('End Date')],FALSE, ['time' => FALSE]);
     $this->addEntityRef('centre_study_origin_id', E::ts('Centre Study Origin'), [

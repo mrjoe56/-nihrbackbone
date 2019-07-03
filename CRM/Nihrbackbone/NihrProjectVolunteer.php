@@ -207,4 +207,53 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
     }
   }
 
+  /**
+   * Method to add 1 or more statuses to the eligibility of the volunteer on the project (custom field on case)
+   *
+   * @param array $newStatus
+   * @param int $caseId
+   * @param bool $replace (if TRUE current statuses will be wiped out and replace with new ones ELSE new ones will be added)
+   */
+  public static function setEligibilityStatus($newStatus, $caseId, $replace = FALSE) {
+    // if new status is not an array, make it one!
+    if (!is_array($newStatus)) {
+      $newStatus = [$newStatus];
+    }
+    $eligibleCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'id');
+    if ($eligibleCustomField) {
+      try {
+        $result = civicrm_api3('Case', 'getsingle', [
+          'return' => [$eligibleCustomField, 'contact_id'],
+          'id' => $caseId,
+        ]);
+        // if replace is false, make sure the current status are also saved
+        // apart from when it is eligible because that can not be in combination with others
+        if (!$replace) {
+          foreach ($result[$eligibleCustomField] as $currentStatus) {
+            $newStatus[] = $currentStatus;
+          }
+        }
+        // now update the eligibility
+        try {
+          civicrm_api3('Case', 'create', [
+            'id' => $caseId,
+            'contact_id' => $result['contact_id'][1],
+            $eligibleCustomField => $newStatus,
+          ]);
+        }
+        catch (CiviCRM_API3_Exception $ex) {
+          Civi::log()->error(E::ts('Not able to update the eligibility for case with ID ') . $caseId . E::ts(' in ')
+            . __METHOD__ . E::ts(', error from API Case create: ') . $ex->getMessage());
+        }
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+        Civi::log()->error(E::ts('Could not find case data for case ID ') . $caseId . E::ts(' in ')
+          . __METHOD__ . E::ts(', error message from API Case getsingle :') . $ex->getMessage());
+      }
+    }
+    else {
+      Civi::log()->error(E::ts('Could not find a custom field for eligible status in ') . __METHOD__);
+    }
+  }
+
 }
