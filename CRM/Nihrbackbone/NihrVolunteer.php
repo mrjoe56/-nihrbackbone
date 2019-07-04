@@ -123,4 +123,38 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return $weight / ($height * $height);
   }
 
+  /**
+   * Method to check if the volunteer now has the max number of participations in the period
+   *
+   * @param $contactId
+   * @return bool
+   * @throws
+   */
+  public function hasMaxParticipationsNow($contactId) {
+    // get the settings for the max number, the max period and the case status to be counted
+    $maxNumber = Civi::settings()->get('nbr_max_participations');
+    $noMonths = Civi::settings()->get('nbr_no_months_participation');
+    $countCaseStatuses = Civi::settings()->get('nbr_part_case_status');
+    $checkDate = new DateTime();
+    $modifier = '-' . $noMonths . ' months';
+    $checkDate->modify($modifier);
+    // retrieve the number of participation cases in the specified period with the status that
+    // are to be counted
+    try {
+      $result = (int)civicrm_api3('Case', 'getcount', [
+        'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(),
+        'start_date' => ['>' => $checkDate->format('d-m-Y')],
+        'status_id' => ['IN' => $countCaseStatuses],
+        'contact_id' => $contactId,
+        'is_deleted' => 0,
+      ]);
+      if ($result >= $maxNumber) {
+        return TRUE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return FALSE;
+  }
+
 }

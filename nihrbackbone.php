@@ -2,37 +2,6 @@
 require_once 'nihrbackbone.civix.php';
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
-function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
-  if ($op == 'create' || $op == 'edit') {
-    if ($groupID == CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerGeneralObservationsCustomGroup('id')) {
-      $weight = NULL;
-      $height = NULL;
-      foreach ($params as $key => $param) {
-        if ($param['column_name'] == 'nvgo_weight_kg') {
-          $weight = $params['value'];
-        }
-        if ($param['column_name'] == 'nvgo_height_m') {
-          $height = $params['value'];
-        }
-      }
-      if ($weight && $height) {
-        $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
-        $bmi = $volunteer->calculateBmi($weight, $height);
-        try {
-          civicrm_api3('Contact', 'create', [
-            'id' => $entityID,
-            'custom_184' => $bmi,
-          ]);
-        }
-        catch (CiviCRM_API3_Exception $ex) {
-          Civi::log()->error("This is an error when the BMI is updated");
-        }
-      }
-    }
-  }
-
-}
-
 /**
  * Implements hook_civicrm_validateForm().
  *

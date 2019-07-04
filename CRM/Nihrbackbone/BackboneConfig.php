@@ -313,6 +313,27 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for general observation data custom field
+   *
+   * @param $customFieldName
+   * @param $key
+   * @return mixed
+   */
+  public function getGeneralObservationCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_volunteerGeneralObservationsCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Getter for participation data custom field
    *
    * @param $customFieldName
