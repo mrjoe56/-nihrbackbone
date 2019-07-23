@@ -2,12 +2,93 @@
 require_once 'nihrbackbone.civix.php';
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
+
+/**
+ * Implements hook_civicrm_custom.
+ *
+ */
+function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
+
+  /** if this custom post is to add or edit General observations, and parameters are present, update the bmi from ht and wt */
+  if ($op == 'create' || $op == 'edit') {
+
+    if ($groupID == CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerGeneralObservationsCustomGroup('id')&&count($params)>1) {
+
+      //logs
+      Civi::log()->debug('----------------------------------------- ');
+      Civi::log()->debug('custom hook called  op:'.$op.'   grpID:'.$groupID.'  $entityID:'.$entityID) ;
+      Civi::log()->debug('&$params - ');
+      foreach ($params as $key => $param) {
+        Civi::log()->debug($param['column_name'] . ' : ' . $param['value']);
+      }
+      Civi::log()->debug('count: '.count($params));
+      // /logs
+
+      $weight = NULL;                                                          // initialise ht, wt
+      $height = NULL;
+
+      foreach ($params as $key => $param) {                                    // retrieve ht, wt from paramas
+        if ($param['column_name'] == 'nvgo_weight_kg') {
+          $weight = $param['value'];
+        }
+        if ($param['column_name'] == 'nvgo_height_m') {
+          $height = $param['value'];
+        }
+      }
+
+      if ($weight && $height) {                                                // if we have ht/wt values ..
+        $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
+        $bmi = $volunteer->calculateBmi($weight, $height);                     //   calculate bmi
+        writeBmi($entityID, $bmi);                                             //   and save
+      }
+      else {                                                                   // else
+        writeBmi($entityID, 0);                                            //   save bmi as 0
+      }
+    }
+  }
+}
+
+function writeBmi($entityID, $bmi) {
+
+  try {
+    civicrm_api3('Contact', 'create', [
+      'id' => $entityID,
+      'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()
+        ->getGeneralObservationCustomField('nvgo_bmi', 'id') => $bmi,
+    ]);
+  }
+  catch (CiviCRM_API3_Exception $ex) {
+    Civi::log()->error("This is an error when the BMI is updated");
+  }
+}
+
+
+function nihrbackbone_civicrm_buildForm($formName, &$form) {
+
+  Civi::log()->debug('getAction: '.$form->getAction());
+
+  Civi::log()->debug('buildForm hook called  $formName: ' . $formName);
+
+
+  CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js', 10, 'page-body');
+
+  if ($formName=='$formNameCRM_Contact_Form_CustomData') {
+    //CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js');
+    CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js', 10, 'page-body');
+  }
+
+}
+
 /**
  * Implements hook_civicrm_validateForm().
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_validateForm/
  */
 function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  //Civi::log()->debug('backbone.validateForm') ;
+  //foreach ($fields as $value)
+    //Civi::log()->debug(strval($value)) ;
+
   if ($form instanceof CRM_Nihrbackbone_Form_ImportCsvMap) {
     CRM_Nihrbackbone_Form_ImportCsvMap::validateForm($fields, $form, $errors);
   }
