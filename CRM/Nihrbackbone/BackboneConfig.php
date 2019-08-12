@@ -19,7 +19,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_ethicsApprovedOptionGroupId = NULL;
   private $_eligibleStatusOptionGroupId = NULL;
   private $_genderOptionGroupId = NULL;
-  private $_volunteerProjectStatusOptionGroupId = NULL;
+  private $_projectParticipationStatusOptionGroupId = NULL;
   private $_ethnicityOptionGroupId = NULL;
   private $_consentStatusOptionGroupId = NULL;
   private $_consentVersionOptionGroupId = NULL;
@@ -409,8 +409,8 @@ class CRM_Nihrbackbone_BackboneConfig {
    *
    * @return null
    */
-  public function getVolunteerProjectStatusOptionGroupId() {
-    return $this->_volunteerProjectStatusOptionGroupId;
+  public function getProjectParticipationStatusOptionGroupId() {
+    return $this->_projectParticipationStatusOptionGroupId;
   }
 
   /**
@@ -455,9 +455,9 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_study_status',
       'nihr_ethics_approved',
       'nihr_eligible_status',
-      'nihr_volunteer_project_status',
+      'nbr_project_participation_status',
       'nihr_ethnicity',
-      'nihr_consent_status',
+      'nbr_consent_status',
       'gender',
       'nbr_consent_version',
       'case_status',
