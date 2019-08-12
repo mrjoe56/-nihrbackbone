@@ -3,17 +3,6 @@ require_once 'nihrbackbone.civix.php';
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /**
- * Implements hook_civicrm_validateForm().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_validateForm/
- */
-function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
-  if ($form instanceof CRM_Nihrbackbone_Form_ImportCsvMap) {
-    CRM_Nihrbackbone_Form_ImportCsvMap::validateForm($fields, $form, $errors);
-  }
-}
-
-/**
  * Implements hook_civicrm_links().
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_links/
@@ -29,7 +18,14 @@ function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask
         'title' => 'Volunteers',
         'class' => 'no-popup',
         'qs' => 'reset=1&pid=%%id%%',
-      ];
+        ];
+      $links[] = [
+        'name' => ts('Import'),
+        'url' => 'civicrm/nihrbackbone/form/importcsvselect',
+        'title' => 'Import',
+        'class' => 'no-popup',
+        'qs' => 'reset=1&pid=%%id%%',
+        ];
     }
   }
 }

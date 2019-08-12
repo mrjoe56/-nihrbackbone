@@ -1,6 +1,7 @@
 <div class="crm-block crm-form-block">
   <div class="help-block" id="help">
-    {ts}Select the .csv file to import from. You can specify if the first row of the .csv file contains the headers of the fields, and which separator to use for the data (comma or semi-colon){/ts}
+    {ts}Select the .csv file to import from. You can specify if the first row of the .csv file contains the headers of the fields, and which separator to use for the data (comma or semi-colon).{/ts}<br /><br />
+    <strong>{ts}Note that you should only do this here if you want to import a small file.{/ts}</strong>&nbsp;{ts}If you want to import a large file (more than 250 records) do so with the scheduled job!{/ts}
   </div>
   <div class="crm-submit-buttons">
     {include file="CRM/common/formButtons.tpl" location="top"}
