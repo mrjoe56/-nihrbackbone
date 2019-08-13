@@ -79,4 +79,18 @@ class CRM_Nihrbackbone_Utils {
     return $columns;
   }
 
+  /**
+   * Method to put comma separated list of values in a string into an array
+   *
+   * @param string $csList
+   * @return array
+   */
+  public static function moveCommaSeparatedListToArray($csList) {
+    $parts = explode(',', $csList);
+    foreach ($parts  as $partKey => $partValue) {
+      trim($partValue);
+    }
+    return $parts;
+  }
+
 }
