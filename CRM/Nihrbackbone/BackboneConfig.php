@@ -452,7 +452,7 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   private function setOptionGroups() {
     $optionGroupNames = [
-      'nihr_study_status',
+      'nbr_study_status',
       'nihr_ethics_approved',
       'nihr_eligible_status',
       'nbr_project_participation_status',

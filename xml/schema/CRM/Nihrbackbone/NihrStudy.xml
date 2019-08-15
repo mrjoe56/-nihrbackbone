@@ -46,11 +46,20 @@
   </foreignKey>
 
   <field>
-    <name>title</name>
+    <name>short_name</name>
     <type>varchar</type>
-    <title>Study Title</title>
-    <length>128</length>
-    <comment>Study Title</comment>
+    <title>Study Short Name</title>
+    <length>64</length>
+    <comment>Study Short Name</comment>
+    <add>5.9</add>
+  </field>
+
+  <field>
+    <name>long_name</name>
+    <type>varchar</type>
+    <title>Study Long Name</title>
+    <length>256</length>
+    <comment>Study Long Name</comment>
     <add>5.9</add>
   </field>
 
@@ -85,6 +94,18 @@
   </field>
 
   <field>
+    <name>ethics_approved_date</name>
+    <title>Ethics Approved Date</title>
+    <type>date</type>
+    <comment>Ethics Approved Date</comment>
+    <html>
+      <type>Select Date</type>
+      <formatType>activityDate</formatType>
+    </html>
+    <add>5.9</add>
+  </field>
+
+  <field>
     <name>requirements</name>
     <title>Requirements</title>
     <type>text</type>
@@ -98,10 +119,10 @@
   </field>
 
   <field>
-    <name>start_date</name>
-    <title>Study Start Date</title>
+    <name>valid_start_date</name>
+    <title>Valid Start Date</title>
     <type>date</type>
-    <comment>Study start date</comment>
+    <comment>Study valid start date</comment>
     <html>
       <type>Select Date</type>
       <formatType>activityDate</formatType>
@@ -110,10 +131,10 @@
   </field>
 
   <field>
-    <name>end_date</name>
-    <title>Study End Date</title>
+    <name>valid_end_date</name>
+    <title>Valid End Date</title>
     <type>date</type>
-    <comment>Study end date</comment>
+    <comment>Study valid end date</comment>
     <html>
       <type>Select Date</type>
       <formatType>activityDate</formatType>
@@ -152,7 +173,8 @@
   <field>
     <name>status_id</name>
     <title>Study Status</title>
-    <type>int unsigned</type>
+    <type>varchar</type>
+    <length>64</length>
     <comment>Study Status</comment>
     <add>5.9</add>
   </field>
@@ -210,6 +232,5 @@
     <add>5.9</add>
     <onDelete>CASCADE</onDelete>
   </foreignKey>
-
 
 </table>

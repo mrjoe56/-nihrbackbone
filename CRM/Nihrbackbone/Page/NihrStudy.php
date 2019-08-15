@@ -94,7 +94,6 @@ class CRM_Nihrbackbone_Page_NihrStudy extends CRM_Core_Page {
     }
   }
 
-
   /**
    * Function to set the row action urls and links for each row
    *

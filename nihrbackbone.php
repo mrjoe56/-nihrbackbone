@@ -13,17 +13,6 @@ function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
   if ($op == 'create' || $op == 'edit') {
 
     if ($groupID == CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerGeneralObservationsCustomGroup('id')&&count($params)>1) {
-
-      //logs
-      Civi::log()->debug('----------------------------------------- ');
-      Civi::log()->debug('custom hook called  op:'.$op.'   grpID:'.$groupID.'  $entityID:'.$entityID) ;
-      Civi::log()->debug('&$params - ');
-      foreach ($params as $key => $param) {
-        Civi::log()->debug($param['column_name'] . ' : ' . $param['value']);
-      }
-      Civi::log()->debug('count: '.count($params));
-      // /logs
-
       $weight = NULL;                                                          // initialise ht, wt
       $height = NULL;
 
@@ -64,12 +53,6 @@ function writeBmi($entityID, $bmi) {
 
 
 function nihrbackbone_civicrm_buildForm($formName, &$form) {
-
-  Civi::log()->debug('getAction: '.$form->getAction());
-
-  Civi::log()->debug('buildForm hook called  $formName: ' . $formName);
-
-
   CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js', 10, 'page-body');
 
   if ($formName=='$formNameCRM_Contact_Form_CustomData') {

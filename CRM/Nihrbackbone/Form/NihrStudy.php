@@ -12,6 +12,8 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
 class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
   private $_studyId = NULL;
   private $_currentData = [];
+  private $_statusList = [];
+  private $_ethicsApprovedList = [];
 
   /**
    * Method to build the form
@@ -40,30 +42,20 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
     ], FALSE);
     $this->add('text', 'study_number', E::ts('Study Number'), [], TRUE);
-    $this->add('text', 'title', E::ts('Title'), [], TRUE);
+    $this->add('text', 'short_name', E::ts('Short Name'), [], TRUE);
+    $this->add('text', 'long_name', E::ts('Long Name'), ['size' => 120], FALSE);
     $this->add('textarea', 'description', E::ts('Description'), ['rows' => 4, 'cols' => 50], FALSE);
     $this->add('text', 'ethics_number', E::ts('Ethics Number'), [], FALSE);
-    $this->addEntityRef('ethics_approved_id', E::ts('Ethics Approved'), [
-      'entity' => 'option_value',
-      'api' => [
-        'params' => ['option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getEthicsApprovedOptionGroupId()],
-      ],
-      'select' => ['minimumInputLength' => 1],
-    ]);
+    $this->add('select', 'ethics_approved_id', E::ts('Ethics Approved'), $this->_ethicsApprovedList,TRUE, ['class' => 'crm-select2']);
+    $this->add('datepicker', 'ethics_approved_date', E::ts('Ethics Approved Date'), ['placeholder' => ts('Ethics Approved Date')],FALSE, ['time' => FALSE]);
     $this->add('textarea', 'requirements', E::ts('Requirements'), ['rows' => 4, 'cols' => 50], FALSE);
-    $this->add('datepicker', 'start_date', E::ts('Start Date'), ['placeholder' => ts('Start Date')],FALSE, ['time' => FALSE]);
-    $this->add('datepicker', 'end_date', E::ts('End Date'), ['placeholder' => ts('End Date')],FALSE, ['time' => FALSE]);
+    $this->add('datepicker', 'valid_start_date', E::ts('Valid Start Date'), ['placeholder' => ts('Valid Start Date')],FALSE, ['time' => FALSE]);
+    $this->add('datepicker', 'valid_end_date', E::ts('Valid End Date'), ['placeholder' => ts('Valid End Date')],FALSE, ['time' => FALSE]);
     $this->addEntityRef('centre_study_origin_id', E::ts('Centre Study Origin'), [
       'api' => ['params' => ['group' => 'Study Centres']],
     ], FALSE);
     $this->add('textarea', 'notes', E::ts('Notes'), ['rows' => 4, 'cols' => 50], FALSE);
-    $this->addEntityRef('status_id', E::ts('Status'), [
-      'entity' => 'option_value',
-      'api' => [
-        'params' => ['option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyStatusOptionGroupId()],
-      ],
-      'select' => ['minimumInputLength' => 1],
-    ]);
+    $this->add('select', 'status_id', E::ts('Study Status'), $this->_statusList,TRUE, ['class' => 'crm-select2']);
   }
 
   /**
@@ -163,9 +155,10 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
    * @access public
    */
   public function addRules() {
-    $this->addFormRule(array('CRM_Nihrbackbone_Form_NihrStudy', 'validateDates'));
-    $this->addFormRule(array('CRM_Nihrbackbone_Form_NihrStudy', 'validateTitle'));
-    $this->addFormRule(array('CRM_Nihrbackbone_Form_NihrStudy', 'validateStudyNumber'));
+    $this->addFormRule(['CRM_Nihrbackbone_Form_NihrStudy', 'validateDates']);
+    $this->addFormRule(['CRM_Nihrbackbone_Form_NihrStudy', 'validateShortName']);
+    $this->addFormRule(['CRM_Nihrbackbone_Form_NihrStudy', 'validateLongName']);
+    $this->addFormRule(['CRM_Nihrbackbone_Form_NihrStudy', 'validateStudyNumber']);
   }
 
   /**
@@ -178,28 +171,28 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
    */
   public static function validateDates($fields) {
     // if start_date > end_date
-    if (isset($fields['start_date']) && isset($fields['end_date'])) {
-      if (!empty($fields['start_date']) && !empty($fields['end_date'])) {
+    if (isset($fields['valid_start_date']) && isset($fields['valid_end_date'])) {
+      if (!empty($fields['valid_start_date']) && !empty($fields['valid_end_date'])) {
         try {
-          $startDate = new DateTime($fields['start_date']);
+          $startDate = new DateTime($fields['valid_start_date']);
         }
         catch (Exception $ex) {
-          $errors['start_date'] = E::ts('Invalid start date, format not recognized');
+          $errors['valid_start_date'] = E::ts('Invalid start date, format not recognized');
           return $errors;
         }
         try {
-          $endDate = new DateTime($fields['end_date']);
+          $endDate = new DateTime($fields['valid_end_date']);
         }
         catch (Exception $ex) {
-          $errors['end_date'] = E::ts('Invalid end date, format not recognized');
+          $errors['valid_end_date'] = E::ts('Invalid end date, format not recognized');
           return $errors;
         }
         if ($startDate > $endDate) {
-          $errors['start_date'] = E::ts('Start date can not be later than end date');
+          $errors['valid_start_date'] = E::ts('Start date can not be later than end date');
           return $errors;
         }
         if ($endDate < $startDate) {
-          $errors['end_date'] = E::ts('End date can not be earlier than start date');
+          $errors['valid_end_date'] = E::ts('End date can not be earlier than start date');
           return $errors;
         }
       }
@@ -232,22 +225,47 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
   }
 
   /**
-   * Method to validate title (can not already exist)
+   * Method to validate short name (can not already exist)
    *
    * @param $fields
    * @return array|bool
    */
-  public static function validateTitle($fields) {
-    if (isset($fields['title']) && !empty($fields['title'])) {
+  public static function validateShortName($fields) {
+    if (isset($fields['short_name']) && !empty($fields['short_name'])) {
       // set parameters for study get count for create (no id) and edit (id)
-      $getParams = ['title' => $fields['title']];
+      $getParams = ['short_name' => $fields['short_name']];
       if (isset($fields['study_id']) && !empty($fields['study_id'])) {
         $getParams['id'] = ['!=' => $fields['study_id']];
       }
       try {
         $count = civicrm_api3('NihrStudy', 'getcount', $getParams);
         if ($count > 0) {
-          $errors['title'] = E::ts('There is already a study with this title, please change.');
+          $errors['short_name'] = E::ts('There is already a study with this short_name, please change.');
+          return $errors;
+        }
+      } catch (CiviCRM_API3_Exception $ex) {
+      }
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to validate long name (can not already exist)
+   *
+   * @param $fields
+   * @return array|bool
+   */
+  public static function validateLongName($fields) {
+    if (isset($fields['long_name']) && !empty($fields['long_name'])) {
+      // set parameters for study get count for create (no id) and edit (id)
+      $getParams = ['long_name' => $fields['long_name']];
+      if (isset($fields['study_id']) && !empty($fields['study_id'])) {
+        $getParams['id'] = ['!=' => $fields['study_id']];
+      }
+      try {
+        $count = civicrm_api3('NihrStudy', 'getcount', $getParams);
+        if ($count > 0) {
+          $errors['long_name'] = E::ts('There is already a study with this long_name, please change.');
           return $errors;
         }
       } catch (CiviCRM_API3_Exception $ex) {
@@ -275,10 +293,10 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
     try {
       civicrm_api3('NihrStudy', 'create', $params);
       if ($this->_action == CRM_Core_Action::ADD) {
-        CRM_Core_Session::setStatus(E::ts('Study with title ') . $params['title'] . E::ts(' added to database.'), E::ts('Study saved'), 'success');
+        CRM_Core_Session::setStatus(E::ts('Study with short name ') . $params['short_name'] . E::ts(' added to database.'), E::ts('Study saved'), 'success');
       }
       else {
-        CRM_Core_Session::setStatus(E::ts('Study with title ') . $params['title'] . E::ts(' saved.'), E::ts('Study saved'), 'success');
+        CRM_Core_Session::setStatus(E::ts('Study with short name ') . $params['short_name'] . E::ts(' saved.'), E::ts('Study saved'), 'success');
       }
     }
     catch (CiviCRM_API3_Exception $ex) {
