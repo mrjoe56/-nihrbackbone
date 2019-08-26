@@ -254,20 +254,6 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
   }
 
   /**
-   * Method to check if volunteer has maximum participations in periode
-   *
-   * @param $volunteerId
-   */
-  public static function checkMaxPart($volunteerId) {
-    $maxPart = Civi::settings()->get('nbr_max_participations');
-    $maxMonths = Civi::settings()->get('nbr_no_months_participation');
-    $volunteerCount = self::countVolunteerParticipations($volunteerId, $maxMonths);
-    if ($volunteerCount <= $maxPart) {
-      self::unsetMaxStatus($volunteerId);
-    }
-  }
-
-  /**
    * Method to remove the max reached eligible status for the volunteer
    *
    * @param $volunteerId
@@ -290,7 +276,7 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
     ];
     $current = CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($current->fetch()) {
-      self::removeEligibleStatus($current->entity_id, $current->$eligibleColumnName, $maxReachedStatusId);
+      self::removeEligibilityStatus($current->entity_id, $current->$eligibleColumnName, $maxReachedStatusId);
     }
   }
 
@@ -301,7 +287,7 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
    * @param string $currentEligibleStatus
    * @param string $removeStatusId
    */
-  public static function removeEligibleStatus($caseId, $currentEligibleStatus, $removeStatusId) {
+  public static function removeEligibilityStatus($caseId, $currentEligibleStatus, $removeStatusId) {
     if (!empty($caseId) && !empty($removeStatusId) && !empty($currentEligibleStatus)) {
       $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
       $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');

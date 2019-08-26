@@ -58,8 +58,10 @@ function civicrm_api3_nihr_project_volunteer_Checkmaxpart($params) {
   }
   $volunteer = CRM_Core_DAO::executeQuery($query, $queryParams);
   while ($volunteer->fetch()) {
-    // update eligible status for no of project in xxx period if necessary
-    CRM_Nihrbackbone_NihrProjectVolunteer::checkMaxPart($volunteer->contact_id);
+    // remove eligible status for no of project in xxx period if necessary
+    if (!CRM_Nihrbackbone_NihrVolunteer::hasMaxParticipationsNow($volunteer->contact_id)) {
+      CRM_Nihrbackbone_NihrProjectVolunteer::unsetMaxStatus($volunteer->contact_id);
+    }
   }
   return civicrm_api3_create_success([], $params, 'NihrProjectVolunteer', 'seteligible');
 }
