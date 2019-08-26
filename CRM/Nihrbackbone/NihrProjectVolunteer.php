@@ -253,4 +253,105 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
     }
   }
 
+  /**
+   * Method to check if volunteer has maximum participations in periode
+   *
+   * @param $volunteerId
+   */
+  public static function checkMaxPart($volunteerId) {
+    $maxPart = Civi::settings()->get('nbr_max_participations');
+    $maxMonths = Civi::settings()->get('nbr_no_months_participation');
+    $volunteerCount = self::countVolunteerParticipations($volunteerId, $maxMonths);
+    if ($volunteerCount <= $maxPart) {
+      self::unsetMaxStatus($volunteerId);
+    }
+  }
+
+  /**
+   * Method to remove the max reached eligible status for the volunteer
+   *
+   * @param $volunteerId
+   */
+  public static function unsetMaxStatus($volunteerId) {
+    $maxReachedStatusId = CRM_Nihrbackbone_BackboneConfig::singleton()->getMaxReachedEligibleStatusId();
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+    $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
+    // retrieve current eligible status from each volunteer participation cases
+    $query = "SELECT a." . $eligibleColumnName . ", a.entity_id
+      FROM " . $tableName . " AS a
+      JOIN civicrm_case AS b ON a.entity_id = b.id
+      JOIN civicrm_case_contact AS c ON a.entity_id = c.case_id
+      WHERE b.is_deleted = %1 AND b.case_type_id = %2 AND c.contact_id = %3 AND b.status_id != %4";
+    $queryParams = [
+      1 => [0, 'Integer'],
+      2 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), 'Integer'],
+      3 => [$volunteerId, 'Integer'],
+      4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), 'Integer'],
+    ];
+    $current = CRM_Core_DAO::executeQuery($query, $queryParams);
+    while ($current->fetch()) {
+      self::removeEligibleStatus($current->entity_id, $current->$eligibleColumnName, $maxReachedStatusId);
+    }
+  }
+
+  /**
+   * Method to remove an eligible status from the list
+   *
+   * @param int $caseId
+   * @param string $currentEligibleStatus
+   * @param string $removeStatusId
+   */
+  public static function removeEligibleStatus($caseId, $currentEligibleStatus, $removeStatusId) {
+    if (!empty($caseId) && !empty($removeStatusId) && !empty($currentEligibleStatus)) {
+      $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+      $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
+      $newValues = explode(CRM_Core_DAO::VALUE_SEPARATOR, $currentEligibleStatus);
+      foreach ($newValues as $currentValueId => $currentValue) {
+        if ($currentValue == $removeStatusId || empty($currentValue)) {
+          unset($newValues[$currentValueId]);
+        }
+      }
+      $query = "UPDATE " . $tableName . " SET " . $eligibleColumnName . " = %1 WHERE entity_id = %2";
+      $queryParams = [
+        1 => [implode(CRM_Core_DAO::VALUE_SEPARATOR, $newValues), 'String'],
+        2 => [$caseId, 'Integer'],
+      ];
+      CRM_Core_DAO::executeQuery($query, $queryParams);
+    }
+  }
+
+  /**
+   * Method to count the number of participation cases for a volunteer in the last xxx months
+   *
+   * @param $volunteerdId
+   * @param $numberOfMonths
+   * @return int|string|null
+   */
+  public static function countVolunteerParticipations($volunteerdId, $numberOfMonths) {
+    // start date should be after or on the date xxx months ago
+    try {
+      $startDate = new DateTime();
+      $modifier = '-' . $numberOfMonths . ' months';
+      $startDate->modify($modifier);
+      $query = "SELECT COUNT(*) FROM civicrm_case_contact AS a
+      JOIN civicrm_case AS b ON a.case_id = b.id 
+      WHERE b.case_type_id = %1 AND b.is_deleted = %2 AND b.status_id != %3  AND a.contact_id = %4 
+      AND b.start_date >= %5";
+      $queryParams = [
+        1 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), 'Integer'],
+        2 => [0, 'Integer'],
+        3 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), 'Integer'],
+        4 => [$volunteerdId, 'Integer'],
+        5 => [$startDate->format('Y-m-d'), 'String'],
+      ];
+      $count = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+      if ($count) {
+        return $count;
+      }
+    }
+    catch (Exception $ex) {
+    }
+    return 0;
+  }
+
 }
