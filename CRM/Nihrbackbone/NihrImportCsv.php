@@ -28,7 +28,7 @@ class CRM_Nihrbackbone_NihrImportCsv {
    */
   public function __construct($type, $csvFileName, $separator = ';', $firstRowHeaders = FALSE) {
     $this->_logger = new CRM_Nihrbackbone_NihrLogger('nbrcsvimport_' . date('Ymdhis'));
-    $validTypes = ['participation', 'recruitment'];
+    $validTypes = ['participation'];
     if (in_array($type, $validTypes)) {
       $this->_type = $type;
     }
@@ -109,16 +109,9 @@ class CRM_Nihrbackbone_NihrImportCsv {
         $this->importParticipation();
         fclose($this->_csv);
         break;
-      case 'recruitment':
-        $this->importRecruitment();
-        fclose($this->_csv);
-        break;
       default:
         $this->_logger->logMessage(E::ts('No valid type of csv import found, no function to process import.'), 'error');
     }
-  }
-  private function importRecruitment() {
-
   }
 
   /**
