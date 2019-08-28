@@ -20,7 +20,7 @@ class CRM_Nihrbackbone_Form_ImportCsvSelect extends CRM_Core_Form {
   public function buildQuickForm() {
     // no action if delete
     if ($this->_action != CRM_Core_Action::DELETE) {
-      $this->add('hidden', 'project_id');
+      $this->assign('project_id', $this->_projectId);
       $this->add('file', 'csv_file', E::ts('File to import'), [], TRUE);
       $this->addRule('csv_file', E::ts('Input file must be in CSV format'), 'utf8File');
       $this->addRule('csv_file', E::ts('A valid file must be uploaded.'), 'uploadedfile');
@@ -46,26 +46,12 @@ class CRM_Nihrbackbone_Form_ImportCsvSelect extends CRM_Core_Form {
   }
 
   /**
-   * Overridden parent method to set default values
-   *
-   * @return array|NULL
-   */
-  public function setDefaultValues() {
-    $defaults = [];
-    if (isset($this->_projectId) && !empty($this->_projectId)) {
-      $defaults['project_id'] = $this->_projectId;
-    }
-    return $defaults;
-  }
-
-  /**
    * Overridden parent method to process the submitted form
    *
    */
   public function postProcess() {
-    $values = $this->exportValues();
-    $import = new CRM_Nihrbackbone_NihrImportCsv('participation', $this->_submitFiles['csv_file']['tmp_name'], $values['separator_id'], $values['first_row_headers']);
-    if ($import->validImportData($values['project_id'])) {
+    $import = new CRM_Nihrbackbone_NihrImportCsv('participation', $this->_submitFiles['csv_file']['tmp_name'], $this->getSeparator($this->_submitValues['separator_id']), $this->_submitValues['first_row_headers']);
+    if ($import->validImportData($this->_submitValues['project_id'])) {
       $import->processImport();
     }
     parent::postProcess();
