@@ -19,7 +19,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_ethicsApprovedOptionGroupId = NULL;
   private $_eligibleStatusOptionGroupId = NULL;
   private $_genderOptionGroupId = NULL;
-  private $_volunteerProjectStatusOptionGroupId = NULL;
+  private $_projectParticipationStatusOptionGroupId = NULL;
   private $_ethnicityOptionGroupId = NULL;
   private $_consentStatusOptionGroupId = NULL;
   private $_consentVersionOptionGroupId = NULL;
@@ -39,6 +39,9 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_participationCaseTypeId = NULL;
   private $_recruitmentCaseTypeId = NULL;
 
+  // properties for case status ids
+  private $_closedCaseStatusId = NULL;
+
   // properties for phone type ids
   private $_mobilePhoneTypeId = NULL;
   private $_phonePhoneTypeId = NULL;
@@ -52,7 +55,8 @@ class CRM_Nihrbackbone_BackboneConfig {
   // other properties
   private $_defaultLocationTypeId = NULL;
   private $_skypeProviderId = NULL;
-  private $_eligibleStatus  = NULL;
+  private $_eligibleEligibleStatusId  = NULL;
+  private $_maxReachedEligibleStatusId = NULL;
 
   /**
    * CRM_Nihrbackbone_BackboneConfig constructor.
@@ -63,6 +67,7 @@ class CRM_Nihrbackbone_BackboneConfig {
     $this->setEligibleStatus();
     $this->setCampaignTypes();
     $this->setCaseTypes();
+    $this->setCaseStatus();
     $this->setCustomData();
     $this->setPhoneTypes();
     $this->setDefaultCommunicationStyles();
@@ -91,8 +96,23 @@ class CRM_Nihrbackbone_BackboneConfig {
    * Getter for eligible status
    * @return null
    */
-  public function getEligibleStatus() {
-    return $this->_eligibleStatus;
+  public function getEligibleEligibleStatus() {
+    return $this->_eligibleEligibleStatusId;
+  }
+  /**
+   * Getter for maximum reached eligible status
+   * @return null
+   */
+  public function getMaxReachedEligibleStatusId() {
+    return $this->_maxReachedEligibleStatusId;
+  }
+
+  /**
+   * Getter for case status closed
+   * @return null
+   */
+  public function getClosedCaseStatusId() {
+    return $this->_closedCaseStatusId;
   }
 
   /**
@@ -409,8 +429,8 @@ class CRM_Nihrbackbone_BackboneConfig {
    *
    * @return null
    */
-  public function getVolunteerProjectStatusOptionGroupId() {
-    return $this->_volunteerProjectStatusOptionGroupId;
+  public function getProjectParticipationStatusOptionGroupId() {
+    return $this->_projectParticipationStatusOptionGroupId;
   }
 
   /**
@@ -452,12 +472,12 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   private function setOptionGroups() {
     $optionGroupNames = [
-      'nihr_study_status',
+      'nbr_study_status',
       'nihr_ethics_approved',
       'nihr_eligible_status',
-      'nihr_volunteer_project_status',
+      'nbr_project_participation_status',
       'nihr_ethnicity',
-      'nihr_consent_status',
+      'nbr_consent_status',
       'gender',
       'nbr_consent_version',
       'case_status',
@@ -477,13 +497,27 @@ class CRM_Nihrbackbone_BackboneConfig {
       Civi::log()->error(E::ts('Could not find a unique option group with name gender in ') . __METHOD__);
     }
   }
+
+  /**
+   * Method to set the eligible statuses
+   */
   private function setEligibleStatus() {
+    $valids = ['nihr_eligible', 'nihr_maximum_reached'];
     try {
-      $this->_eligibleStatus = civicrm_api3('OptionValue', 'getvalue', [
+      $eligibleStatuses = civicrm_api3('OptionValue', 'get', [
         'option_group_id' => $this->_eligibleStatusOptionGroupId,
-        'name' => 'nihr_eligible',
-        'return' => 'value',
+        'name' => ['IN' => $valids],
       ]);
+      foreach ($eligibleStatuses['values'] as $eligibleStatus) {
+        switch ($eligibleStatus['name']) {
+          case 'nihr_eligible':
+            $this->_eligibleEligibleStatusId = $eligibleStatus['value'];
+            break;
+          case 'nihr_maximum_reached':
+            $this->_maxReachedEligibleStatusId = $eligibleStatus['value'];
+            break;
+        }
+      }
     }
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->warning(E::ts('Could not find eligile status in ') . __METHOD__ . E::ts(', error message from API OptionValue getvalue: ') . $ex->getMessage());
@@ -627,7 +661,28 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
     catch (CiviCRM_API3_Exception $ex) {
     }
+  }
 
+  /**
+   * Method to set the case status properties
+   */
+  private function setCaseStatus() {
+    try {
+      $caseStatuses = civicrm_api3('OptionValue', 'get', [
+        'option_group_id' => 'case_status',
+        'is_active' => 1,
+        'options' => ['limit' => 0],
+      ]);
+      foreach ($caseStatuses['values'] as $caseStatus) {
+        switch ($caseStatus['name']) {
+          case "Closed":
+            $this->_closedCaseStatusId = $caseStatus['value'];
+            break;
+        }
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
   }
 
   /**

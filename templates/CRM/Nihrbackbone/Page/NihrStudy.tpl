@@ -12,11 +12,11 @@
         <tr>
           <th id="sortable">{ts}Study ID{/ts}</th>
           <th id="sortable">{ts}Study Number{/ts}</th>
-          <th id="sortable">{ts}Title{/ts}</th>
+          <th id="sortable">{ts}Short Name{/ts}</th>
           <th id="sortable">{ts}Principal Investigator{/ts}</th>
-          <th id="nosort">{ts}Description{/ts}</th>
           <th id="nosort">{ts}Ethics Number{/ts}</th>
           <th id="nosort">{ts}Ethics Approved{/ts}</th>
+          <th id="nosort">{ts}Ethics Approved Date{/ts}</th>
           <th id="sortable">{ts}Status{/ts}</th>
           <th id="sortable">{ts}Start Date{/ts}</th>
           <th id="sortable">{ts}End Date{/ts}</th>
@@ -34,14 +34,14 @@
         <tr id="nihr_study-{$study_id}" class="crm-entity {cycle values="odd-row,even-row"} {$row.class}">
           <td>{$study.id}</td>
           <td>{$study.study_number}</td>
-          <td>{$study.title}</td>
+          <td>{$study.short_name}</td>
           <td>{$study.investigator}</td>
-          <td>{$study.description}</td>
           <td>{$study.ethics_number}
           <td>{$study.ethics_approved}
+          <td>{$study.ethics_approved_date|crmDate}</td>
           <td>{$study.status}
-          <td>{$study.start_date|crmDate}
-          <td>{$study.end_date|crmDate}
+          <td>{$study.valid_start_date|crmDate}
+          <td>{$study.valid_end_date|crmDate}
           <td>{$study.centre_study_origin}</td>
           <td>{$study.created_date|crmDate}</td>
           <td>{$study.created_by}</td>

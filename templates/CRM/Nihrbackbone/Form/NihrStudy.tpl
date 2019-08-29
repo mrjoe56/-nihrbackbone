@@ -16,9 +16,15 @@
     <div class="clear"></div>
   </div>
 
-  <div class="crm-section title_section">
-    <div class="label">{$form.title.label}</div>
-    <div class="content">{$form.title.html}</div>
+  <div class="crm-section short_name_section">
+    <div class="label">{$form.short_name.label}</div>
+    <div class="content">{$form.short_name.html}</div>
+    <div class="clear"></div>
+  </div>
+
+  <div class="crm-section long_name_section">
+    <div class="label">{$form.long_name.label}</div>
+    <div class="content">{$form.long_name.html}</div>
     <div class="clear"></div>
   </div>
 
@@ -40,21 +46,27 @@
     <div class="clear"></div>
   </div>
 
+  <div class="crm-section ethics_approved_date_section">
+    <div class="label">{$form.ethics_approved_date.label}</div>
+    <div class="content">{$form.ethics_approved_date.html}</div>
+    <div class="clear"></div>
+  </div>
+
   <div class="crm-section requirements_section">
     <div class="label">{$form.requirements.label}</div>
     <div class="content">{$form.requirements.html}</div>
     <div class="clear"></div>
   </div>
 
-  <div class="crm-section start_date_section">
-    <div class="label">{$form.start_date.label}</div>
-    <div class="content">{$form.start_date.html}</div>
+  <div class="crm-section valid_start_date_section">
+    <div class="label">{$form.valid_start_date.label}</div>
+    <div class="content">{$form.valid_start_date.html}</div>
     <div class="clear"></div>
   </div>
 
-  <div class="crm-section start_date_section">
-    <div class="label">{$form.end_date.label}</div>
-    <div class="content">{$form.end_date.html}</div>
+  <div class="crm-section valid_end_date_section">
+    <div class="label">{$form.valid_end_date.label}</div>
+    <div class="content">{$form.valid_end_date.html}</div>
     <div class="clear"></div>
   </div>
 

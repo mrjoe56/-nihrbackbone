@@ -133,7 +133,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @return bool
    * @throws
    */
-  public function hasMaxParticipationsNow($contactId) {
+  public static function hasMaxParticipationsNow($contactId) {
     // get the settings for the max number, the max period and the case status to be counted
     $maxNumber = Civi::settings()->get('nbr_max_participations');
     $noMonths = Civi::settings()->get('nbr_no_months_participation');

@@ -31,10 +31,17 @@ function _civicrm_api3_nihr_study_create_spec(&$spec) {
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_INT,
   ];
-  $spec['title'] = [
-    'name' => 'title',
-    'title' => 'Title',
-    'description' => 'Study Title',
+  $spec['short_name'] = [
+    'name' => 'short_name',
+    'title' => 'Short Name',
+    'description' => 'Study Short Name',
+    'api.required' => 1,
+    'type' => CRM_Utils_Type::T_STRING,
+  ];
+  $spec['long_name'] = [
+    'name' => 'long_name',
+    'title' => 'Long Name',
+    'description' => 'Study Long Name',
     'api.required' => 1,
     'type' => CRM_Utils_Type::T_STRING,
   ];
@@ -59,6 +66,13 @@ function _civicrm_api3_nihr_study_create_spec(&$spec) {
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_STRING,
   ];
+  $spec['ethics_approved_date'] = [
+    'name' => 'ethics_approved_date',
+    'title' => 'Ethics Approved Date',
+    'description' => 'Study Ethics Approved Date',
+    'api.required' => 0,
+    'type' => CRM_Utils_Type::T_DATE,
+  ];
   $spec['requirements'] = [
     'name' => 'requirements',
     'title' => 'Requirements',
@@ -66,17 +80,17 @@ function _civicrm_api3_nihr_study_create_spec(&$spec) {
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_TEXT,
   ];
-  $spec['start_date'] = [
-    'name' => 'start_date',
-    'title' => 'Start Date',
-    'description' => 'Study Start Date',
+  $spec['valid_start_date'] = [
+    'name' => 'valid_start_date',
+    'title' => 'Valid Start Date',
+    'description' => 'Valid Start Date',
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_DATE,
   ];
-  $spec['end_date'] = [
-    'name' => 'end_date',
-    'title' => 'End Date',
-    'description' => 'Study End Date',
+  $spec['valid_end_date'] = [
+    'name' => 'valid_end_date',
+    'title' => 'Valid End Date',
+    'description' => 'Valid End Date',
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_DATE,
   ];
@@ -99,7 +113,7 @@ function _civicrm_api3_nihr_study_create_spec(&$spec) {
     'title' => 'Study Status',
     'description' => 'Study Status',
     'api.required' => 0,
-    'type' => CRM_Utils_Type::T_INT,
+    'type' => CRM_Utils_Type::T_STRING,
   ];
 }
 
@@ -165,10 +179,17 @@ function _civicrm_api3_nihr_study_get_spec(&$spec) {
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_INT,
   ];
-  $spec['title'] = [
-    'name' => 'title',
-    'title' => 'Title',
-    'description' => 'Study Title',
+  $spec['short_name'] = [
+    'name' => 'short_name',
+    'title' => 'Short Name',
+    'description' => 'Study Short Name',
+    'api.required' => 0,
+    'type' => CRM_Utils_Type::T_STRING,
+  ];
+  $spec['long_name'] = [
+    'name' => 'long_name',
+    'title' => 'Long Name',
+    'description' => 'Study Long Name',
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_STRING,
   ];
@@ -193,6 +214,13 @@ function _civicrm_api3_nihr_study_get_spec(&$spec) {
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_STRING,
   ];
+  $spec['ethics_approved_date'] = [
+    'name' => 'ethics_approved_date',
+    'title' => 'Ethics Approved Date',
+    'description' => 'Study Ethics Approved Date',
+    'api.required' => 0,
+    'type' => CRM_Utils_Type::T_DATE,
+  ];
   $spec['requirements'] = [
     'name' => 'requirements',
     'title' => 'Requirements',
@@ -200,17 +228,17 @@ function _civicrm_api3_nihr_study_get_spec(&$spec) {
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_TEXT,
   ];
-  $spec['start_date'] = [
-    'name' => 'start_date',
-    'title' => 'Start Date',
-    'description' => 'Study Start Date',
+  $spec['valid_start_date'] = [
+    'name' => 'valid_start_date',
+    'title' => 'Valid Start Date',
+    'description' => 'Valid Start Date',
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_DATE,
   ];
-  $spec['end_date'] = [
-    'name' => 'end_date',
-    'title' => 'End Date',
-    'description' => 'Study End Date',
+  $spec['valid_end_date'] = [
+    'name' => 'valid_end_date',
+    'title' => 'Valid End Date',
+    'description' => 'Valid End Date',
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_DATE,
   ];
@@ -233,7 +261,7 @@ function _civicrm_api3_nihr_study_get_spec(&$spec) {
     'title' => 'Study Status',
     'description' => 'Study Status',
     'api.required' => 0,
-    'type' => CRM_Utils_Type::T_INT,
+    'type' => CRM_Utils_Type::T_STRING,
   ];
   $spec['created_date'] = [
     'name' => 'created_date',

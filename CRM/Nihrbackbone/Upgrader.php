@@ -41,6 +41,41 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     return TRUE;
   }
 
+  /**
+   * Upgrade 1020 (add option values for studies)
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1020() {
+    $this->ctx->log->info(E::ts('Applying update 1010 - updating nihr_study table'));
+    // rename existing column title to short_name if required
+    if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'title')) {
+      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study CHANGE COLUMN title short_name VARCHAR(64)");
+    }
+    // add long_name column after short_name
+    if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'long_name')) {
+      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study ADD COLUMN long_name VARCHAR(256) AFTER short_name");
+    }
+    // add ethics_approved_date column after ethics_approved_id
+    if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'ethics_approved_date')) {
+      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study ADD COLUMN ethics_approved_date DATE after ethics_approved_id");
+    }
+    // change start_date and end_date columns to valid_start_date and valid_end_date
+    if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'start_date')) {
+      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study CHANGE COLUMN start_date valid_start_date DATE");
+    }
+    if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'end_date')) {
+      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study CHANGE COLUMN end_date valid_end_date DATE");
+    }
+    // make sure status_id is varchar
+    if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'status_id')) {
+      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study MODIFY status_id VARCHAR(64)");
+    }
+    return TRUE;
+  }
+
+
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).
 

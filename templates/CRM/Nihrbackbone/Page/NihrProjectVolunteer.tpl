@@ -1,6 +1,6 @@
 <div class="crm-content-block crm-block">
   <div id="help">
-    {ts}This overview shows you the current volunteer selection on a project</strong>
+    {ts}This overview shows you the current volunteer selection on a project{/ts}
   </div>
   <div class="action-link">
     <a class="button import-option" href="{$import_file_url}">
@@ -20,7 +20,6 @@
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Location{/ts}</th>
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Status in Project{/ts}</th>
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Eligible{/ts}</th>
-        <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Consent Status (Project){/ts}</th>
       </tr>
       </thead>
       <tbody>
@@ -36,7 +35,6 @@
           <td>{$volunteer.location}</td>
           <td>{$volunteer.volunteer_project_status}</td>
           <td>{$volunteer.eligible}</td>
-          <td>{$volunteer.project_consent_status}</td>
         </tr>
       {/foreach}
       </tbody>

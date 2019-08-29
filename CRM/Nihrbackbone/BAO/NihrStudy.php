@@ -64,8 +64,8 @@ class CRM_Nihrbackbone_BAO_NihrStudy extends CRM_Nihrbackbone_DAO_NihrStudy {
         try {
           civicrm_api3('OptionValue', 'create', [
             'option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'option_group_id'),
-            'name' => $study->title,
-            'label' => $study->title,
+            'name' => $study->short_name,
+            'label' => $study->short_name,
             'value' => $study->id,
           ]);
         }
@@ -74,24 +74,24 @@ class CRM_Nihrbackbone_BAO_NihrStudy extends CRM_Nihrbackbone_DAO_NihrStudy {
         }
         break;
       case "edit":
-        // update title for option value
+        // update short name for option value
         try {
           $optionValue = civicrm_api3('OptionValue', 'getsingle', [
             'option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'option_group_id'),
             'value' => $study->id,
             'return' => ["label", "id"],
           ]);
-          if ($optionValue['label'] && $optionValue['label'] != $study->title) {
+          if ($optionValue['label'] && $optionValue['label'] != $study->short_name) {
             try {
               civicrm_api3('OptionValue', 'create', [
                 'option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'option_group_id'),
-                'name' => $study->title,
-                'label' => $study->title,
+                'name' => $study->short_name,
+                'label' => $study->short_name,
                 'id' => $optionValue['id'],
               ]);
             }
             catch (CiviCRM_API3_Exception $ex) {
-              Civi::log()->error(E::ts('Could not update option value for study ') . $study->title . E::ts(' in ') . __METHOD__);
+              Civi::log()->error(E::ts('Could not update option value for study ') . $study->short_name . E::ts(' in ') . __METHOD__);
             }
           }
         }
