@@ -91,8 +91,8 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
     $pvStatusIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_participation_status', 'column_name');
     $eligibleColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
     $participationTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-    $ethnicityIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerCustomField('nvd_ethnicity_id', 'column_name');
-    $volunteerTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerDataCustomGroup('table_name');
+    $ethnicityIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_ethnicity_id', 'column_name');
+    $generalTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerGeneralObservationsCustomGroup('table_name');
     $queryArray = [
       'query' => "SELECT a.entity_id AS case_id, a." . $projectIdColumn. " AS project_id, a." . $projectAnonIdColumn
         . " AS anon_project_id, a." . $pvStatusIdColumn
@@ -103,20 +103,19 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
         JOIN civicrm_case_contact AS b ON a.entity_id = b.case_id
         JOIN civicrm_contact AS c ON b.contact_id = c.id
         JOIN civicrm_case AS j ON b.case_id = j.id
-        LEFT JOIN ". $volunteerTable . " AS d ON b.contact_id = d.entity_id
+        LEFT JOIN ". $generalTable . " AS d ON b.contact_id = d.entity_id
         LEFT JOIN civicrm_option_value AS e ON c.gender_id = e.value AND e.option_group_id = %1
         LEFT JOIN civicrm_address AS f ON b.contact_id = f.contact_id AND f.is_primary = %2
         LEFT JOIN civicrm_option_value AS g ON a." . $pvStatusIdColumn . " = g.value AND g.option_group_id = %3
         LEFT JOIN civicrm_option_value AS h ON d." . $ethnicityIdColumn . " = h.value AND h.option_group_id = %4
-        WHERE a." . $projectIdColumn . " = %6 AND j.is_deleted = %7",
+        WHERE a." . $projectIdColumn . " = %5 AND j.is_deleted = %6",
       'query_params' => [
         1 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getGenderOptionGroupId(), 'Integer'],
         2 => [1, 'Integer'],
         3 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectParticipationStatusOptionGroupId(), 'Integer'],
         4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getEthnicityOptionGroupId(), 'Integer'],
-        5 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getConsentStatusOptionGroupId(), 'Integer'],
-        6 => [$this->_projectId, 'Integer'],
-        7 => [0, 'Integer'],
+        5 => [$this->_projectId, 'Integer'],
+        6 => [0, 'Integer'],
       ]];
     return $queryArray;
   }
