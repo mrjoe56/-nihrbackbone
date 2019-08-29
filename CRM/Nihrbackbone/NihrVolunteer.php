@@ -109,6 +109,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
 
   }
+
   /**
    * Method to calculate BMI
    *
@@ -119,9 +120,11 @@ class CRM_Nihrbackbone_NihrVolunteer {
   public function calculateBmi($weight, $height) {
     if (empty($weight) || empty($height)) {
       return FALSE;
+      //return 88.8;
     }
-    return $weight / ($height * $height);
+    return round($weight / ($height * $height), 1);
   }
+
 
   /**
    * Method to check if the volunteer now has the max number of participations in the period
