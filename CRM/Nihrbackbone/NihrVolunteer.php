@@ -232,8 +232,10 @@ class CRM_Nihrbackbone_NihrVolunteer {
       ]);
       if ($birthDate) {
         $age = CRM_Utils_Date::calculateAge($birthDate);
-        if ($age >= $fromAge && $age <= $toAge) {
-          return TRUE;
+        if (isset($age['years'])) {
+          if ($age['years'] >= $fromAge && $age['years'] <= $toAge) {
+            return TRUE;
+          }
         }
       }
     }
