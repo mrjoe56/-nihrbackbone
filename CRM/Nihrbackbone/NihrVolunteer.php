@@ -157,4 +157,133 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return FALSE;
   }
 
+  /**
+   * Method to find out if volunteer is available for blood studies
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function availableForBlood($volunteerId) {
+    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_no_blood_studies', 'column_name');
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
+    $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
+    $excludeFromBlood = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
+    if (!$excludeFromBlood) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to find out if volunteer is able to travel
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function ableToTravel($volunteerId) {
+    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_unable_to_travel', 'column_name');
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
+    $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
+    $unable = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
+    if (!$unable) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to determine if contact has a certain gender
+   *
+   * @param $contactId
+   * @param $genderId
+   * @return bool
+   */
+  public static function hasGender($contactId, $genderId) {
+    try {
+      $contactGenderId = civicrm_api3('Contact', 'getvalue',[
+        'id' => $contactId,
+        'return' => 'gender_id',
+      ]);
+      if ($contactGenderId && $contactGenderId == $genderId) {
+        return TRUE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to calculate if contact is in age range
+   *
+   * @param $contactId
+   * @param $fromAge
+   * @param $toAge
+   * @return bool
+   */
+  public static function inAgeRange($contactId, $fromAge, $toAge) {
+    try {
+      $birthDate = (string) civicrm_api3('Contact', 'getvalue',[
+        'id' => $contactId,
+        'return' => 'birth_date',
+      ]);
+      if ($birthDate) {
+        $age = CRM_Utils_Date::calculateAge($birthDate);
+        if ($age >= $fromAge && $age <= $toAge) {
+          return TRUE;
+        }
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to calculate if contact is in bmi range
+   *
+   * @param $contactId
+   * @param $fromBmi
+   * @param $toBmi
+   * @return bool
+   */
+  public static function inBmiRange($contactId, $fromBmi, $toBmi) {
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerGeneralObservationsCustomGroup('table_name');
+    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_bmi', 'column_name');
+    $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
+    $contactBmi = CRM_Core_DAO::singleValueQuery($query, [ 1 => [$contactId, "Integer"]]);
+    if ($contactBmi) {
+      if ($contactBmi >= $fromBmi && $contactBmi <= $toBmi) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to determine if contact has ethnicity from param array
+   *
+   * @param $contactId
+   * @param $ethnicityIds
+   * @return bool
+   */
+  public static function hasEthnicity($contactId, $ethnicityIds) {
+    if (!empty($contactId && !empty($ethnicityIds))) {
+      if (!is_array($ethnicityIds)) {
+        $ethnicityIds = [$ethnicityIds];
+      }
+      $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerGeneralObservationsCustomGroup('table_name');
+      $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_ethnicity_id', 'column_name');
+      $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
+      $contactEthnicityId = CRM_Core_DAO::singleValueQuery($query, [ 1 => [$contactId, "Integer"]]);
+      if ($contactEthnicityId) {
+        if (in_array($contactEthnicityId, $ethnicityIds)) {
+          return TRUE;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+
 }

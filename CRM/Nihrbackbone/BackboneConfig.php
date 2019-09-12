@@ -32,8 +32,9 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_projectDataCustomGroup = [];
   private $_participationDataCustomGroup = [];
   private $_volunteerDataCustomGroup = [];
-  private $_sampleDataCustomGroup = [];
   private $_volunteerGeneralObservationsCustomGroup = [];
+  private $_volunteerSelectionEligibilityCustomGroup = [];
+  private $_selectionCriteriaCustomGroup = [];
 
   // properties for case types ids
   private $_participationCaseTypeId = NULL;
@@ -192,6 +193,21 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for selection critiera custom group
+   *
+   * @param null $key
+   * @return array|mixed
+   */
+  public function getSelectionCriteriaCustomGroup($key = NULL) {
+    if ($key && isset($this->_selectionCriteriaCustomGroup[$key])) {
+      return $this->_selectionCriteriaCustomGroup[$key];
+    }
+    else {
+      return $this->_selectionCriteriaCustomGroup;
+    }
+  }
+
+  /**
    * Getter for volunteer general observations custom group
    *
    * @param null $key
@@ -203,6 +219,21 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
     else {
       return $this->_volunteerGeneralObservationsCustomGroup;
+    }
+  }
+
+  /**
+   * Getter for volunteer selection eligibility custom group
+   *
+   * @param null $key
+   * @return array|mixed
+   */
+  public function getVolunteerSelectionEligibilityCustomGroup($key = NULL) {
+    if ($key && isset($this->_volunteerSelectionEligibilityCustomGroup[$key])) {
+      return $this->_volunteerSelectionEligibilityCustomGroup[$key];
+    }
+    else {
+      return $this->_volunteerSelectionEligibilityCustomGroup;
     }
   }
 
@@ -237,21 +268,6 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
-   * Getter for sample data custom group
-   *
-   * @param null $key
-   * @return array|mixed
-   */
-  public function getSampleDataCustomGroup($key = NULL) {
-    if ($key && isset($this->_sampleDataCustomGroup[$key])) {
-      return $this->_sampleDataCustomGroup[$key];
-    }
-    else {
-      return $this->_sampleDataCustomGroup;
-    }
-  }
-
-  /**
    * Getter for mobile phone type id
    *
    * @return null
@@ -278,27 +294,6 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function getProjectCustomField($customFieldName, $key = NULL) {
     foreach ($this->_projectDataCustomGroup['custom_fields'] as $customField) {
-      if ($customField['name'] == $customFieldName) {
-        if ($key && isset($customField[$key])) {
-          return $customField[$key];
-        }
-        else {
-          return $customField;
-        }
-      }
-    }
-    return FALSE;
-  }
-
-  /**
-   * Getter for sample data custom field
-   *
-   * @param $customFieldName
-   * @param $key
-   * @return mixed
-   */
-  public function getSampleCustomField($customFieldName, $key = NULL) {
-    foreach ($this->_sampleDataCustomGroup['custom_fields'] as $customField) {
       if ($customField['name'] == $customFieldName) {
         if ($key && isset($customField[$key])) {
           return $customField[$key];
@@ -354,6 +349,27 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for selection eligibility custom field
+   *
+   * @param $customFieldName
+   * @param $key
+   * @return mixed
+   */
+  public function getSelectionEligibilityCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_volunteerSelectionEligibilityCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Getter for participation data custom field
    *
    * @param $customFieldName
@@ -362,6 +378,27 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function getParticipationCustomField($customFieldName, $key = NULL) {
     foreach ($this->_participationDataCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Getter for selection criteria custom field
+   *
+   * @param $customFieldName
+   * @param $key
+   * @return mixed
+   */
+  public function getSelectionCriteriaCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_selectionCriteriaCustomGroup['custom_fields'] as $customField) {
       if ($customField['name'] == $customFieldName) {
         if ($key && isset($customField[$key])) {
           return $customField[$key];
@@ -603,8 +640,9 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_project_data',
       'nihr_participation_data',
       'nihr_volunteer_data',
-      'nihr_sample_data',
       'nihr_volunteer_general_observations',
+      'nihr_volunteer_selection_eligibility',
+      'nbr_selection_criteria'
       ];
     try {
       $customGroups = civicrm_api3('CustomGroup', 'get', [
@@ -612,14 +650,18 @@ class CRM_Nihrbackbone_BackboneConfig {
       ]);
       foreach ($customGroups['values'] as $customGroupId => $customGroup) {
         if (in_array($customGroup['name'], $relevantCustomGroups)) {
-          $name = str_replace('nihr_', '', $customGroup['name']);
-          $parts = explode('_', $name);
+          $parts = explode('_', $customGroup['name']);
           foreach ($parts as $partId => $part) {
-            if ($partId == 0) {
-              $parts[$partId] = strtolower($part);
+            if ($part == "nihr" || $part == "nbr") {
+              unset($parts[$partId]);
             }
             else {
-              $parts[$partId] = ucfirst(strtolower($part));
+              if ($partId == 1) {
+                $parts[$partId] = strtolower($part);
+              }
+              else {
+                $parts[$partId] = ucfirst(strtolower($part));
+              }
             }
           }
           $property = '_' . implode('', $parts) . 'CustomGroup';

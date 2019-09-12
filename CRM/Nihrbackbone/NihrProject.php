@@ -88,7 +88,7 @@ class CRM_Nihrbackbone_NihrProject {
 
   /**
    * Method to get the study id of a project
-   * 
+   *
    * @param $projectId
    * @return bool|string|null
    */
@@ -180,6 +180,62 @@ class CRM_Nihrbackbone_NihrProject {
       Civi::log()->error(E::ts('No attribute with name ') . $attribute . E::ts(' for project in ') . __METHOD__);
       return FALSE;
     }
+  }
+
+  /**
+   * Method to get the project ID with a case ID
+   *
+   * @param $caseId
+   * @return bool|int
+   */
+  public static function getProjectIdWithCaseId($caseId) {
+    if (!empty($caseId)) {
+      try {
+        return (int) civicrm_api3('Case', 'getvalue', [
+          'return' => "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'id'),
+          'id' => $caseId,
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to get the project selection criteria
+   *
+   * @param $projectId
+   * @return array
+   */
+  public static function getSelectionCriteria($projectId) {
+    $criteria = [];
+    if (!empty($projectId)) {
+      $returns = [];
+      $customFields = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('custom_fields');
+      foreach ($customFields as $customField) {
+        $returns[] = "custom_" . $customField['id'];
+      }
+      try {
+        $customValues = civicrm_api3('Campaign', 'getsingle', [
+          'id' => $projectId,
+          'return' => $returns,
+        ]);
+        foreach ($customFields as $customFieldId => $customField) {
+          $elementName = "custom_" . $customFieldId;
+          $columnName = $customField['column_name'];
+          if (isset($customValues[$elementName])) {
+            $criteria[$columnName] = $customValues[$elementName];
+          }
+          else {
+            $criteria[$columnName] = NULL;
+          }
+        }
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+      }
+    }
+    return $criteria;
   }
 
 }
