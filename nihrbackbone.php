@@ -15,7 +15,6 @@ function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
     if ($groupID == CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerGeneralObservationsCustomGroup('id')&&count($params)>1) {
       $weight = NULL;                                                          // initialise ht, wt
       $height = NULL;
-
       foreach ($params as $key => $param) {                                    // retrieve ht, wt from paramas
         if ($param['column_name'] == 'nvgo_weight_kg') {
           $weight = $param['value'];
@@ -24,7 +23,6 @@ function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
           $height = $param['value'];
         }
       }
-
       if ($weight && $height) {                                                // if we have ht/wt values ..
         $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
         $bmi = $volunteer->calculateBmi($weight, $height);                     //   calculate bmi
@@ -53,6 +51,7 @@ function writeBmi($entityID, $bmi) {
 
 
 function nihrbackbone_civicrm_buildForm($formName, &$form) {
+
   CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js', 10, 'page-body');
 
   if ($formName=='$formNameCRM_Contact_Form_CustomData') {
@@ -60,6 +59,21 @@ function nihrbackbone_civicrm_buildForm($formName, &$form) {
     CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js', 10, 'page-body');
   }
 
+}
+
+/**
+ * Implements hook_civicrm_custom.
+ *
+ */
+
+function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  //Civi::log()->debug('backbone.validateForm') ;
+  //foreach ($fields as $value)
+    //Civi::log()->debug(strval($value)) ;
+
+  if ($form instanceof CRM_Nihrbackbone_Form_ImportCsvMap) {
+    CRM_Nihrbackbone_Form_ImportCsvMap::validateForm($fields, $form, $errors);
+  }
 }
 
 /**
