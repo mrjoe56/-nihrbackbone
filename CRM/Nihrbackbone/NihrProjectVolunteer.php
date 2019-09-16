@@ -339,4 +339,31 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
     return 0;
   }
 
+  /**
+   * Method to get all participation case ids for volunteer
+   *
+   * @param $volunteerId
+   * @return array
+   */
+  public static function getVolunteerParticipations($volunteerId) {
+    $result = [];
+    if (!empty($volunteerId)) {
+      // get all active participations for contact
+      $query = "SELECT a.case_id FROM civicrm_case_contact AS a
+        JOIN civicrm_case AS b ON a.case_id = b.id
+        WHERE contact_id = %1 AND b.is_deleted = %2 AND b.case_type_id = 3 AND b.status_id != 2";
+      $queryParams = [
+        1 => [$volunteerId, "Integer"],
+        2 => [0, "Integer"],
+        3 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+        4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), "Integer"],
+      ];
+      $projects = CRM_Core_DAO::executeQuery($query, $queryParams);
+      while ($projects->fetch()) {
+        $result[] = $projects->case_id;
+      }
+    }
+    return $result;
+  }
+
 }
