@@ -32,6 +32,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_projectDataCustomGroup = [];
   private $_participationDataCustomGroup = [];
   private $_volunteerDataCustomGroup = [];
+  private $_volunteerStatusCustomGroup = [];
   private $_volunteerGeneralObservationsCustomGroup = [];
   private $_volunteerSelectionEligibilityCustomGroup = [];
   private $_selectionCriteriaCustomGroup = [];
@@ -253,6 +254,21 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for volunteer status custom group
+   *
+   * @param null $key
+   * @return array|mixed
+   */
+  public function getVolunteerStatusCustomGroup($key = NULL) {
+    if ($key && isset($this->_volunteerStatusCustomGroup[$key])) {
+      return $this->_volunteerStatusCustomGroup[$key];
+    }
+    else {
+      return $this->_volunteerStatusCustomGroup;
+    }
+  }
+
+  /**
    * Getter for participation data custom group
    *
    * @param null $key
@@ -313,8 +329,29 @@ class CRM_Nihrbackbone_BackboneConfig {
    * @param $key
    * @return mixed
    */
-  public function getVolunteerCustomField($customFieldName, $key = NULL) {
+  public function getVolunteerDataCustomField($customFieldName, $key = NULL) {
     foreach ($this->_volunteerDataCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Getter for volunteer status custom field
+   *
+   * @param $customFieldName
+   * @param $key
+   * @return mixed
+   */
+  public function getVolunteerStatusCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_volunteerStatusCustomGroup['custom_fields'] as $customField) {
       if ($customField['name'] == $customFieldName) {
         if ($key && isset($customField[$key])) {
           return $customField[$key];
@@ -640,6 +677,7 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_project_data',
       'nihr_participation_data',
       'nihr_volunteer_data',
+      'nihr_volunteer_status',
       'nihr_volunteer_general_observations',
       'nihr_volunteer_selection_eligibility',
       'nbr_selection_criteria'
