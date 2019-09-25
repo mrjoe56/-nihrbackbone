@@ -28,7 +28,7 @@ class CRM_Nihrbackbone_NihrImportCsv {
    */
   public function __construct($type, $csvFileName, $separator = ';', $firstRowHeaders = FALSE) {
     $this->_logger = new CRM_Nihrbackbone_NihrLogger('nbrcsvimport_' . date('Ymdhis'));
-    $validTypes = ['participation'];
+    $validTypes = ['participation', 'demographics'];
     if (in_array($type, $validTypes)) {
       $this->_type = $type;
     }
@@ -109,6 +109,10 @@ class CRM_Nihrbackbone_NihrImportCsv {
         $this->importParticipation();
         fclose($this->_csv);
         break;
+      case 'demographics':
+        $this->importDemographics();
+        fclose($this->_csv);
+        break;
       default:
         $this->_logger->logMessage(E::ts('No valid type of csv import found, no function to process import.'), 'error');
     }
@@ -144,5 +148,34 @@ class CRM_Nihrbackbone_NihrImportCsv {
     }
   }
 
-}
+
+  /**
+   * Method to process the participation import (participation id)
+   */
+  private function importDemographics() {
+    $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
+    while (!feof($this->_csv)) {
+      // $data = fgetcsv($this->_csv, 0, $this->_separator);
+      $data = fgetcsv($this->_csv, 0, ";");
+
+      if ($data){
+        try {
+          civicrm_api3('Contact', 'create', [
+                'contact_type' => "Individual",
+                'contact_sub_type' => "nihr_volunteer",
+                'last_name' => $data[0],
+                'first_name' => $data[1],
+                'birth_date' => $data[2]]);
+
+            $this->_logger->logMessage('Volunteer ' . $data[0] . ' ' . $data[1] .' succesfully loaded');
+          }
+          catch (CiviCRM_API3_Exception $ex) {
+            $this->_logger->logMessage('Error message when adding volunteer ' . $data[0]
+              . $ex->getMessage(), 'error');
+          }
+        }
+      }
+    }
+  }
+
 
