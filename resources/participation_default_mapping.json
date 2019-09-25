@@ -1,0 +1,8 @@
+{
+  "First Name": "first_name",
+  "Last Name": "last_name",
+  "Phone number": "phone",
+  "Mobile number": "mobile",
+  "Gender": "gender_id",
+  "Ethnicity": "ethnicity_id"
+}

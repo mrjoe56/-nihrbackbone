@@ -17,6 +17,7 @@ class CRM_Nihrbackbone_NihrImportCsv {
   private $_logger = NULL;
   private $_csv = NULL;
   private $_projectId = NULL;
+  private $_mapping = [];
 
   /**
    * CRM_Nihrbackbone_NihrImportCsv constructor.
@@ -104,6 +105,8 @@ class CRM_Nihrbackbone_NihrImportCsv {
    * Process import depending on type
    */
   public function processImport() {
+    // get mapping
+    $this->getMapping();
     switch ($this->_type) {
       case 'participation':
         $this->importParticipation();
@@ -119,6 +122,22 @@ class CRM_Nihrbackbone_NihrImportCsv {
   }
 
   /**
+   * Method to get the data mapping based on the name of the csv file
+   */
+  private function getMapping() {
+    // retrieve first part of the file name (expecting pattern like ucl_12sept2019.csv)
+    $nameParts = explode("_", $this->_csvFile);
+    $container = CRM_Extension_System::singleton()->getFullContainer();
+    $resourcePath = $container->getPath('nihrbackbone') . '/resources/';
+    $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . $nameParts[0] . $this->_type . "_mapping.json";
+    if (!file_exists($mappingFile)) {
+      $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . $this->_type . "_default_mapping.json";
+    }
+    $mappingJson = file_get_contents($mappingFile);
+    $this->_mapping = json_decode($mappingJson, TRUE);
+  }
+
+  /**
    * Method to process the participation import (participation id)
    */
   private function importParticipation() {
@@ -126,6 +145,8 @@ class CRM_Nihrbackbone_NihrImportCsv {
     while (!feof($this->_csv)) {
       $data = fgetcsv($this->_csv, 0, $this->_separator);
       if ($data){
+        // map data based on filename
+        $data = $this->applyMapping($data);
         $contactId = $volunteer->findVolunteerByIdentity($data[0], 'alias_type_participant_id');
         if (!$contactId) {
           $this->_logger->logMessage(E::ts('Could not find a volunteer with participantID ') . $data[0] . E::ts(', not imported to project in ') . __METHOD__, 'error');
@@ -176,6 +197,26 @@ class CRM_Nihrbackbone_NihrImportCsv {
         }
       }
     }
+
+  /**
+   * Method to map data according to loaded mapping
+   *
+   * @param $preMappingData
+   * @return array
+   */
+  private function applyMapping($preMappingData) {
+    $mappedData = [];
+    foreach ($preMappingData as $key => $value) {
+      if (isset($this->_mapping[$key])) {
+        $newKey = $this->_mapping[$key];
+      } else {
+        $newKey = $key;
+      }
+      $mappedData[$newKey] = $value;
+    }
+    return $mappedData;
   }
+
+}
 
 
