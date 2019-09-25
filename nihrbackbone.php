@@ -49,16 +49,12 @@ function writeBmi($entityID, $bmi) {
   }
 }
 
-
 function nihrbackbone_civicrm_buildForm($formName, &$form) {
-
   CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js', 10, 'page-body');
-
-  if ($formName=='$formNameCRM_Contact_Form_CustomData') {
+  if ($formName == 'CRM_Contact_Form_CustomData') {
     //CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js');
     CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js', 10, 'page-body');
   }
-
 }
 
 /**
