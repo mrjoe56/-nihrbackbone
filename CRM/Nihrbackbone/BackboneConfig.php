@@ -604,7 +604,13 @@ class CRM_Nihrbackbone_BackboneConfig {
    * Method to set the eligible statuses
    */
   private function setEligibleStatus() {
-    $valids = ['nihr_eligible', 'nihr_maximum_reached'];
+    $valids = [
+      'nihr_eligible',
+      'nihr_maximum_reached',
+      'nihr_not_active',
+      'nihr_not_recallable',
+      'nihr_criteria_not_met',
+    ];
     try {
       $eligibleStatuses = civicrm_api3('OptionValue', 'get', [
         'option_group_id' => $this->_eligibleStatusOptionGroupId,
