@@ -7,8 +7,8 @@
       <span><div class="icon ui-icon-folder-open"></div>{ts}Import from CSV File(s){/ts}</span>
     </a>
   </div>
-  <div id="nihr_project_volunteer_wrapper" class="dataTables_wrapper">
-    <table id="nihr_project_volunteer-table" class="display">
+  <div id="nbr_volunteer_case_wrapper" class="dataTables_wrapper">
+    <table id="nbr_volunteer_case-table" class="display">
       <thead>
       <tr>
         <th class="sorting-disabled" rowspan="1" colspan="1">{ts}Name{/ts}</th>
@@ -25,7 +25,7 @@
       <tbody>
       {assign var="row_class" value="odd-row"}
       {foreach from=$volunteers item=volunteer}
-        <tr id="nihr_project_volunteer-{$volunteer.case_id}" class="crm-entity {cycle values="odd-row,even-row"} {$row.class}">
+        <tr id="nbr_volunteer_case-{$volunteer.case_id}" class="crm-entity {cycle values="odd-row,even-row"} {$row.class}">
           <td>{$volunteer.volunteer_name}</td>
           <td>{$volunteer.bioresource_id}</td>
           <td>{$volunteer.anon_project_id}</td>

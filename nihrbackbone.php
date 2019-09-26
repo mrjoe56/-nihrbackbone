@@ -84,7 +84,7 @@ function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask
       // only if the campaign is a project
       $links[] = [
         'name' => ts('Volunteer(s)'),
-        'url' => 'civicrm/nihrbackbone/page/nihrprojectvolunteer',
+        'url' => 'civicrm/nihrbackbone/page/nbrvolunteercase',
         'title' => 'Volunteers',
         'class' => 'no-popup',
         'qs' => 'reset=1&pid=%%id%%',
