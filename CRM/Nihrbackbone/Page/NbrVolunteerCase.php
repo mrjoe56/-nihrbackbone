@@ -2,14 +2,14 @@
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /**
- * Page NihrProjectVolunteer to show the project/volunteer data
+ * Page NbrVolunteerCase to show the project/volunteer data
  *
  * @author Erik Hommel <erik.hommel@civicoop.org>
  * @date 28 Feb 2019
  * @license AGPL-3.0
  * @errorrange 2000-2100
  */
-class CRM_Nihrbackbone_Page_NihrProjectVolunteer extends CRM_Core_Page {
+class CRM_Nihrbackbone_Page_NbrVolunteerCase extends CRM_Core_Page {
 
   private $_projectId = NULL;
 
@@ -22,7 +22,7 @@ class CRM_Nihrbackbone_Page_NihrProjectVolunteer extends CRM_Core_Page {
     $this->setPageConfiguration();
     $volunteers = [];
     try {
-      $volunteers = civicrm_api3('NihrProjectVolunteer', 'get', [
+      $volunteers = civicrm_api3('NbrVolunteerCase', 'get', [
         'options' => ['limit' => 0],
         'project_id' => $this->_projectId,
       ])['values'];
@@ -68,8 +68,6 @@ class CRM_Nihrbackbone_Page_NihrProjectVolunteer extends CRM_Core_Page {
     if (!$this->_projectId) {
       throw new CiviCRM_API3_Exception(E::ts('Could not find a project id in the request URL in ') . __METHOD__, 2001);
     }
-    $this->assign('import_file_url', CRM_Utils_System::url('civicrm/nihrbackbone/form/importcsvselect',
-      'reset=1&pid=' . $this->_projectId, TRUE));
   }
 
 }

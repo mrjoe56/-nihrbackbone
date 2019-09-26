@@ -2,31 +2,28 @@
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /**
- * Class NihrProjectVolunteer to deal with project volunteer links and data
+ * Class NbrVolunteerCase to deal with project volunteer links and data
  *
  * @author Erik Hommel <erik.hommel@civicoop.org>
  * @date 7 Mar 2019
  * @license AGPL-3.0
  * @errorrange 3000-3499
  */
-class CRM_Nihrbackbone_NihrProjectVolunteer {
+class CRM_Nihrbackbone_NbrVolunteerCase {
 
-  private $_projectId = NULL;
+  private $_apiParams = [];
 
   /**
-   * CRM_Nihrbackbone_NihrProjectVolunteer constructor.
+   * CRM_Nihrbackbone_NbrVolunteerCase constructor.
    *
-   * @param $projectId
+   * @param $projectId (participation case only)
    * @throws API_Exception
    */
-  public function __construct($projectId) {
-    if (empty($projectId)) {
-      throw new API_Exception(E::ts('Can not initiate NihrProjectVolunteer class with empty projectId'), 3000);
+  public function __construct($apiParams) {
+    if(!is_array($apiParams)) {
+      $apiParams = [$apiParams];
     }
-    if (!is_numeric($projectId)) {
-      throw new API_Exception(E::ts('Can not initiate NihrProjectVolunteer class with a non-numeric projectId'), 3001);
-    }
-    $this->_projectId = trim(stripslashes($projectId));
+    $this->_apiParams = $apiParams;
   }
 
   /**
@@ -37,7 +34,7 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
   public function getVolunteers() {
     $volunteers = [];
     // return empty array if no projectId
-    if (!$this->_projectId) {
+    if (!$this->_apiParams['project_id']) {
       return $volunteers;
     }
     // find all cases that belong to the project, each case client is a volunteer
@@ -114,11 +111,23 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
         2 => [1, 'Integer'],
         3 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectParticipationStatusOptionGroupId(), 'Integer'],
         4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getEthnicityOptionGroupId(), 'Integer'],
-        5 => [$this->_projectId, 'Integer'],
+        5 => [$this->_apiParams['project_id'], 'Integer'],
         6 => [0, 'Integer'],
       ]];
     return $queryArray;
   }
+
+  public function createVolunteerCase($contactId)
+  {
+    // todo use switch
+    if ($this->_apiParams['case_type'] == 'recruitment') {
+      $this->createRecruitmentVolunteerCase($contactId);
+  }
+    elseif ($this->_apiParams['case_type'] == 'participation') {
+      $this->createParticipationVolunteerCase($contactId);
+    }
+  }
+
 
   /**
    * Method to link a volunteer to a project (create case of type Participation)
@@ -127,16 +136,16 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
    * @throws API_Exception
    * @return array
    */
-  public function createProjectVolunteer($contactId) {
-    if (empty($this->_projectId)) {
+  public function createParticipationVolunteerCase($contactId) {
+    if (empty($this->_apiParams['project_id'])) {
       throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty projectId in ') . __METHOD__, 3002);
     }
     if (empty($contactId)) {
       throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty contactId in ') . __METHOD__, 3003);
     }
-    // check if project exists
+
     $nihrProject = new CRM_Nihrbackbone_NihrProject();
-    if ($nihrProject->projectExists($this->_projectId)) {
+    if ($nihrProject->projectExists($this->_apiParams['project_id'])) {
       // check if contact exists and has contact sub type Volunteer and does not have a case for this project yet
       $nihrVolunteer = new CRM_Nihrbackbone_NihrVolunteer();
       if ($nihrVolunteer->isValidVolunteer($contactId) && !$this->isAlreadyOnProject($contactId)) {
@@ -153,6 +162,33 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
     }
   }
 
+
+  /**
+   * Method to create case of type Recruitment
+   *
+   * @param $contactId
+   * @throws API_Exception
+   * @return array
+   */
+  public function createRecruitmentVolunteerCase($contactId) {
+    if (empty($contactId)) {
+      throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty contactId in ') . __METHOD__, 3003);
+    }
+      // check if contact exists and has contact sub type Volunteer and does not have a case for this project yet
+      $nihrVolunteer = new CRM_Nihrbackbone_NihrVolunteer();
+
+        try {
+          $case = civicrm_api3('Case', 'create', $this->setRecruitmentCaseCreateData($contactId));
+          return ['case_id' => $case['id']];
+        }
+        catch (CiviCRM_API3_Exception $ex) {
+          throw new API_Exception('Could not create a Participation case for contact ID ' . $contactId
+            . ' in ' . __METHOD__ . ', error code from API Case create:'  . $ex->getMessage(), 3004);
+        }
+      }
+
+
+
   /**
    * Prepare data for case create
    *
@@ -167,13 +203,23 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
     $caseCreateData =  [
       'contact_id' => $contactId,
       'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(),
-      'subject' => "Selected for project " . $this->_projectId,
+      'subject' => "Selected for project " . $this->_apiParams['project_id'],
       'status_id' => "Open",
-      $projectIdCustomFieldId => $this->_projectId,
+      $projectIdCustomFieldId => $this->_apiParams['project_id'],
       $anonCustomFieldId => "3294yt71L",
       $pvStatusCustomFieldId => 1,
       $consentCustomFieldId => 7,
       ];
+    return $caseCreateData;
+  }
+
+  private function setRecruitmentCaseCreateData($contactId) {
+    $caseCreateData =  [
+      'contact_id' => $contactId,
+      'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitmentCaseTypeId(),
+      'subject' => "Recruited",
+      'status_id' => "Open",
+    ];
     return $caseCreateData;
   }
 
@@ -192,7 +238,7 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
       WHERE a.contact_id = %1 AND " . $projectIdColumn . " = %2 AND b.is_deleted = %3";
     $count = CRM_Core_DAO::singleValueQuery($query, [
       1 => [$contactId, 'Integer'],
-      2 => [$this->_projectId, 'Integer'],
+      2 => [$this->_apiParams['project_id'], 'Integer'],
       3 => [0, 'Integer'],
     ]);
     if ($count == 0) {
@@ -262,6 +308,7 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
     $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
     // retrieve current eligible status from each volunteer participation cases
+    self::getCurrentElgibleStatus($volunteerId);
     $query = "SELECT a." . $eligibleColumnName . ", a.entity_id
       FROM " . $tableName . " AS a
       JOIN civicrm_case AS b ON a.entity_id = b.id
@@ -296,11 +343,19 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
           unset($newValues[$currentValueId]);
         }
       }
-      $query = "UPDATE " . $tableName . " SET " . $eligibleColumnName . " = %1 WHERE entity_id = %2";
-      $queryParams = [
-        1 => [implode(CRM_Core_DAO::VALUE_SEPARATOR, $newValues), 'String'],
-        2 => [$caseId, 'Integer'],
-      ];
+      if (!empty($newValues)) {
+        $query = "UPDATE " . $tableName . " SET " . $eligibleColumnName . " = %1 WHERE entity_id = %2";
+        $queryParams = [
+          1 => [implode(CRM_Core_DAO::VALUE_SEPARATOR, $newValues), 'String'],
+          2 => [$caseId, 'Integer'],
+        ];
+      }
+      else {
+        $query = "UPDATE " . $tableName . " SET " . $eligibleColumnName . " = NULL WHERE entity_id = %1";
+        $queryParams = [
+          1 => [$caseId, 'Integer'],
+        ];
+      }
       CRM_Core_DAO::executeQuery($query, $queryParams);
     }
   }
@@ -348,9 +403,11 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
   public static function getVolunteerParticipations($volunteerId) {
     $result = [];
     if (!empty($volunteerId)) {
+      $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
       // get all active participations for contact
-      $query = "SELECT a.case_id FROM civicrm_case_contact AS a
+      $query = "SELECT a.case_id, c.* FROM civicrm_case_contact AS a
         JOIN civicrm_case AS b ON a.case_id = b.id
+        lEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id 
         WHERE contact_id = %1 AND b.is_deleted = %2 AND b.case_type_id = 3 AND b.status_id != 2";
       $queryParams = [
         1 => [$volunteerId, "Integer"],
@@ -360,7 +417,7 @@ class CRM_Nihrbackbone_NihrProjectVolunteer {
       ];
       $projects = CRM_Core_DAO::executeQuery($query, $queryParams);
       while ($projects->fetch()) {
-        $result[] = $projects->case_id;
+        $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($projects);
       }
     }
     return $result;

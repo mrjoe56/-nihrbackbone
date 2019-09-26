@@ -16,7 +16,8 @@ function civicrm_api3_nihr_import_csv_Loaddemographics($params) {
   $loadFolder = Civi::settings()->get('nbr_csv_import_folder');
   if ($loadFolder && !empty($loadFolder)) {
     // get all .csv files from folder
-    $csvFiles = glob($loadFolder . DIRECTORY_SEPARATOR . "*demographics.csv");
+    //$csvFiles = glob($loadFolder . DIRECTORY_SEPARATOR . "*demographics.csv");
+    $csvFiles = glob($loadFolder . DIRECTORY_SEPARATOR . "*.csv");
     // make sure it's sorted
     sort($csvFiles);
 
@@ -24,8 +25,8 @@ function civicrm_api3_nihr_import_csv_Loaddemographics($params) {
     $csvFile = array_pop($csvFiles);
 
     // process file
-    $import = new CRM_Nihrbackbone_NihrImportCsv('demographics', $csvFile);
-    if ($import->validImportData($params[''])) {
+    $import = new CRM_Nihrbackbone_NihrImportCsv('demographics', $csvFile, ';', TRUE);
+    if ($import->validImportData()) {
       $import->processImport();
 
       return civicrm_api3_create_success([], $params, 'NihrImportCsv', 'loaddemographics');

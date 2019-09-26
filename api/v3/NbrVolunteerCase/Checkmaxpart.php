@@ -2,7 +2,7 @@
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /**
- * NihrProjectVolunteer.Checkmaxpart API specification (optional)
+ * NbrVolunteerCase.Checkmaxpart API specification (optional)
  * This is used for documentation and validation.
  *
  * @param array $spec description of fields supported by this API call
@@ -20,7 +20,7 @@ function _civicrm_api3_nihr_project_volunteer_Checkmaxpart_spec(&$spec) {
 }
 
 /**
- * NihrProjectVolunteer.Checkmaxpart API
+ * NbrVolunteerCase.Checkmaxpart API
  *
  * @param array $params
  * @return array API result descriptor
@@ -60,8 +60,8 @@ function civicrm_api3_nihr_project_volunteer_Checkmaxpart($params) {
   while ($volunteer->fetch()) {
     // remove eligible status for no of project in xxx period if necessary
     if (!CRM_Nihrbackbone_NihrVolunteer::hasMaxParticipationsNow($volunteer->contact_id)) {
-      CRM_Nihrbackbone_NihrProjectVolunteer::unsetMaxStatus($volunteer->contact_id);
+      CRM_Nihrbackbone_NbrVolunteerCase::unsetMaxStatus($volunteer->contact_id);
     }
   }
-  return civicrm_api3_create_success([], $params, 'NihrProjectVolunteer', 'seteligible');
+  return civicrm_api3_create_success([], $params, 'NbrVolunteerCase', 'seteligible');
 }

@@ -59,6 +59,9 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_skypeProviderId = NULL;
   private $_eligibleEligibleStatusId  = NULL;
   private $_maxReachedEligibleStatusId = NULL;
+  private $_notActiveEligibleStatusId = NULL;
+  private $_notRecallableEligibleStatusId = NULL;
+  private $_criteriaNotMetEligibleStatusId = NULL;
 
   /**
    * CRM_Nihrbackbone_BackboneConfig constructor.
@@ -101,12 +104,37 @@ class CRM_Nihrbackbone_BackboneConfig {
   public function getEligibleEligibleStatus() {
     return $this->_eligibleEligibleStatusId;
   }
+
   /**
    * Getter for maximum reached eligible status
    * @return null
    */
   public function getMaxReachedEligibleStatusId() {
     return $this->_maxReachedEligibleStatusId;
+  }
+
+  /**
+   * Getter for not active eligible status id
+   * @return null
+   */
+  public function getNotActiveEligibleStatusId() {
+    return $this->_notActiveEligibleStatusId;
+  }
+
+  /**
+   * Getter for not recallable eligible status id
+   * @return null
+   */
+  public function getNotRecallableEligibleStatusId() {
+    return $this->_notRecallableEligibleStatusId;
+  }
+
+  /**
+   * Getter for criteria not met eligible status id
+   * @return null
+   */
+  public function getCriteriaNotMetStatusId() {
+    return $this->_criteriaNotMetEligibleStatusId;
   }
 
   /**
@@ -576,7 +604,13 @@ class CRM_Nihrbackbone_BackboneConfig {
    * Method to set the eligible statuses
    */
   private function setEligibleStatus() {
-    $valids = ['nihr_eligible', 'nihr_maximum_reached'];
+    $valids = [
+      'nihr_eligible',
+      'nihr_maximum_reached',
+      'nihr_not_active',
+      'nihr_not_recallable',
+      'nihr_criteria_not_met',
+    ];
     try {
       $eligibleStatuses = civicrm_api3('OptionValue', 'get', [
         'option_group_id' => $this->_eligibleStatusOptionGroupId,
@@ -589,6 +623,15 @@ class CRM_Nihrbackbone_BackboneConfig {
             break;
           case 'nihr_maximum_reached':
             $this->_maxReachedEligibleStatusId = $eligibleStatus['value'];
+            break;
+          case 'nihr_not_active':
+            $this->_notActiveEligibleStatusId = $eligibleStatus['value'];
+            break;
+          case 'nihr_not_recallable':
+            $this->_notRecallableEligibleStatusId = $eligibleStatus['value'];
+            break;
+          case 'nihr_criteria_not_met':
+            $this->_criteriaNotMetEligibleStatusId = $eligibleStatus['value'];
             break;
         }
       }
