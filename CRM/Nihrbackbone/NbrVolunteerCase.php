@@ -308,6 +308,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
     $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
     // retrieve current eligible status from each volunteer participation cases
+    self::getCurrentElgibleStatus($volunteerId);
     $query = "SELECT a." . $eligibleColumnName . ", a.entity_id
       FROM " . $tableName . " AS a
       JOIN civicrm_case AS b ON a.entity_id = b.id
@@ -342,11 +343,19 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
           unset($newValues[$currentValueId]);
         }
       }
-      $query = "UPDATE " . $tableName . " SET " . $eligibleColumnName . " = %1 WHERE entity_id = %2";
-      $queryParams = [
-        1 => [implode(CRM_Core_DAO::VALUE_SEPARATOR, $newValues), 'String'],
-        2 => [$caseId, 'Integer'],
-      ];
+      if (!empty($newValues)) {
+        $query = "UPDATE " . $tableName . " SET " . $eligibleColumnName . " = %1 WHERE entity_id = %2";
+        $queryParams = [
+          1 => [implode(CRM_Core_DAO::VALUE_SEPARATOR, $newValues), 'String'],
+          2 => [$caseId, 'Integer'],
+        ];
+      }
+      else {
+        $query = "UPDATE " . $tableName . " SET " . $eligibleColumnName . " = NULL WHERE entity_id = %1";
+        $queryParams = [
+          1 => [$caseId, 'Integer'],
+        ];
+      }
       CRM_Core_DAO::executeQuery($query, $queryParams);
     }
   }
@@ -394,9 +403,11 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   public static function getVolunteerParticipations($volunteerId) {
     $result = [];
     if (!empty($volunteerId)) {
+      $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
       // get all active participations for contact
-      $query = "SELECT a.case_id FROM civicrm_case_contact AS a
+      $query = "SELECT a.case_id, c.* FROM civicrm_case_contact AS a
         JOIN civicrm_case AS b ON a.case_id = b.id
+        lEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id 
         WHERE contact_id = %1 AND b.is_deleted = %2 AND b.case_type_id = 3 AND b.status_id != 2";
       $queryParams = [
         1 => [$volunteerId, "Integer"],
@@ -406,7 +417,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       ];
       $projects = CRM_Core_DAO::executeQuery($query, $queryParams);
       while ($projects->fetch()) {
-        $result[] = $projects->case_id;
+        $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($projects);
       }
     }
     return $result;
