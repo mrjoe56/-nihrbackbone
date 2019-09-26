@@ -68,8 +68,6 @@ class CRM_Nihrbackbone_Page_NihrProjectVolunteer extends CRM_Core_Page {
     if (!$this->_projectId) {
       throw new CiviCRM_API3_Exception(E::ts('Could not find a project id in the request URL in ') . __METHOD__, 2001);
     }
-    $this->assign('import_file_url', CRM_Utils_System::url('civicrm/nihrbackbone/form/importcsvselect',
-      'reset=1&pid=' . $this->_projectId, TRUE));
   }
 
 }

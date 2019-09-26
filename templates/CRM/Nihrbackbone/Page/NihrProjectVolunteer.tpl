@@ -2,11 +2,6 @@
   <div id="help">
     {ts}This overview shows you the current volunteer selection on a project{/ts}
   </div>
-  <div class="action-link">
-    <a class="button import-option" href="{$import_file_url}">
-      <span><div class="icon ui-icon-folder-open"></div>{ts}Import from CSV File(s){/ts}</span>
-    </a>
-  </div>
   <div id="nihr_project_volunteer_wrapper" class="dataTables_wrapper">
     <table id="nihr_project_volunteer-table" class="display">
       <thead>
@@ -39,10 +34,5 @@
       {/foreach}
       </tbody>
     </table>
-  </div>
-  <div class="action-link">
-    <a class="button import-option" href="{$import_file_url}">
-      <span><div class="icon ui-icon-folder-open"></div>{ts}Import from CSV File(s){/ts}</span>
-    </a>
   </div>
 </div>
