@@ -2,6 +2,19 @@
 require_once 'nihrbackbone.civix.php';
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
+/** Implements hook_civicrm_post */
+
+function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
+
+  if ($objectName == 'Address') {
+    if ($op == 'edit'||$op == 'create') {
+      Civi::log()->debug('JB posthook $op:' . $op . '  $objectName : ' . $objectName);
+      CRM_Nihrbackbone_NihrAddress::processPost($op,$objectName, $objectID, $objectRef);
+    }
+  }
+
+}
+
 
 /**
  * Implements hook_civicrm_custom.
@@ -9,6 +22,7 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  */
 function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
 
+  Civi::log() ->debug(' JB custom hook');
   /** if this custom post is to add or edit General observations, and parameters are present, update the bmi from ht and wt */
   if ($op == 'create' || $op == 'edit') {
 
@@ -50,9 +64,7 @@ function writeBmi($entityID, $bmi) {
 }
 
 function nihrbackbone_civicrm_buildForm($formName, &$form) {
-  CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js', 10, 'page-body');
   if ($formName == 'CRM_Contact_Form_CustomData') {
-    //CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js');
     CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js', 10, 'page-body');
   }
 }
