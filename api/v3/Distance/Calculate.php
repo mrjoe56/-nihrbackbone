@@ -39,8 +39,6 @@ function civicrm_api3_distance_Calculate($params) {
   $from = str_replace(' ', '', $params['NBR_postcode']);
   $to = str_replace(' ', '', $params['postcode']);
 
-  Civi::log()->debug('civicrm_api3_distance_Calculate call - from : '.$from.'  to : '.$to);
-
   $url = 'http://www.mapquestapi.com/directions/v2/route?key=ge1sXrGxbNAcYEreGTxWFV8PAT0m7UWA&from='.$from.'&to='.$to.'&outFormat=json&unit=Miles&routeType=shortest&locale=en_GB';
 
   $data = file_get_contents($url);
