@@ -26,9 +26,10 @@ function _civicrm_api3_nihr_import_csv_Loadparticipation_spec(&$spec) {
  * @return array API result descriptor
  * @see civicrm_api3_create_success
  * @see civicrm_api3_create_error
- * @throws API_Exception
+ * @throws
  */
 function civicrm_api3_nihr_import_csv_Loadparticipation($params) {
+  $returnValues = [];
   // get the csv import and processed folders
   $loadFolder = Civi::settings()->get('nbr_csv_import_folder');
   $processedFolder = Civi::settings()->get('nbr_csv_processed_folder');
@@ -41,7 +42,7 @@ function civicrm_api3_nihr_import_csv_Loadparticipation($params) {
       // process file
       $import = new CRM_Nihrbackbone_NihrImportCsv('participation', $csvFile);
       if ($import->validImportData($params['project_id'])) {
-        $import->processImport();
+        $returnValues = $import->processImport();
         // move file once succesfully imported
         if ($processedFolder) {
           $processedFile = $processedFolder . DIRECTORY_SEPARATOR . basename($csvFile);
@@ -49,7 +50,7 @@ function civicrm_api3_nihr_import_csv_Loadparticipation($params) {
         }
       }
     }
-    return civicrm_api3_create_success([], $params, 'NihrImportCsv', 'loadparticipation');
+    return civicrm_api3_create_success($returnValues, $params, 'NihrImportCsv', 'loadparticipation');
   }
   else {
     throw new API_Exception(E::ts('Folder for csv import (setting nbr_csv_import_folder) not found or empty'),  1001);

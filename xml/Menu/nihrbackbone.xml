@@ -24,4 +24,16 @@
     <title>ImportCsvSelect</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/nihrbackbone/page/nbrimportresults</path>
+    <page_callback>CRM_Nihrbackbone_Page_NbrImportResults</page_callback>
+    <title>NbrImportResults</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nihrbackbone/page/nbrimportlog</path>
+    <page_callback>CRM_Nihrbackbone_Page_NbrImportLog</page_callback>
+    <title>NbrImportLog</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
