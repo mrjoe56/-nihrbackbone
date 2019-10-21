@@ -17,10 +17,9 @@ function _civicrm_api3_nbr_volunteer_case_Get_spec(&$spec) {
     'description' => 'Internal ID of the project',
     'api.required' => 1,
     'type' => CRM_Utils_Type::T_INT,
-  );/**
-
-  }
-
+  );
+}
+/**
  * NbrVolunteerCase.Get API
  *
  * @param array $params
