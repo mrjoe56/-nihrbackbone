@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Nihrbackbone</base>
+  <class>NbrImportLog</class>
+  <name>civicrm_nbr_import_log</name>
+  <comment>FIXME</comment>
+  <add>5.17</add>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique NbrImportLog ID</comment>
+    <add>5.17</add>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>import_id</name>
+    <type>varchar</type>
+    <length>32</length>
+    <title>Unique import ID</title>
+    <comment>Unique ID of the import job</comment>
+    <add>5.17</add>
+  </field>
+
+  <field>
+    <name>filename</name>
+    <type>varchar</type>
+    <length>128</length>
+    <title>File Name</title>
+    <comment>Name of the import file that is being logged</comment>
+    <add>5.17</add>
+  </field>
+
+  <field>
+    <name>message_type</name>
+    <type>varchar</type>
+    <length>128</length>
+    <title>Message Type</title>
+    <comment>Type of message (info, warning, error)</comment>
+    <add>5.17</add>
+  </field>
+
+  <field>
+    <name>message</name>
+    <title>Message</title>
+    <type>text</type>
+    <html>
+      <type>TextArea</type>
+      <rows>4</rows>
+      <cols>60</cols>
+    </html>
+    <comment>Message</comment>
+    <add>5.17</add>
+  </field>
+
+  <field>
+    <name>logged_date</name>
+    <title>Date Message Logged</title>
+    <type>date</type>
+    <comment>The date the message was logged</comment>
+    <html>
+      <type>Select Date</type>
+      <formatType>activityDate</formatType>
+    </html>
+    <add>5.17</add>
+  </field>
+
+</table>
