@@ -2,15 +2,20 @@
 require_once 'nihrbackbone.civix.php';
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
-/** Implements hook_civicrm_post */
+/** Implements hook_civicrm_post JB */
 
 function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 
-  if ($objectName == 'Address') {
+  if ($objectName == 'Address' && $objectRef->is_primary) {
     if ($op == 'edit'||$op == 'create') {
-      Civi::log()->debug('JB posthook $op:' . $op . '  $objectName : ' . $objectName);
-      CRM_Nihrbackbone_NihrAddress::processPost($op,$objectName, $objectID, $objectRef);
+      Civi::log()->debug('----------');
+      Civi::log()->debug('JB posthook $op:' . $op . '  $objectName : ' . $objectName.' : calling processPost');
+      CRM_Nihrbackbone_NihrAddress::postProcess($op,$objectName, $objectID,$objectRef);
     }
+  }
+  else {
+    Civi::log()->debug('----------');
+    Civi::log()->debug('JB posthook $op:' . $op . '  $objectName : ' . $objectName.' : NO CALL');
   }
 
 }
@@ -48,6 +53,8 @@ function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
     }
   }
 }
+
+
 
 function writeBmi($entityID, $bmi) {
 
