@@ -219,7 +219,7 @@ class CRM_Nihrbackbone_NihrImportCsv {
             civicrm_api3('NbrVolunteerCase', 'create', [
               'project_id' => $this->_projectId,
               'contact_id' => $contactId,
-              'case_type' => CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(),
+              'case_type' => 'participation',
             ]);
             $this->_imported++;
             $message = E::ts('Volunteer with participantID ') . $data[0] . E::ts(' succesfully added to projectID ') . $this->_projectId;
