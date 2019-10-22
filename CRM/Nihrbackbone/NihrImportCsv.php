@@ -20,6 +20,7 @@ class CRM_Nihrbackbone_NihrImportCsv
   private $_projectId = NULL;
   private $_mapping = [];
   private $_columnHeaders = [];
+  private $_dataSource = NULL;
 
   /**
    * CRM_Nihrbackbone_NihrImportCsv constructor.
@@ -29,7 +30,7 @@ class CRM_Nihrbackbone_NihrImportCsv
    * @param string $separator
    * @param bool $firstRowHeaders
    */
-  public function __construct($type, $csvFileName, $separator = ';', $firstRowHeaders = FALSE)
+  public function __construct($type, $csvFileName, $separator = ';', $firstRowHeaders = TRUE, $dataSource = '')
   {
     $this->_logger = new CRM_Nihrbackbone_NihrLogger('nbrcsvimport_' . date('Ymdhis'));
     $validTypes = ['participation', 'demographics'];
@@ -45,6 +46,7 @@ class CRM_Nihrbackbone_NihrImportCsv
     }
     $this->_separator = $separator;
     $this->_firstRowHeaders = $firstRowHeaders;
+    $this->_dataSource = $dataSource;
   }
 
   /**
@@ -136,12 +138,11 @@ class CRM_Nihrbackbone_NihrImportCsv
   private function getMapping()
   {
     if ($this->_type != 'participation') {
-      // retrieve first part of the file name (expecting pattern like ucl_12sept2019.csv)
-      $nameParts = explode("_", $this->_csvFile);
-      $nameParts2 = explode("/", $nameParts[0]);
+      // todo : $this->_dataSource needs to hold the param!!
       $container = CRM_Extension_System::singleton()->getFullContainer();
       $resourcePath = $container->getPath('nihrbackbone') . '/resources/';
-      $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . end($nameParts2) . $this->_type . "_mapping.json";
+      // todo $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . $this->_dataSource . $this->_type . "_mapping.json";
+      $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . "ucl" . "_mapping.json";
       if (!file_exists($mappingFile)) {
         $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . $this->_type . "_default_mapping.json";
       }
@@ -185,20 +186,22 @@ class CRM_Nihrbackbone_NihrImportCsv
    */
   private function importDemographics()
   {
+    $this->_logger->logMessage('dataSource: ' . $this->_dataSource . '; separator: ' . $this->_separator);
     $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
     while (!feof($this->_csv)) {
-      // $data = fgetcsv($this->_csv, 0, $this->_separator);
-      $data = fgetcsv($this->_csv, 0, ";");
+      $data = fgetcsv($this->_csv, 0, $this->_separator);
 
       if ($data) {
         // map data based on filename
         $data = $this->applyMapping($data);
 
-        $contactId = $this->addContact($data);
-        // todo $this->addEmail($data);
+        list($contactId, $new_volunteer) = $this->addContact($data);
+        $this->addEmail($data, $contactId);
+        $this->addAddress($data, $contactId);
+        $this->addPhone($data, $contactId); // todo home phone only at the moment, add mobile and work
 
-        // *** add recruitment case, if volunteer record newly created, i.e. contactID > 0
-        if ($contactId > 0) {
+        // *** add recruitment case, if volunteer record newly created
+        if ($new_volunteer) {
           try {
             civicrm_api3('NbrVolunteerCase', 'create', [
               'contact_id' => $contactId,
@@ -210,7 +213,6 @@ class CRM_Nihrbackbone_NihrImportCsv
               . ' from API NbrVolunteerCase create : ' . $ex->getMessage(), 'error');
           }
         }
-        // ***
       }
     }
   }
@@ -233,6 +235,22 @@ class CRM_Nihrbackbone_NihrImportCsv
         // todo add to logfile
         $newKey = $key;
       }
+
+      if ($newKey == 'ethnicity') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_ethnicity_id', 'id');
+      }
+      if ($newKey == 'weight_kg') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_weight_kg', 'id');
+      }
+      if ($newKey == 'height_m') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_height_m', 'id');
+      }
+      if ($newKey == 'local_ucl_id') {
+        // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nva_local_ucl_id', 'id');
+        $mappedData[$newKey] = $value;
+        // mapping ID is entered twice, once for insert (custom ID) and once for mapping (local_ucl_id)
+        $newKey = 'custom_218';
+      }
       $mappedData[$newKey] = $value;
     }
     return $mappedData;
@@ -244,53 +262,121 @@ class CRM_Nihrbackbone_NihrImportCsv
 
     $new_volunteer = 1;
 
-    // todo move to volunteer class
-    $contactParams = [
-      'contact_type' => "Individual",
-      'contact_sub_type' => "nihr_volunteer",
-    ];
-    // todo use mapping file to create
-    $fields = [
-      'last_name' => "last_name",
-      'first_name' => "first_name",
-      'gender_id' => "gender_id",
-      'custom_166' => "ethnicity_id",
-      'display_name' => "first_name",
-      'custom_218' => "local_ucl_id",
-      'custom_55' => "height",
-      'custom_54' => "weight",
-    ];
+    // todo replace with param $dataSource
+    $xdataSource = 'ucl';
 
-    // todo replace 'custom_123' by field names
-    //$weightColumn = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('', 'id');
+    // todo move to volunteer class (?)
 
-    foreach ($fields as $fieldKey => $fieldValue) {
-      if (isset($data[$fieldValue])) {
-        $contactParams[$fieldKey] = $data[$fieldValue];
-      }
-    }
+    $data['contact_type'] = 'Individual';
+    $data['contact_sub_type'] = 'nihr_volunteer';
+
     $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
-    $contactId = $volunteer->findVolunteerByIdentity($data["local_ucl_id"], 'alias_type_ucl_br_local');
+
+    $mappingID = NULL;
+    $identifierType = NULL;
+    switch ($xdataSource) {
+      case "ucl": $mappingID = "local_ucl_id";  $identifierType = 'alias_type_ucl_br_local'; break;
+      case "ibd": $mappingID = "ibd_id";        $identifierType = 'alias_type_ibd_id';       break;
+      default: $this->_logger->logMessage('ERROR: no default mapping for ' . $xdataSource, 'error');
+    }
+
+    $contactId = $volunteer->findVolunteerByIdentity($data[$mappingID], $identifierType);
     if ($contactId) {
       // volunteer already exists
-      $contactParams['id'] = $contactId;
+      $data['id'] = $contactId;
       $new_volunteer = 0;
     }
     try {
-      $result = civicrm_api3("Contact", "create", $contactParams);
-      //$this->_logger->logMessage('Volunteer ' . $data["last_name"] . ' ' . $data["first_name"] . ' succesfully loaded');
+      $result = civicrm_api3("Contact", "create", $data);
       $this->_logger->logMessage('Volunteer succesfully loaded/updated');
     }
     catch (CiviCRM_API3_Exception $ex) {
       $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . $ex->getMessage(), 'error');
     }
-    if ($new_volunteer) {
-      return (int) $result['id'];
-    }
-    else {
-      return 0;
+    return array ((int) $result['id'], $new_volunteer);
+  }
+
+
+  private function addEmail($data, $contactID) {
+    // *** add or update volunteer email address
+
+    // only add if not already on database
+    $result = civicrm_api3('Email', 'get', [
+      'sequential' => 1,
+      'email' => $data['email'],
+      'contact_id' => $contactID,
+    ]);
+    if ($result['count'] == 0) {
+      // todo check if not former email address
+      try {
+        $result = civicrm_api3('Email', 'create', [
+          'contact_id' => $contactID,
+          'email' => $data['email'],
+        ]);
+        $this->_logger->logMessage('Volunteer email succesfully loaded/updated');
+      } catch (CiviCRM_API3_Exception $ex) {
+        $this->_logger->logMessage('Error message when adding volunteer email ' . $contactID . $ex->getMessage(), 'error');
+      }
     }
   }
+
+  private function addAddress($data, $contactID) {
+    // *** add or update volunteer home address
+
+    // only add if not already on database
+    $result = civicrm_api3('Address', 'get', [
+      'sequential' => 1,
+      'contact_id' => $contactID,
+      'street_address' => $data['address_1'],
+      'postal_code' => $data['postcode'],
+    ]);
+    if ($result['count'] == 0) {
+      // todo check if not former address
+      try {
+        $result = civicrm_api3('Address', 'create', [
+          'contact_id' => $contactID,
+          'location_type_id' => "Home",
+          'street_address' => $data['address_1'],
+          'supplemental_address_1' => $data['address_2'], // todo only add this line, if there is data
+          'supplemental_address_2' => $data['address_3'], // todo only add this line, if there is data
+          'city' => $data['address_4'],
+          'postal_code' => $data['postcode'],
+        ]);
+
+        //$this->_logger->logMessage('Volunteer ' . $data["last_name"] . ' ' . $data["first_name"] . ' succesfully loaded');
+        $this->_logger->logMessage('Volunteer address succesfully loaded/updated');
+      } catch (CiviCRM_API3_Exception $ex) {
+        $this->_logger->logMessage('Error message when adding volunteer address ' . $contactID . $ex->getMessage(), 'error');
+      }
+    }
+  }
+
+  private function addPhone($data, $contactID) {
+    // *** add or update volunteer home address
+
+    // only add if not already on database
+    $result = civicrm_api3('Phone', 'get', [
+      'sequential' => 1,
+      'contact_id' => $contactID,
+      'phone' => $data['phone_home']
+    ]);
+    if ($result['count'] == 0) {
+      // todo check if not former phone
+      try {
+        $result = civicrm_api3('Phone', 'create', [
+          'contact_id' => $contactID,
+          'phone' => $data['phone_home'],
+          'phone_type_id' => "Phone"
+        ]);
+        // todo for Mobile and work phone (add new phone type, if possible)
+
+        $this->_logger->logMessage('Volunteer phone succesfully loaded/updated');
+      } catch (CiviCRM_API3_Exception $ex) {
+        $this->_logger->logMessage('Error message when adding volunteer phone ' . $contactID . $ex->getMessage(), 'error');
+      }
+    }
+  }
+
 }
 
 

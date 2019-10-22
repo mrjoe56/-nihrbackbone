@@ -13,7 +13,8 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  */
 function civicrm_api3_nihr_import_csv_Loaddemographics($params) {
   // get the csv import and processed folders
-  $loadFolder = Civi::settings()->get('nbr_csv_import_folder');
+  $folder = 'nbr_folder_'.$params['dataSource'];
+  $loadFolder = Civi::settings()->get($folder);
   if ($loadFolder && !empty($loadFolder)) {
     // get all .csv files from folder
     //$csvFiles = glob($loadFolder . DIRECTORY_SEPARATOR . "*demographics.csv");
@@ -24,8 +25,10 @@ function civicrm_api3_nihr_import_csv_Loaddemographics($params) {
     // only use newest - last - file
     $csvFile = array_pop($csvFiles);
 
+    // todo firstRowHeaders always needs to be true as used for the mapping
     // process file
-    $import = new CRM_Nihrbackbone_NihrImportCsv('demographics', $csvFile, ';', TRUE);
+    // todo $import = new CRM_Nihrbackbone_NihrImportCsv('demographics', $csvFile, $params['separator'], TRUE);
+    $import = new CRM_Nihrbackbone_NihrImportCsv('demographics', $csvFile);
     if ($import->validImportData()) {
       $import->processImport();
 
