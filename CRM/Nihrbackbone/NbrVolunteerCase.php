@@ -271,8 +271,10 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         // if replace is false, make sure the current status are also saved
         // apart from when it is eligible because that can not be in combination with others
         if (!$replace) {
-          foreach ($result[$eligibleCustomField] as $currentStatus) {
-            $newStatus[] = $currentStatus;
+          if (isset($result[$eligibleCustomField])) {
+            foreach ($result[$eligibleCustomField] as $currentStatus) {
+              $newStatus[] = $currentStatus;
+            }
           }
         }
         // now update the eligibility
