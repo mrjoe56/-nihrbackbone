@@ -133,7 +133,7 @@ class CRM_Nihrbackbone_BackboneConfig {
    * Getter for criteria not met eligible status id
    * @return null
    */
-  public function getCriteriaNotMetStatusId() {
+  public function getCriteriaNotMetEligibleStatusId() {
     return $this->_criteriaNotMetEligibleStatusId;
   }
 

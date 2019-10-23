@@ -47,8 +47,9 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
    * @return TRUE on success
    * @throws Exception
    */
-  public function upgrade_1020() {
-    $this->ctx->log->info(E::ts('Applying update 1010 - updating nihr_study table'));
+  public function upgrade_1020()
+  {
+    $this->ctx->log->info(E::ts('Applying update 1020 - updating nihr_study table'));
     // rename existing column title to short_name if required
     if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'title')) {
       CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study CHANGE COLUMN title short_name VARCHAR(64)");
@@ -71,6 +72,27 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     // make sure status_id is varchar
     if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'status_id')) {
       CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study MODIFY status_id VARCHAR(64)");
+    }
+    return TRUE;
+  }
+
+  /**
+   * Upgrade 1030 (add log table - see https://issues.civicoop.org/issues/4950)
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1030() {
+    $this->ctx->log->info(E::ts('Applying update 1030 - add import log table'));
+    if (!CRM_Core_DAO::checkTableExists('civicrm_nbr_import_log')) {
+      $query = "CREATE TABLE `civicrm_nbr_import_log` (
+     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique NbrImportLog ID',
+     `import_id` varchar(32)    COMMENT 'Unique ID of the import job',
+     `filename` varchar(128)    COMMENT 'Name of the import file that is being logged',
+     `message_type` varchar(128)    COMMENT 'Type of message (info, warning, error)',
+     `message` text    COMMENT 'Message',
+     `logged_date` date    COMMENT 'The date the message was logged', PRIMARY KEY (`id`));";
+      CRM_Core_DAO::executeQuery($query);
     }
     return TRUE;
   }

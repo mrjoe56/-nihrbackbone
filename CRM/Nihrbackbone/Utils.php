@@ -93,4 +93,32 @@ class CRM_Nihrbackbone_Utils {
     return $parts;
   }
 
+  /**
+   * Method to log a message in the table civicrm_nbr_import_log
+   *
+   * @param $importId
+   * @param $message
+   * @param null $fileName
+   * @param string $messageType
+   * @throws Exception
+   */
+  public static function logMessage($importId, $message, $fileName = NULL, $messageType = "info") {
+    $logParams = [
+      'import_id' => $importId,
+      'message' => trim(strip_tags($message)),
+      'message_type' => $messageType,
+      'logged_date' => date('Ymd'),
+    ];
+    if ($fileName) {
+      $logParams['filename'] = $fileName;
+    }
+    try {
+      civicrm_api3('NbrImportLog', 'create' , $logParams);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      throw new Exception(E::ts('Could not log message of type ') . $messageType . E::ts(' to logging table with API NbrImportLog create in  ')
+        . __METHOD__ . E::ts(', error message from API: ') . $ex->getMessage());
+    }
+  }
+
 }

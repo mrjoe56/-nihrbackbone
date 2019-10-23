@@ -137,21 +137,26 @@ class CRM_Nihrbackbone_NihrVolunteer {
     // get the settings for the max number, the max period and the case status to be counted
     $maxNumber = Civi::settings()->get('nbr_max_participations');
     $noMonths = Civi::settings()->get('nbr_no_months_participation');
-    $countCaseStatuses = Civi::settings()->get('nbr_part_case_status');
+    $countCaseStatuses = (int) Civi::settings()->get('nbr_part_case_status');
+    // make case statuses array if not array
+    if (!is_array($countCaseStatuses)) {
+      $countCaseStatuses = [$countCaseStatuses];
+    }
     $checkDate = new DateTime();
     $modifier = '-' . $noMonths . ' months';
     $checkDate->modify($modifier);
     // retrieve the number of participation cases in the specified period with the status that
     // are to be counted
+    $caseParams = [
+      'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(),
+      'start_date' => ['>' => $checkDate->format('d-m-Y')],
+      'status_id' => ['IN' => $countCaseStatuses],
+      'contact_id' => $contactId,
+      'is_deleted' => 0,
+    ];
     try {
-      $result = (int)civicrm_api3('Case', 'getcount', [
-        'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(),
-        'start_date' => ['>' => $checkDate->format('d-m-Y')],
-        'status_id' => ['IN' => $countCaseStatuses],
-        'contact_id' => $contactId,
-        'is_deleted' => 0,
-      ]);
-      if ($result >= $maxNumber) {
+      $result = (int)civicrm_api3('Case', 'getcount', $caseParams);
+      if ($result > $maxNumber) {
         return TRUE;
       }
     }
@@ -290,5 +295,50 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return FALSE;
   }
 
+  /**
+   * Method to check if the volunteer meets all the selection criteria for a project
+   *
+   * @param $volunteerId
+   * @param $projectId
+   * @return bool
+   */
+  public static function meetsProjectSelectionCriteria($volunteerId, $projectId) {
+    if (empty($projectId) || empty($volunteerId)) {
+      Civi::log()->error(E::ts('Attempt to check if volunteer meets selection criteria for project without volunteer ID or project ID in ') . __METHOD__);
+      return TRUE;
+    }
+    $criteria = CRM_Nihrbackbone_NihrProject::getSelectionCriteria($projectId);
+    // if the project requires blood, the volunteer should not have the exclude from blood studies flag
+    if ($criteria['nsc_blood_required'] && !CRM_Nihrbackbone_NihrVolunteer::availableForBlood($volunteerId)) {
+      return FALSE;
+    }
+    // if the project requires an age range, check if the volunteer is in the age range
+    if ($criteria['nsc_age_from'] || $criteria['nsc_age_to']) {
+      if (!CRM_Nihrbackbone_NihrVolunteer::inAgeRange($volunteerId, $criteria['nsc_age_from'], $criteria['nsc_age_to'])) {
+        return FALSE;
+      }
+    }
+    // if the project requires a BMI range, check if the volunteer is in the BMI range
+    if ($criteria['nsc_bmi_from'] || $criteria['nsc_bmi_to']) {
+      if (!CRM_Nihrbackbone_NihrVolunteer::inBmiRange($volunteerId, $criteria['nsc_bmi_from'], $criteria['nsc_bmi_to'])) {
+        return FALSE;
+      }
+    }
+    // if ethnicities are selection criteria, volunteer should have one of the selected
+    if ($criteria['nsc_ethnicity_id']) {
+      if (!CRM_Nihrbackbone_NihrVolunteer::hasEthnicity($volunteerId, $criteria['nsc_ethnicity_id'])) {
+        return FALSE;
+      }
+    }
+    // if gender is used volunteer should have the correct gender
+    if ($criteria['nsc_gender_id'] && !CRM_Nihrbackbone_NihrVolunteer::hasGender($volunteerId, $criteria['nsc_gender_id'])) {
+      return FALSE;
+    }
+    // if project requires travel, volunteer shoud not have the unable to travel flag
+    if ($criteria['nsc_travel_required'] && !CRM_Nihrbackbone_NihrVolunteer::ableToTravel($volunteerId)) {
+      return FALSE;
+    }
+    return TRUE;
+  }
 
 }

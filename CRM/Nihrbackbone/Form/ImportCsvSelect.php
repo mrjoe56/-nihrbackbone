@@ -48,9 +48,10 @@ class CRM_Nihrbackbone_Form_ImportCsvSelect extends CRM_Core_Form {
   /**
    * Overridden parent method to process the submitted form
    *
+   * @throws
    */
   public function postProcess() {
-    $import = new CRM_Nihrbackbone_NihrImportCsv('participation', $this->_submitFiles['csv_file']['tmp_name'], $this->getSeparator($this->_submitValues['separator_id']), $this->_submitValues['first_row_headers']);
+    $import = new CRM_Nihrbackbone_NihrImportCsv('participation', $this->_submitFiles['csv_file']['tmp_name'], $this->getSeparator($this->_submitValues['separator_id']), $this->_submitValues['first_row_headers'], $this->_submitFiles['csv_file']['name'],"ui");
     if ($import->validImportData($this->_submitValues['project_id'])) {
       $import->processImport();
     }

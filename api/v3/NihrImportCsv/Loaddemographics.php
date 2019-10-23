@@ -12,6 +12,7 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  * @throws API_Exception
  */
 function civicrm_api3_nihr_import_csv_Loaddemographics($params) {
+  $returnValues = [];
   // get the csv import and processed folders
   $folder = 'nbr_folder_'.$params['dataSource'];
   $loadFolder = Civi::settings()->get($folder);
@@ -30,9 +31,9 @@ function civicrm_api3_nihr_import_csv_Loaddemographics($params) {
     // todo $import = new CRM_Nihrbackbone_NihrImportCsv('demographics', $csvFile, $params['separator'], TRUE);
     $import = new CRM_Nihrbackbone_NihrImportCsv('demographics', $csvFile);
     if ($import->validImportData()) {
-      $import->processImport();
+      $returnValues = $import->processImport();
 
-      return civicrm_api3_create_success([], $params, 'NihrImportCsv', 'loaddemographics');
+      return civicrm_api3_create_success($returnValues, $params, 'NihrImportCsv', 'loaddemographics');
     }
   }
   else {
