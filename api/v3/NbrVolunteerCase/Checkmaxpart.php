@@ -9,7 +9,7 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  * @return void
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC/API+Architecture+Standards
  */
-function _civicrm_api3_nihr_project_volunteer_Checkmaxpart_spec(&$spec) {
+function _civicrm_api3_nbr_volunteer_case_Checkmaxpart_spec(&$spec) {
   $spec['project_id'] = array(
     'name' => 'project_id',
     'title' => 'project_id',
@@ -28,7 +28,7 @@ function _civicrm_api3_nihr_project_volunteer_Checkmaxpart_spec(&$spec) {
  * @see civicrm_api3_create_error
  * @throws API_Exception
  */
-function civicrm_api3_nihr_project_volunteer_Checkmaxpart($params) {
+function civicrm_api3_nbr_volunteer_case_Checkmaxpart($params) {
   // todo update with case statuses once decision has been made
   // get all volunteers that have an active volunteer case (for a project if parameter was not empty)
   if (isset($params['project_id']) && !empty($params['project_id'])) {
