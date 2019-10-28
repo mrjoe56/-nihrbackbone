@@ -273,7 +273,9 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         if (!$replace) {
           if (isset($result[$eligibleCustomField])) {
             foreach ($result[$eligibleCustomField] as $currentStatus) {
-              $newStatus[] = $currentStatus;
+              if (!in_array($currentStatus, $newStatus)) {
+                $newStatus[] = $currentStatus;
+              }
             }
           }
         }
@@ -324,7 +326,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     ];
     $current = CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($current->fetch()) {
-      self::removeEligibilityStatus($current->entity_id, $current->$eligibleColumnName, $maxReachedStatusId);
+      self::removeEligibilityStatus((int) $current->entity_id, $current->$eligibleColumnName, $maxReachedStatusId);
     }
   }
 
@@ -341,6 +343,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
       $newValues = explode(CRM_Core_DAO::VALUE_SEPARATOR, $currentEligibleStatus);
       foreach ($newValues as $currentValueId => $currentValue) {
+        $currentValue = (string) $currentValue;
         if ($currentValue == $removeStatusId || empty($currentValue)) {
           unset($newValues[$currentValueId]);
         }
@@ -348,7 +351,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       if (!empty($newValues)) {
         $query = "UPDATE " . $tableName . " SET " . $eligibleColumnName . " = %1 WHERE entity_id = %2";
         $queryParams = [
-          1 => [implode(CRM_Core_DAO::VALUE_SEPARATOR, $newValues), 'String'],
+          1 => [CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $newValues) . CRM_Core_DAO::VALUE_SEPARATOR, 'String'],
           2 => [$caseId, 'Integer'],
         ];
       }
