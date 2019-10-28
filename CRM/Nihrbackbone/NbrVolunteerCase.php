@@ -34,7 +34,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   public function getVolunteers() {
     $volunteers = [];
     // return empty array if no projectId
-    if (!$this->_apiParams['project_id']) {
+    if (!isset($this->_apiParams['project_id']) || empty($this->_apiParams['project_id'])) {
       return $volunteers;
     }
     // find all cases that belong to the project, each case client is a volunteer
