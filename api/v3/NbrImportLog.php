@@ -79,3 +79,18 @@ function civicrm_api3_nbr_import_log_delete($params) {
 function civicrm_api3_nbr_import_log_get($params) {
   return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
+
+/**
+ * NbrImportLog.clear API
+ *
+ * @param array $params
+ * @return array API result descriptor
+ * @throws
+ */
+function civicrm_api3_nbr_import_log_clear($params) {
+  // compute date 1 month ago
+  $oneMonthAgo = new \DateTime('1 month ago');
+  $query = "DELETE FROM civicrm_nbr_import_log WHERE logged_date < %1";
+  CRM_Core_DAO::executeQuery($query, [1 => [$oneMonthAgo->format('Y-m-d'), 'String']]);
+  return civicrm_api3_create_success([], $params, 'NbrImportLog', 'clear');
+}
