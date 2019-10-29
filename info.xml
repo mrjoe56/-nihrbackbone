@@ -2,7 +2,7 @@
 <extension key="nihrbackbone" type="module">
   <file>nihrbackbone</file>
   <name>NIHR BioResource CiviCRM Backbone</name>
-  <description>CiviCRM extension for NIHR BioResource Backbone</description>
+  <description>CiviCRM extension for NIHR BioResource Backbone eh</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Erik Hommel</author>
