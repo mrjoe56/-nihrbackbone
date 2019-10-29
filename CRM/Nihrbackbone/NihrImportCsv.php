@@ -313,7 +313,7 @@ class CRM_Nihrbackbone_NihrImportCsv {
         $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_height_m', 'id');
       }
       if ($newKey == 'local_ucl_id') {
-        // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nva_local_ucl_id', 'id');
+        // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nva_ucl_br_local', 'id');
         $mappedData[$newKey] = $value;
         // mapping ID is entered twice, once for insert (custom ID) and once for mapping (local_ucl_id)
         $newKey = 'custom_218';
