@@ -40,7 +40,7 @@ function civicrm_api3_nihr_import_csv_Loadparticipation($params) {
     sort($csvFiles);
     foreach ($csvFiles as $csvFile) {
       // process file
-      $import = new CRM_Nihrbackbone_NihrImportCsv('participation', $csvFile);
+      $import = new CRM_Nihrbackbone_NihrImportCsv('participation', $csvFile, $params);
       if ($import->validImportData($params['project_id'])) {
         $returnValues = $import->processImport();
         // move file once succesfully imported
