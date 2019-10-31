@@ -47,7 +47,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         $volunteer['age'] = CRM_Utils_Date::calculateAge($volunteer['birth_date'])['years'];
       }
       // get eligible status (multi value in dao with value separators)
-      $volunteer['eligible'] = implode(', ', $this->getEligibleDescriptions($volunteer['eligible_id']));
+      $volunteer['eligible'] = implode(', ', CRM_Nihrbackbone_NbrVolunteerCase::getEligibleDescriptions($volunteer['eligible_id']));
       $volunteers[] = $volunteer;
     }
     return $volunteers;
@@ -59,7 +59,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @param $eligibleId
    * @return array
    */
-  private function getEligibleDescriptions($eligibleId) {
+  public static function getEligibleDescriptions($eligibleId) {
     $descriptions = [];
     $parts = explode(CRM_Core_DAO::VALUE_SEPARATOR, $eligibleId);
     foreach ($parts as $part) {

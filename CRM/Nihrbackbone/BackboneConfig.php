@@ -20,6 +20,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_eligibleStatusOptionGroupId = NULL;
   private $_genderOptionGroupId = NULL;
   private $_projectParticipationStatusOptionGroupId = NULL;
+  private $_studyParticipationStatusOptionGroupId = NULL;
   private $_ethnicityOptionGroupId = NULL;
   private $_consentStatusOptionGroupId = NULL;
   private $_consentVersionOptionGroupId = NULL;
@@ -573,6 +574,15 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for volunteer study status option group id
+   *
+   * @return null
+   */
+  public function getStudyParticipationStatusOptionGroupId() {
+    return $this->_studyParticipationStatusOptionGroupId;
+  }
+
+  /**
    * Getter for eligible status option group id
    *
    * @return null
@@ -615,6 +625,7 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_ethics_approved',
       'nihr_eligible_status',
       'nbr_project_participation_status',
+      'nbr_study_participation_status',
       'nihr_ethnicity',
       'nbr_consent_status',
       'gender',
