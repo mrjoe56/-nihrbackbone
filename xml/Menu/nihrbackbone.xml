@@ -13,12 +13,6 @@
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/nihrbackbone/page/nbrvolunteercase</path>
-    <page_callback>CRM_Nihrbackbone_Page_NbrVolunteerCase</page_callback>
-    <title>NbrVolunteerCase</title>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-  <item>
     <path>civicrm/nihrbackbone/form/importcsvselect</path>
     <page_callback>CRM_Nihrbackbone_Form_ImportCsvSelect</page_callback>
     <title>ImportCsvSelect</title>

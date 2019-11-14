@@ -95,13 +95,6 @@ function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask
     if ($project->isNihrProject($objectId)) {
       // only if the campaign is a project
       $links[] = [
-        'name' => ts('Volunteer(s)'),
-        'url' => 'civicrm/nihrbackbone/page/nbrvolunteercase',
-        'title' => 'Volunteers',
-        'class' => 'no-popup',
-        'qs' => 'reset=1&pid=%%id%%',
-        ];
-      $links[] = [
         'name' => ts('Import'),
         'url' => 'civicrm/nihrbackbone/form/importcsvselect',
         'title' => 'Import',
