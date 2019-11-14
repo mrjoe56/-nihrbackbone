@@ -157,4 +157,25 @@ class CRM_Nihrbackbone_BAO_NihrStudy extends CRM_Nihrbackbone_DAO_NihrStudy {
     return TRUE;
   }
 
+  /**
+   * Method to get all the project ids in the study
+   *
+   * @param $studyId
+   * @return array
+   */
+  public static function getProjectIds($studyId) {
+    $projectIds = [];
+    if (!empty($studyId)) {
+      $projectTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectDataCustomGroup('table_name');
+      $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'column_name');
+      $query = "SELECT entity_id FROM " . $projectTable . " WHERE " . $studyIdColumn . " = %1";
+      $queryParams = [1 => [$studyId, 'String']];
+      $dao = CRM_Core_DAO::executeQuery($query, $queryParams);
+      while ($dao->fetch()) {
+        $projectIds[] = $dao->entity_id;
+      }
+    }
+    return $projectIds;
+  }
+
 }

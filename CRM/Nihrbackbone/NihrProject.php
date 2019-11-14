@@ -92,7 +92,7 @@ class CRM_Nihrbackbone_NihrProject {
    * @param $projectId
    * @return bool|string|null
    */
-  public function getProjectStudyId($projectId) {
+  public static function getProjectStudyId($projectId) {
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectDataCustomGroup('table_name');
     $studyColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'column_name');
     $query = "SELECT " . $studyColumn . " FROM " . $tableName . " WHERE entity_id = %1";
