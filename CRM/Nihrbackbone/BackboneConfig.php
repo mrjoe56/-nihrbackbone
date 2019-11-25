@@ -43,6 +43,11 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_participationCaseTypeId = NULL;
   private $_recruitmentCaseTypeId = NULL;
 
+  // propterties for activity type ids
+  private $_changeStudyStatusActivityTypeId = NULL;
+  private $_changeProjectStatusActivityTypeId = NULL;
+  private $_inviteProjectActivityTypeId = NULL;
+
   // properties for case status ids
   private $_closedCaseStatusId = NULL;
 
@@ -74,6 +79,7 @@ class CRM_Nihrbackbone_BackboneConfig {
     $this->setEligibleStatus();
     $this->setCampaignTypes();
     $this->setCaseTypes();
+    $this->setActivityTypes();
     $this->setCaseStatus();
     $this->setCustomData();
     $this->setPhoneTypes();
@@ -617,6 +623,30 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for change project status activity type id
+   * @return null
+   */
+  public function getChangeProjectStatusActivityTypeId() {
+    return $this->_changeProjectStatusActivityTypeId;
+  }
+
+  /**
+   * Getter for change study status activity type id
+   * @return null
+   */
+  public function getChangedStudyStatusActivityTypeId() {
+    return $this->_changeStudyStatusActivityTypeId;
+  }
+
+  /**
+   * Getter for invite to project activity type id
+   * @return null
+   */
+  public function getInviteProjectActivityTypeId() {
+    return $this->_inviteProjectActivityTypeId;
+  }
+
+  /**
    * Method to set the relevant option groups
    */
   private function setOptionGroups() {
@@ -728,6 +758,36 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->error(E::ts('Could not find case_types in ') . __METHOD__);
+    }
+  }
+
+  /**
+   * Method to set the relevant activity type ids
+   */
+  private function setActivityTypes() {
+    $validTypes = ['nbr_change_project_status', 'nbr_change_study_status', 'nbr_project_invite'];
+    try {
+      $apiTypes = civicrm_api3('OptionValue', 'get', [
+        'options' => ['limit' => 0],
+        'name' => ['IN' => $validTypes],
+        'return' => ['value', 'name'],
+        'sequential' => 1,
+      ]);
+      foreach ($apiTypes['values'] as $apiType) {
+        switch ($apiType['name']) {
+          case 'nbr_change_project_status':
+            $this->_changeProjectStatusActivityTypeId = $apiType['value'];
+            break;
+          case 'nbr_change_study_status':
+            $this->_changeStudyStatusActivityTypeId = $apiType['value'];
+            break;
+          case 'nbr_project_invite':
+            $this->_inviteProjectActivityTypeId = $apiType['value'];
+            break;
+        }
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
     }
   }
 
