@@ -105,7 +105,7 @@ class CRM_Nihrbackbone_Page_NihrStudy extends CRM_Core_Page {
     $rowActions = [];
     $updateUrl = CRM_Utils_System::url('civicrm/nihrbackbone/form/nihrstudy', 'reset=1&action=update&id='.
       $study['id']);
-    $projectUrl = CRM_Utils_System::url('http://localhost/nihrdev/index.php?q=civicrm/campaign', 'reset=1', TRUE);
+    $projectUrl = CRM_Utils_System::url('civicrm/campaign', 'reset=1', TRUE);
     $rowActions[] = '<a class="action-item" title="Update" href="' . $updateUrl .'">' . E::ts('Edit') . '</a>';
     $rowActions[] = '<a class="action-item" title="Projects" href="' . $projectUrl . '">' . E::ts('Project(s)') . '</a>';
     return $rowActions;

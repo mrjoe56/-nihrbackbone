@@ -101,9 +101,32 @@ function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask
         'class' => 'no-popup',
         'qs' => 'reset=1&pid=%%id%%',
         ];
+      try {
+        $csId = (int) civicrm_api3('OptionValue', 'getvalue', [
+          'return' => "value",
+          'option_group_id' => "custom_search",
+          'name' => "CRM_Nbrprojectvolunteerlist_Form_Search_VolunteerList",
+        ]);
+      } catch (CiviCRM_API3_Exception $ex) {
+        $csId = NULL;
+      }
+      if ($csId) {
+        $links[] = [
+          'name' => ts('Volunteers'),
+          'url' => 'civicrm/contact/search/custom',
+          'title' => 'Volunteers',
+          'class' => 'no-popup',
+          'qs' => 'reset=1&csid=' . $csId,
+      ];
+      }
     }
   }
 }
+if ($csId) {
+  $volunteerUrl = CRM_Utils_System::url('civicrm/contact/search/custom', '&reset=1&csid=' . $csId, TRUE);
+  $rowActions[] = '<a class="action-item" title="Volunteers" href="' . $volunteerUrl .'">' . E::ts('Volunteers') . '</a>';
+}
+
 
 /**
  * Implements hook_civicrm_navigationMenu().
