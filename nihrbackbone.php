@@ -122,11 +122,6 @@ function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask
     }
   }
 }
-if ($csId) {
-  $volunteerUrl = CRM_Utils_System::url('civicrm/contact/search/custom', '&reset=1&csid=' . $csId, TRUE);
-  $rowActions[] = '<a class="action-item" title="Volunteers" href="' . $volunteerUrl .'">' . E::ts('Volunteers') . '</a>';
-}
-
 
 /**
  * Implements hook_civicrm_navigationMenu().
