@@ -8,7 +8,7 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 
   if ($objectName == 'Address' && $objectRef->is_primary) {
     if ($op == 'edit'||$op == 'create') {
-      CRM_Nihrbackbone_NihrAddress::postProcess($op,$objectName, $objectID,$objectRef);
+      //CRM_Nihrbackbone_NihrAddress::postProcess($op,$objectName, $objectID,$objectRef);
     }
   }
 }
@@ -19,8 +19,6 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
  *
  */
 function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
-
-  Civi::log() ->debug(' JB custom hook');
   /** if this custom post is to add or edit General observations, and parameters are present, update the bmi from ht and wt */
   if ($op == 'create' || $op == 'edit') {
 

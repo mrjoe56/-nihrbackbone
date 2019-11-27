@@ -38,6 +38,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_volunteerSelectionEligibilityCustomGroup = [];
   private $_selectionCriteriaCustomGroup = [];
   private $_volunteerAliasCustomGroup = [];
+  private $_volunteerIdsCustomGroup = [];
 
   // properties for case types ids
   private $_participationCaseTypeId = NULL;
@@ -245,6 +246,21 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for volunteer ids custom group
+   *
+   * @param null $key
+   * @return array|mixed
+   */
+  public function getVolunteerIdsCustomGroup($key = NULL) {
+    if ($key && isset($this->_volunteerIdsCustomGroup[$key])) {
+      return $this->_volunteerIdsCustomGroup[$key];
+    }
+    else {
+      return $this->_volunteerIdsCustomGroup;
+    }
+  }
+
+  /**
    * Getter for selection critiera custom group
    *
    * @param null $key
@@ -403,6 +419,27 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function getVolunteerAliasCustomField($customFieldName, $key = NULL) {
     foreach ($this->_volunteerAliasCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Getter for volunteer ids custom field
+   *
+   * @param $customFieldName
+   * @param $key
+   * @return mixed
+   */
+  public function getVolunteerIdsCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_volunteerIdsCustomGroup['custom_fields'] as $customField) {
       if ($customField['name'] == $customFieldName) {
         if ($key && isset($customField[$key])) {
           return $customField[$key];
@@ -833,6 +870,7 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_volunteer_selection_eligibility',
       'nbr_selection_criteria',
       'nihr_volunteer_alias',
+      'nihr_volunteer_ids',
       ];
     try {
       $customGroups = civicrm_api3('CustomGroup', 'get', [
