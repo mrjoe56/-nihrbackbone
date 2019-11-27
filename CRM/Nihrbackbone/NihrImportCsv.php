@@ -213,7 +213,7 @@ class CRM_Nihrbackbone_NihrImportCsv {
       $data = fgetcsv($this->_csv, 0, $this->_separator);
       if ($data) {
         $this->_read++;
-        $contactId = $volunteer->findVolunteerByIdentity($data[0], 'alias_type_participant_id');
+        $contactId = $volunteer->findVolunteerByIdentity($data[0], 'cih_type_participant_id');
         if (!$contactId) {
           $this->_failed++;
           $message = E::ts('Could not find a volunteer with participantID ') . $data[0] . E::ts(', not imported to project.');
