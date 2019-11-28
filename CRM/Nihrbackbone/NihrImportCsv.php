@@ -289,6 +289,10 @@ class CRM_Nihrbackbone_NihrImportCsv
         $this->addPhone($contactId, $data, 'phone_work', 'Work', 'Phone');
         $this->addPhone($contactId, $data, 'phone_mobile', 'Main', 'Mobile');
 
+        // aliases: only the mapping one can be added via the API (as aliases are stored in a table), so
+        // all additional ones need to be added independently
+        $this->addAlias($contactId, 'alias_type_nhs_number', $data['nhs_number'], 0);
+
         // *** add recruitment case, if volunteer record newly created
         if ($new_volunteer) {
           try {
@@ -327,6 +331,9 @@ class CRM_Nihrbackbone_NihrImportCsv
         $newKey = $key;
       }
 
+      // NOTE: keep names for aliases, need to be added to the database separately
+
+
       if ($newKey == 'ethnicity') {
         $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_ethnicity_id', 'id');
       }
@@ -336,21 +343,27 @@ class CRM_Nihrbackbone_NihrImportCsv
       if ($newKey == 'height_m') {
         $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_height_m', 'id');
       }
-      if ($newKey == 'nhs_number') {
-        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_height_m', 'id');
-      }
+
       if ($newKey == 'local_ucl_id') {
         // todo use new fct from Erik $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nva_ucl_br_local', 'id');
         $mappedData[$newKey] = $value;
         // mapping ID is entered twice, once for insert (custom ID) and once for mapping (local_ucl_id)
         $newKey = 'custom_253';
       }
+      // todo don't use hardcoded
       if ($newKey == 'pack_id') {
-        // todo use new fct from Erik $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nva_ucl_br_local', 'id');
+        $mappedData['nva_alias_type'] = 'alias_type_packid';
+        $mappedData['nva_external_id'] = $value;
+
+      /*  $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('alias_type_ibd_id', 'id');
+        $mappedData[$newKey] = $value;
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_external_id', 'id');
         $mappedData[$newKey] = $value;
         // mapping ID is entered twice, once for insert (custom ID) and once for mapping (local_ucl_id)
-        $newKey = 'custom_246';
+        $newKey = 'custom_'.CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_alias_type', 'id');
+        ; */
       }
+
       $mappedData[$newKey] = $value;
     }
     return $mappedData;
@@ -398,10 +411,10 @@ class CRM_Nihrbackbone_NihrImportCsv
     try {
       $result = civicrm_api3("Contact", "create", $data);
       $this->_logger->logMessage('Volunteer succesfully loaded/updated');
+      return array((int)$result['id'], $new_volunteer);
     } catch (CiviCRM_API3_Exception $ex) {
       $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . " " . $ex->getMessage() . 'error');
     }
-    return array((int)$result['id'], $new_volunteer);
   }
 
 
@@ -556,6 +569,50 @@ class CRM_Nihrbackbone_NihrImportCsv
             $this->_logger->logMessage('Volunteer phone succesfully loaded/updated');
           } catch (CiviCRM_API3_Exception $ex) {
             $this->_logger->logMessage('Error message when adding volunteer phone ' . $contactID . $ex->getMessage(), 'error');
+          }
+        }
+      }
+    }
+  }
+
+  private function addAlias($contactID, $aliasType, $externalID, $update)
+  {
+    // *** add alias
+
+    if (isset($aliasType))
+      // todo and check if aliasType exists
+    {
+      if (isset($externalID)) {
+        $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomGroup('table_name');
+
+        // check if alias already exists
+        $query = "SELECT nva_external_id
+                    from $table
+                    where entity_id = %1
+                    and nva_alias_type = %2";
+        $queryParams = [
+          1 => [$contactID, "Integer"],
+          2 => [$aliasType, "String"],
+        ];
+        $dbExternalID = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+
+        if (!isset($dbExternalID)) {
+          // insert
+          $query = "insert into $table (entity_id,nva_alias_type, nva_external_id)
+                            values (%1,%2,%3)";
+          $queryParams = [
+            1 => [$contactID, "Integer"],
+            2 => [$aliasType, "String"],
+            3 => [$externalID, "String"],
+          ];
+          CRM_Core_DAO::executeQuery($query, $queryParams);
+
+        }
+        else {
+          // only update if update flag is set
+          if($dbExternalID <> $externalID and $update == 1)
+          {
+            // todo update alias
           }
         }
       }

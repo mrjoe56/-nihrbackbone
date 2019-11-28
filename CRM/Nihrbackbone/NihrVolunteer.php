@@ -75,10 +75,16 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     // then check if identifierType is valid
     try {
-      $count = civicrm_api3('OptionValue', 'getcount', [
+      /* $count = civicrm_api3('OptionValue', 'getcount', [
         'option_group_id' => "contact_id_history_type",
         'name' => $identifierType,
+      ]); */
+
+      $count = civicrm_api3('OptionValue', 'getcount', [
+        'option_group_id' => "alias_type",
+        'name' => $identifierType,
       ]);
+
       if ($count == 0) {
         Civi::log()->error(E::ts('Identity type ') . $identifierType . E::ts(' is not a valid contact identity type.'));
         return FALSE;
@@ -91,9 +97,18 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     // if all is well, try to find contact
     try {
-      $result = civicrm_api3('Contact', 'findbyidentity', [
+      /* $result = civicrm_api3('Contact', 'findbyidentity', [
         'identifier' => $identifier,
         'identifier_type' => $identifierType,
+      ]); */
+
+      $xID = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_external_id', 'id');
+      $xAliasType = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_alias_type', 'id');
+
+      $result = civicrm_api3('Contact', 'get', [
+        'sequential' => 1,
+        $xID => $identifier,
+        $xAliasType => $identifierType,
       ]);
       if (isset($result['id'])) {
         return $result['id'];
