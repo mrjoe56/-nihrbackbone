@@ -13,6 +13,9 @@ class CRM_Nihrbackbone_NihrVolunteer {
 
   private $_volunteerContactSubType = [];
 
+  /**
+   * CRM_Nihrbackbone_NihrVolunteer constructor.
+   */
   public function __construct() {
     try {
       $this->_volunteerContactSubType = civicrm_api3('ContactType', 'getsingle', ['name' => 'nihr_volunteer']);
@@ -339,6 +342,59 @@ class CRM_Nihrbackbone_NihrVolunteer {
       return FALSE;
     }
     return TRUE;
+  }
+
+  /**
+   * Method to check if the volunteer has been invited on any other project (the project participation status on any case than the param one)
+   *
+   * @param $contactId
+   * @param $caseId
+   * @return bool
+   */
+  public static function isInvitedOnOtherProjects($contactId, $caseId) {
+    $participationTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+    $projectIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
+    $statusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_participation_status', 'column_name');
+    $query = "SELECT COUNT(*)
+        FROM ". $participationTable . " AS cvnpd
+        JOIN civicrm_case AS cc ON cvnpd.entity_id = cc.id
+        JOIN civicrm_case_contact AS cont ON cc.id = cont.case_id
+        LEFT JOIN civicrm_campaign AS proj ON cvnpd. " . $projectIdColumn . " = proj.id AND proj.status_id = %1
+        WHERE cvnpd.entity_id != %2 AND cc.is_deleted = %3 AND cont.contact_id = %4";
+    $queryParams = [
+      1 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingProjectStatus(), 'Integer'],
+      2 => [(int) $caseId, 'Integer'],
+      3 => [0, 'Integer'],
+      4 => [(int) $contactId, 'Integer']
+    ];
+    $i = 4;
+    $invited = [];
+    foreach (self::getInvitedProjectStatus() as $invitedProjectStatus) {
+      $i++;
+      $invited[] = "%" . $i;
+      $queryParams[$i] = [$invitedProjectStatus, 'String'];
+    }
+    if (!empty($invited)) {
+      $query .= " AND cvnpd." . $statusColumn . " IN (" . implode(", ", $invited) . ")";
+    }
+    $count = (int) CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($count > 0) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to get the project participation statuses to be considered as invited
+   *
+   * @return array
+   */
+  private static function getInvitedProjectStatus() {
+    return [
+      'project_participation_status_accepted',
+      'project_participation_status_invitation_pending',
+      'project_participation_status_invited',
+    ];
   }
 
 }
