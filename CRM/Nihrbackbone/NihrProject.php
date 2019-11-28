@@ -87,6 +87,28 @@ class CRM_Nihrbackbone_NihrProject {
   }
 
   /**
+   * Method to determine if project is active
+   *
+   * @param int $projectId
+   * @return  bool
+   */
+  public static function isProjectActive($projectId) {
+    try {
+      $count = (int) civicrm_api3('Campaign', 'getcount', [
+        'id' => $projectId,
+        'campaign_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCampaignTypeId(),
+        'status_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingProjectStatus(),
+      ]);
+      if ($count == 1) {
+        return TRUE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return FALSE;
+  }
+
+  /**
    * Method to get the study id of a project
    *
    * @param $projectId

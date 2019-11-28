@@ -29,6 +29,13 @@ class CRM_Nihrbackbone_BackboneConfig {
   // property for project campaign type
   private $_projectCampaignTypeId = NULL;
 
+  // properties for project (campagin) status
+  private $_recruitingProjectStatus = NULL;
+  private $_completedProjectStatus = NULL;
+  private $_declinedProjectStatus = NULL;
+  private $_closedProjectStatus = NULL;
+  private $_pendingProjectStatus = NULL;
+
   // properties for custom groups
   private $_projectDataCustomGroup = [];
   private $_participationDataCustomGroup = [];
@@ -79,6 +86,7 @@ class CRM_Nihrbackbone_BackboneConfig {
     // set eligible status should happen once option groups are done!
     $this->setEligibleStatus();
     $this->setCampaignTypes();
+    $this->setCampaignStatus();
     $this->setCaseTypes();
     $this->setActivityTypes();
     $this->setCaseStatus();
@@ -567,6 +575,50 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for closed project status
+   *
+   * @return null
+   */
+  public function getClosedProjectStatus() {
+    return $this->_closedProjectStatus;
+  }
+
+  /**
+   * Getter for completed project status
+   * @return null
+   */
+  public function getCompletedProjectStatus() {
+    return $this->_completedProjectStatus;
+  }
+
+  /**
+   * Getter for declined project status
+   *
+   * @return null
+   */
+  public function getDeclinedProjectStatus() {
+    return $this->_declinedProjectStatus;
+  }
+
+  /**
+   * Getter for pending project status
+   *
+   * @return null
+   */
+  public function getPendingProjectStatus() {
+    return $this->_pendingProjectStatus;
+  }
+
+  /**
+   * Getter for recruiting project status
+   *
+   * @return mixed
+   */
+  public function getRecruitingProjectStatus() {
+    return $this->_recruitingProjectStatus;
+  }
+
+  /**
    * Getter for study status option group id
    *
    * @return null
@@ -769,6 +821,27 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->error(E::ts('Could not find a unique option group with name campaign_type in ') . __METHOD__);
+    }
+  }
+
+  /**
+   * Method to set the relevant campaign (project) status
+   */
+  private function setCampaignStatus() {
+    try {
+      $apiResult = civicrm_api3('OptionValue', 'get', [
+        'sequential' => 1,
+        'return' => ["value", "name"],
+        'option_group_id' => "campaign_status",
+        'is_active' => 1,
+        'options' => ['limit' => 0],
+      ]);
+      foreach ($apiResult['values'] as $apiValue) {
+        $property = "_" . strtolower($apiValue['name']) . "ProjectStatus";
+        $this->$property = $apiValue['value'];
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
     }
   }
 
