@@ -93,8 +93,8 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $queryArray = [
       'query' => "SELECT a.entity_id AS case_id, a." . $projectIdColumn. " AS project_id, a." . $projectAnonIdColumn
         . " AS anon_project_id, a." . $pvStatusIdColumn
-        . " AS project_status_id, g.label AS volunteer_project_status, a." . $eligibleColumn . " AS eligible_id, 
-        h.label AS ethnicity, b.contact_id AS bioresource_id, c.display_name AS volunteer_name, 
+        . " AS project_status_id, g.label AS volunteer_project_status, a." . $eligibleColumn . " AS eligible_id,
+        h.label AS ethnicity, b.contact_id AS bioresource_id, c.display_name AS volunteer_name,
         c.birth_date, e.label AS sex, f.city AS location, d." . $ethnicityIdColumn . " AS ethnicity_id
         FROM " .  $participationTable . " AS a
         JOIN civicrm_case_contact AS b ON a.entity_id = b.case_id
@@ -379,8 +379,8 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       $modifier = '-' . $numberOfMonths . ' months';
       $startDate->modify($modifier);
       $query = "SELECT COUNT(*) FROM civicrm_case_contact AS a
-      JOIN civicrm_case AS b ON a.case_id = b.id 
-      WHERE b.case_type_id = %1 AND b.is_deleted = %2 AND b.status_id != %3  AND a.contact_id = %4 
+      JOIN civicrm_case AS b ON a.case_id = b.id
+      WHERE b.case_type_id = %1 AND b.is_deleted = %2 AND b.status_id != %3  AND a.contact_id = %4
       AND b.start_date >= %5";
       $queryParams = [
         1 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), 'Integer'],
@@ -412,10 +412,40 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       // get all active participations for contact
       $query = "SELECT a.case_id, c.* FROM civicrm_case_contact AS a
         JOIN civicrm_case AS b ON a.case_id = b.id
-        lEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id 
-        WHERE contact_id = %1 AND b.is_deleted = %2 AND b.case_type_id = 3 AND b.status_id != 2";
+        lEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id
+        WHERE contact_id = %1 AND b.is_deleted = %2 AND b.case_type_id = %3 AND b.status_id != %4";
       $queryParams = [
         1 => [$volunteerId, "Integer"],
+        2 => [0, "Integer"],
+        3 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+        4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), "Integer"],
+      ];
+      $projects = CRM_Core_DAO::executeQuery($query, $queryParams);
+      while ($projects->fetch()) {
+        $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($projects);
+      }
+    }
+    return $result;
+  }
+
+  /**
+   * Method to get all active participations on a project
+   *
+   * @param $projectId
+   * @return array
+   */
+  public static function getProjectParticipations($projectId) {
+    $result = [];
+    if (!empty($projectId)) {
+      $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+      $projectColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
+      // get all active participations for project
+      $query = "SELECT a.case_id, a.contact_id, c.* FROM civicrm_case_contact AS a
+        JOIN civicrm_case AS b ON a.case_id = b.id
+        lEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id
+        WHERE c." . $projectColumn . " = %1 AND b.is_deleted = %2 AND b.case_type_id = %3 AND b.status_id != %4";
+      $queryParams = [
+        1 => [$projectId, "Integer"],
         2 => [0, "Integer"],
         3 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
         4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), "Integer"],
