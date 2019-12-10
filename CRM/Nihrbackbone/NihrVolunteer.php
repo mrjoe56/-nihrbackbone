@@ -234,15 +234,27 @@ class CRM_Nihrbackbone_NihrVolunteer {
    */
   public static function inAgeRange($contactId, $fromAge, $toAge) {
     try {
-      $birthDate = (string) civicrm_api3('Contact', 'getvalue',[
+      $birthDate = civicrm_api3('Contact', 'getvalue',[
         'id' => $contactId,
         'return' => 'birth_date',
       ]);
       if ($birthDate) {
         $age = CRM_Utils_Date::calculateAge($birthDate);
         if (isset($age['years'])) {
-          if ($age['years'] >= $fromAge && $age['years'] <= $toAge) {
-            return TRUE;
+          if (!empty($fromAge) && !empty($toAge)) {
+            if ($age['years'] >= $fromAge && $age['years'] <= $toAge) {
+              return TRUE;
+            }
+          }
+          if (!empty($fromAge) && empty($toAge)) {
+            if ($age['years'] >= $fromAge) {
+              return TRUE;
+            }
+          }
+          if (empty($fromAge) && !empty($toAge)) {
+            if ($age['years'] <= $toAge) {
+              return TRUE;
+            }
           }
         }
       }
@@ -266,8 +278,20 @@ class CRM_Nihrbackbone_NihrVolunteer {
     $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
     $contactBmi = CRM_Core_DAO::singleValueQuery($query, [ 1 => [$contactId, "Integer"]]);
     if ($contactBmi) {
-      if ($contactBmi >= $fromBmi && $contactBmi <= $toBmi) {
-        return TRUE;
+      if (!empty($fromBmi) && !empty($toBmi)) {
+        if ($contactBmi >= $fromBmi && $contactBmi <= $toBmi) {
+          return TRUE;
+        }
+      }
+      if (!empty($fromBmi) && empty($toBmi)) {
+        if ($contactBmi >= $fromBmi) {
+          return TRUE;
+        }
+      }
+      if (empty($fromBmi) && !empty($toBmi)) {
+        if ($contactBmi <= $toBmi) {
+          return TRUE;
+        }
       }
     }
     return FALSE;
@@ -317,13 +341,13 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     // if the project requires an age range, check if the volunteer is in the age range
     if ($criteria['nsc_age_from'] || $criteria['nsc_age_to']) {
-      if (!CRM_Nihrbackbone_NihrVolunteer::inAgeRange($volunteerId, $criteria['nsc_age_from'], $criteria['nsc_age_to'])) {
+      if (!CRM_Nihrbackbone_NihrVolunteer::inAgeRange($volunteerId, (int) $criteria['nsc_age_from'], (int) $criteria['nsc_age_to'])) {
         return FALSE;
       }
     }
     // if the project requires a BMI range, check if the volunteer is in the BMI range
     if ($criteria['nsc_bmi_from'] || $criteria['nsc_bmi_to']) {
-      if (!CRM_Nihrbackbone_NihrVolunteer::inBmiRange($volunteerId, $criteria['nsc_bmi_from'], $criteria['nsc_bmi_to'])) {
+      if (!CRM_Nihrbackbone_NihrVolunteer::inBmiRange($volunteerId, (float) $criteria['nsc_bmi_from'], (float) $criteria['nsc_bmi_to'])) {
         return FALSE;
       }
     }
