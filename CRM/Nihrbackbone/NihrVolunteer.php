@@ -327,14 +327,18 @@ class CRM_Nihrbackbone_NihrVolunteer {
    *
    * @param $volunteerId
    * @param $projectId
+   * @param $criteria
    * @return bool
    */
-  public static function meetsProjectSelectionCriteria($volunteerId, $projectId) {
+  public static function meetsProjectSelectionCriteria($volunteerId, $projectId, $criteria = []) {
     if (empty($projectId) || empty($volunteerId)) {
       Civi::log()->error(E::ts('Attempt to check if volunteer meets selection criteria for project without volunteer ID or project ID in ') . __METHOD__);
       return TRUE;
     }
-    $criteria = CRM_Nihrbackbone_NihrProject::getSelectionCriteria($projectId);
+    // if no criteria passed as parameter, take the ones from the project
+    if (empty($criteria)) {
+      $criteria = CRM_Nihrbackbone_NihrProject::getSelectionCriteria($projectId);
+    }
     // if the project requires blood, the volunteer should not have the exclude from blood studies flag
     if ($criteria['nsc_blood_required'] && !CRM_Nihrbackbone_NihrVolunteer::availableForBlood($volunteerId)) {
       return FALSE;
