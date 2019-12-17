@@ -78,6 +78,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_notActiveEligibleStatusId = NULL;
   private $_notRecallableEligibleStatusId = NULL;
   private $_criteriaNotMetEligibleStatusId = NULL;
+  private $_invitedEligibleStatusId = NULL;
 
   /**
    * CRM_Nihrbackbone_BackboneConfig constructor.
@@ -153,6 +154,15 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function getCriteriaNotMetEligibleStatusId() {
     return $this->_criteriaNotMetEligibleStatusId;
+  }
+
+  /**
+   * Getter for invited to other project status id
+   *
+   * @return null
+   */
+  public function getInvitedEligibleStatusId() {
+    return $this->_invitedEligibleStatusId;
   }
 
   /**
@@ -836,6 +846,9 @@ class CRM_Nihrbackbone_BackboneConfig {
             break;
           case 'nihr_criteria_not_met':
             $this->_criteriaNotMetEligibleStatusId = $eligibleStatus['value'];
+            break;
+          case 'nihr_invited_other':
+            $this->_invitedEligibleStatusId = $eligibleStatus['value'];
             break;
         }
       }
