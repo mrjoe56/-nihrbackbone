@@ -13,9 +13,9 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
   #  get PID and postcode, site ID and postcode, and set distance to centre for this case
   if ($op == 'create' && $objectName == 'Activity' && $objectRef->activity_type_id == 13) {
     $query = "select cc.contact_id, adr.postal_code as cont_pc, projdat.npd_site, site_adr.postal_code as site_pc
-             from civicrm_case_contact cc, civicrm_contact c, civicrm_address adr, civicrm_address site_adr, 
-             civicrm_value_nihr_participation_data partdat, civicrm_value_nihr_project_data projdat 
-             where cc.contact_id = c.id and c.id = adr.contact_id and cc.case_id = partdat.entity_id 
+             from civicrm_case_contact cc, civicrm_contact c, civicrm_address adr, civicrm_address site_adr,
+             civicrm_value_nihr_participation_data partdat, civicrm_value_nihr_project_data projdat
+             where cc.contact_id = c.id and c.id = adr.contact_id and cc.case_id = partdat.entity_id
              and partdat.nvpd_project_id = projdat.entity_id and projdat.npd_site = site_adr.contact_id and case_id = %1";
     $dao = CRM_Core_DAO::executeQuery($query, [1 => [$objectRef->case_id, 'Integer']]);
     if ($dao->fetch()) {
@@ -23,10 +23,19 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
     }
   }
   # if editing a primary Address activity for a participant - update distance to Addenbrookes value
-  $entityType = CRM_Contact_BAO_Contact::getContactType($objectRef->contact_id);
-  if ($objectName == 'Address' && $objectRef->is_primary && $entitySubType[0] == 'Individual') {
-    if ($op == 'edit'||$op == 'create') {
-      CRM_Nihrbackbone_NihrAddress::setContDistance($op,$objectName, $objectID,$objectRef);
+  if ($objectName == 'Address' && $objectRef->is_primary) {
+    if ($op == 'edit' || $op == 'create') {
+
+      try {
+        $contactType = (string)civicrm_api3('Contact', 'getvalue', [
+          'id' => $objectRef->contact_id,
+          'return' => 'contact_type',
+        ]);
+        if ($contactType == "Individual") {
+          CRM_Nihrbackbone_NihrAddress::setContDistance($op, $objectName, $objectID, $objectRef);
+        }
+      } catch (CiviCRM_API3_Exception $ex) {
+      }
     }
   }
 
