@@ -458,4 +458,46 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     return $result;
   }
 
+  /**
+   * Method to add the invite activity to the participation case
+   *
+   * @param $caseId
+   * @param $contactId
+   * @param $projectId
+   * @return bool
+   */
+  public static function addInviteActivity($caseId, $contactId, $projectId) {
+    if (empty($caseId) || empty($contactId)) {
+      Civi::log()->warning(E::ts('Trying to add an invite activity with empty case id or contact id in ') . __METHOD__);
+      return FALSE;
+    }
+    try {
+      $projectTitle = (string) civicrm_api3('Campaign', 'getvalue', [
+        'return' => 'title',
+        'id' => $projectId,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      $projectTitle = $projectId;
+    }
+    $activityTypeId = CRM_Nihrbackbone_BackboneConfig::singleton()->getInviteProjectActivityTypeId();
+    $activityParams = [
+      'source_contact_id' => 'user_contact_id',
+      'target_id' => $contactId,
+      'case_id' => $caseId,
+      'activity_type_id' => $activityTypeId,
+      'subject' => E::ts("Invited to project ") . $projectTitle,
+      'status_id' => 'Completed',
+    ];
+    try {
+      civicrm_api3('Activity', 'create', $activityParams);
+      return TRUE;
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->error(E::Ts('Could not create invite activity for case ID ') . $caseId . E::ts(' and contact ID ')
+        . $contactId . E::ts(', error from API Activity create: ') . $ex->getMessage());
+      return FALSE;
+    }
+  }
+
 }
