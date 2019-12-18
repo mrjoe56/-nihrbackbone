@@ -117,8 +117,11 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     return $queryArray;
   }
 
-  public function createVolunteerCase($contactId)
-  {
+  /**
+   * @param $contactId
+   * @throws API_Exception
+   */
+  public function createVolunteerCase($contactId) {
     // todo use switch
     if ($this->_apiParams['case_type'] == 'recruitment') {
       $this->createRecruitmentVolunteerCase($contactId);
@@ -143,7 +146,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     if (empty($contactId)) {
       throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty contactId in ') . __METHOD__, 3003);
     }
-
     $nihrProject = new CRM_Nihrbackbone_NihrProject();
     if ($nihrProject->projectExists($this->_apiParams['project_id'])) {
       // check if contact exists and has contact sub type Volunteer and does not have a case for this project yet
@@ -197,22 +199,26 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    */
   private function setCaseCreateData($contactId) {
     $projectIdCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'id');
-    $anonCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_anon_project_id', 'id');
     $pvStatusCustomFieldId = 'custom_'. CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_volunteer_project_status_id', 'id');
-    $consentCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_consent_status_id', 'id');
+    $recallGroupCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'id');
     $caseCreateData =  [
       'contact_id' => $contactId,
       'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(),
       'subject' => "Selected for project " . $this->_apiParams['project_id'],
       'status_id' => "Open",
       $projectIdCustomFieldId => $this->_apiParams['project_id'],
-      $anonCustomFieldId => "3294yt71L",
-      $pvStatusCustomFieldId => 1,
-      $consentCustomFieldId => 7,
+      $pvStatusCustomFieldId => 'project_participation_status_selected',
       ];
+    if ($this->_apiParams['recall_group']) {
+      $caseCreateData[$recallGroupCustomFieldId] = $this->_apiParams['recall_group'];
+    }
     return $caseCreateData;
   }
 
+  /**
+   * @param $contactId
+   * @return array
+   */
   private function setRecruitmentCaseCreateData($contactId) {
     $caseCreateData =  [
       'contact_id' => $contactId,
@@ -499,5 +505,4 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       return FALSE;
     }
   }
-
 }
