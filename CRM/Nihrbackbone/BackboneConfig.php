@@ -824,6 +824,7 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_not_active',
       'nihr_not_recallable',
       'nihr_criteria_not_met',
+      'nihr_invited_other',
     ];
     try {
       $eligibleStatuses = civicrm_api3('OptionValue', 'get', [
