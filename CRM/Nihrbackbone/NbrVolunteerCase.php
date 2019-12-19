@@ -318,7 +318,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
     $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
     // retrieve current eligible status from each volunteer participation cases
-    self::getCurrentElgibleStatus($volunteerId);
     $query = "SELECT a." . $eligibleColumnName . ", a.entity_id
       FROM " . $tableName . " AS a
       JOIN civicrm_case AS b ON a.entity_id = b.id
