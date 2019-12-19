@@ -225,6 +225,26 @@ class CRM_Nihrbackbone_NihrProject {
   }
 
   /**
+   * Method to get the name of the project with the id
+   *
+   * @param $projectId
+   * @return bool|string
+   */
+  public static function getProjectNameWithId($projectId) {
+    if (!empty($projectId)) {
+      try {
+        return (string) civicrm_api3('Campaign', 'getvalue', [
+          'return' => 'title',
+          'id' => $projectId,
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Method to get the project selection criteria
    *
    * @param $projectId

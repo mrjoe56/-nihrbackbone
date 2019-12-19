@@ -199,12 +199,19 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    */
   private function setCaseCreateData($contactId) {
     $projectIdCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'id');
-    $pvStatusCustomFieldId = 'custom_'. CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_volunteer_project_status_id', 'id');
+    $pvStatusCustomFieldId = 'custom_'. CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_participation_status', 'id');
     $recallGroupCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'id');
+    $projectName = CRM_Nihrbackbone_NihrProject::getProjectNameWithId($this->_apiParams['project_id']);
+    if ($projectName) {
+      $subject = E::ts("Selected for project ") . $projectName;
+    }
+    else {
+      $subject = E::ts("Selected for project ") . $this->_apiParams['project_id'];
+    }
     $caseCreateData =  [
       'contact_id' => $contactId,
       'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(),
-      'subject' => "Selected for project " . $this->_apiParams['project_id'],
+      'subject' => $subject,
       'status_id' => "Open",
       $projectIdCustomFieldId => $this->_apiParams['project_id'],
       $pvStatusCustomFieldId => 'project_participation_status_selected',
