@@ -137,15 +137,16 @@ class CRM_Nihrbackbone_NihrImportCsv {
   /**
    * Method to process import
    *
+   * @param string $recallGroup
    * @return array|void
    * @throws Exception
    */
-  public function processImport() {
+  public function processImport($recallGroup = NULL) {
     // get mapping
     $this->getMapping();
     switch ($this->_type) {
       case 'participation':
-        $this->importParticipation();
+        $this->importParticipation($recallGroup);
         fclose($this->_csv);
         break;
       case 'demographics':
@@ -207,7 +208,7 @@ class CRM_Nihrbackbone_NihrImportCsv {
    *
    * @throws
    */
-  private function importParticipation() {
+  private function importParticipation($recallGroup = NULL) {
     $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
     while (!feof($this->_csv)) {
       $data = fgetcsv($this->_csv, 0, $this->_separator);
@@ -219,12 +220,16 @@ class CRM_Nihrbackbone_NihrImportCsv {
           $message = E::ts('Could not find a volunteer with participantID ') . $data[0] . E::ts(', not imported to project.');
           CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
         } else {
+          $volunteerCaseParams = [
+            'project_id' => $this->_projectId,
+            'contact_id' => $contactId,
+            'case_type' => 'participation',
+          ];
+          if ($recallGroup) {
+            $volunteerCaseParams['recall_group'] = $recallGroup;
+          }
           try {
-            civicrm_api3('NbrVolunteerCase', 'create', [
-              'project_id' => $this->_projectId,
-              'contact_id' => $contactId,
-              'case_type' => 'participation',
-            ]);
+            civicrm_api3('NbrVolunteerCase', 'create', $volunteerCaseParams);
             $this->_imported++;
             $message = E::ts('Volunteer with participantID ') . $data[0] . E::ts(' succesfully added to projectID ') . $this->_projectId;
             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);

@@ -117,8 +117,11 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     return $queryArray;
   }
 
-  public function createVolunteerCase($contactId)
-  {
+  /**
+   * @param $contactId
+   * @throws API_Exception
+   */
+  public function createVolunteerCase($contactId) {
     // todo use switch
     if ($this->_apiParams['case_type'] == 'recruitment') {
       $this->createRecruitmentVolunteerCase($contactId);
@@ -143,7 +146,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     if (empty($contactId)) {
       throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty contactId in ') . __METHOD__, 3003);
     }
-
     $nihrProject = new CRM_Nihrbackbone_NihrProject();
     if ($nihrProject->projectExists($this->_apiParams['project_id'])) {
       // check if contact exists and has contact sub type Volunteer and does not have a case for this project yet
@@ -197,22 +199,33 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    */
   private function setCaseCreateData($contactId) {
     $projectIdCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'id');
-    $anonCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_anon_project_id', 'id');
-    $pvStatusCustomFieldId = 'custom_'. CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_volunteer_project_status_id', 'id');
-    $consentCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_consent_status_id', 'id');
+    $pvStatusCustomFieldId = 'custom_'. CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_participation_status', 'id');
+    $recallGroupCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'id');
+    $projectName = CRM_Nihrbackbone_NihrProject::getProjectNameWithId($this->_apiParams['project_id']);
+    if ($projectName) {
+      $subject = E::ts("Selected for project ") . $projectName;
+    }
+    else {
+      $subject = E::ts("Selected for project ") . $this->_apiParams['project_id'];
+    }
     $caseCreateData =  [
       'contact_id' => $contactId,
       'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(),
-      'subject' => "Selected for project " . $this->_apiParams['project_id'],
+      'subject' => $subject,
       'status_id' => "Open",
       $projectIdCustomFieldId => $this->_apiParams['project_id'],
-      $anonCustomFieldId => "3294yt71L",
-      $pvStatusCustomFieldId => 1,
-      $consentCustomFieldId => 7,
+      $pvStatusCustomFieldId => 'project_participation_status_selected',
       ];
+    if ($this->_apiParams['recall_group']) {
+      $caseCreateData[$recallGroupCustomFieldId] = $this->_apiParams['recall_group'];
+    }
     return $caseCreateData;
   }
 
+  /**
+   * @param $contactId
+   * @return array
+   */
   private function setRecruitmentCaseCreateData($contactId) {
     $caseCreateData =  [
       'contact_id' => $contactId,
@@ -312,7 +325,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
     $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
     // retrieve current eligible status from each volunteer participation cases
-    self::getCurrentElgibleStatus($volunteerId);
     $query = "SELECT a." . $eligibleColumnName . ", a.entity_id
       FROM " . $tableName . " AS a
       JOIN civicrm_case AS b ON a.entity_id = b.id
@@ -458,4 +470,45 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     return $result;
   }
 
+  /**
+   * Method to add the invite activity to the participation case
+   *
+   * @param $caseId
+   * @param $contactId
+   * @param $projectId
+   * @return bool
+   */
+  public static function addInviteActivity($caseId, $contactId, $projectId) {
+    if (empty($caseId) || empty($contactId)) {
+      Civi::log()->warning(E::ts('Trying to add an invite activity with empty case id or contact id in ') . __METHOD__);
+      return FALSE;
+    }
+    try {
+      $projectTitle = (string) civicrm_api3('Campaign', 'getvalue', [
+        'return' => 'title',
+        'id' => $projectId,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      $projectTitle = $projectId;
+    }
+    $activityTypeId = CRM_Nihrbackbone_BackboneConfig::singleton()->getInviteProjectActivityTypeId();
+    $activityParams = [
+      'source_contact_id' => 'user_contact_id',
+      'target_id' => $contactId,
+      'case_id' => $caseId,
+      'activity_type_id' => $activityTypeId,
+      'subject' => E::ts("Invited to project ") . $projectTitle,
+      'status_id' => 'Completed',
+    ];
+    try {
+      civicrm_api3('Activity', 'create', $activityParams);
+      return TRUE;
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->error(E::Ts('Could not create invite activity for case ID ') . $caseId . E::ts(' and contact ID ')
+        . $contactId . E::ts(', error from API Activity create: ') . $ex->getMessage());
+      return FALSE;
+    }
+  }
 }
