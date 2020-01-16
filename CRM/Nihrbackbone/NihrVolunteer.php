@@ -135,7 +135,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
    */
   public static function hasMaxStudyInvitationsNow($contactId) {
     if (!empty($contactId)) {
-      $maxNumber = Civi::settings()->get('nbr_max_participations');
+      $maxNumber = (int) Civi::settings()->get('nbr_max_invitations');
       $checkDate = self::calculateCheckDateMaxInvitations();
       $studyCount = self::getDistinctStudiesWithInvitations($contactId, $checkDate);
       // get distinct count of studies for contact
@@ -153,7 +153,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @return DateTime
    */
   public static function calculateCheckDateMaxInvitations() {
-    $noMonths = Civi::settings()->get('nbr_no_months_participation');
+    $noMonths = (int) Civi::settings()->get('nbr_no_months_invitations');
     // subtract period from todays date
     $checkDate = new DateTime();
     $modifier = '-' . $noMonths . ' months';
@@ -185,7 +185,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
         LEFT JOIN civicrm_activity AS act ON cac.activity_id = act.id AND act.is_current_revision = %1
         WHERE cc.is_deleted = %2 AND cc.case_type_id = %3 AND act.activity_type_id = %4 AND cont.contact_id = %5
         AND act.activity_date_time > %6";
-    return (int) CRM_Core_DAO::singleValueQuery($studyQuery, [
+    $studyCount =  (int) CRM_Core_DAO::singleValueQuery($studyQuery, [
       1 => [1, 'Integer'],
       2 => [0, 'Integer'],
       3 => [(int)CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), 'Integer'],
@@ -193,6 +193,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
       5 => [(int)$contactId, 'Integer'],
       6 => [$checkDate->format('Y-m-d'), 'String'],
     ]);
+    return $studyCount;
   }
 
   /**
