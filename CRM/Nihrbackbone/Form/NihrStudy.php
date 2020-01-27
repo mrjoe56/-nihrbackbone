@@ -41,7 +41,9 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
     $this->addEntityRef('investigator_id', E::ts('Principal Investigator'), [
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
     ], FALSE);
-    $this->add('text', 'study_number', E::ts('Study Number'), [], FALSE);
+    $this->add('text', 'study_number', E::ts('Study Number'), [
+      'disabled' => 'disabled'
+    ], FALSE);
     $this->add('text', 'short_name', E::ts('Short Name'), [], TRUE);
     $this->add('text', 'long_name', E::ts('Long Name'), ['size' => 120], FALSE);
     $this->add('textarea', 'description', E::ts('Description'), ['rows' => 4, 'cols' => 50], FALSE);

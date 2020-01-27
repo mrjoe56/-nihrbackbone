@@ -7,7 +7,7 @@
   <div class="crm-section study_number_section">
     <div class="label">{$form.study_number.label}</div>
     <div class="content">{$form.study_number.html}
-      <p class="description">{ts}Leave this empty to automatically generate a study number.{/ts}</p>
+      {if !$study_id}<p class="description">{ts}When saving a study number will be automatically generated.{/ts}</p>{/if}
     </div>
     <div class="clear"></div>
   </div>
