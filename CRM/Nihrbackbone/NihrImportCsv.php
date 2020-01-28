@@ -281,6 +281,8 @@ class CRM_Nihrbackbone_NihrImportCsv
       if ($data) {
         // map data based on filename
         $data = $this->applyMapping($data);
+        // format data (e.g. mixed case, trim...)
+        $data = $this->formatData($data);
 
         list($contactId, $new_volunteer) = $this->addContact($data);
         $this->addEmail($contactId, $data);
@@ -289,25 +291,43 @@ class CRM_Nihrbackbone_NihrImportCsv
         $this->addPhone($contactId, $data, 'phone_work', 'Work', 'Phone');
         $this->addPhone($contactId, $data, 'phone_mobile', 'Main', 'Mobile');
 
-        // aliases: only the mapping one can be added via the API (as aliases are stored in a table), so
-        // all additional ones need to be added independently
         $this->addAlias($contactId, 'alias_type_nhs_number', $data['nhs_number'], 0);
+        $this->addAlias($contactId, 'alias_type_packid', $data['pack_id'], 0);
 
         // *** add recruitment case, if volunteer record newly created
+        $caseID = '';
         if ($new_volunteer) {
           try {
-            civicrm_api3('NbrVolunteerCase', 'create', [
+            $caseID = civicrm_api3('NbrVolunteerCase', 'create', [
               'contact_id' => $contactId,
               'case_type' => 'recruitment'
             ]);
             $message = E::ts('Recruitment case for volunteer ' . $contactId . '  added');
             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
           } catch (CiviCRM_API3_Exception $ex) {
-            $message = E::ts('Error message when creating recruitment case for volunteer ') . $contactId
+            $message = E::ts('Error when creating recruitment case for volunteer ') . $contactId
               . E::ts(' from API NbrVolunteerCase create : ') . $ex->getMessage();
             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
           }
+
+          if ($data['nihr_paper_questionnaire'] == 'yes') {
+              // add action
+            try {
+              civicrm_api3('Activity', 'create', [
+                'source_contact_id' => $contactId,
+                'case_id' => $caseID,
+                'activity_type_id' => "nihr_paper_questionnaire",
+              ]);
+            } catch (CiviCRM_API3_Exception $ex) {
+               $message = E::ts('Error when adding paper questionnaire activity to recruitment case for volunteer ') . $contactId
+                . E::ts(' from API Activity create : ') . $ex->getMessage();
+             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
+            }
+          }
         }
+
+        // add consent to recruitment case
+        CRM_Nihrbackbone_NbrConsent::addConsent($contactId, $caseID, 'consent_form_status_not_valid', $data);
       }
     }
   }
@@ -349,9 +369,12 @@ class CRM_Nihrbackbone_NihrImportCsv
         $mappedData[$newKey] = $value;
         // mapping ID is entered twice, once for insert (custom ID) and once for mapping (local_ucl_id)
         $newKey = 'custom_253';
+        // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_ucl_br_local', 'id');
+
       }
       // todo don't use hardcoded
       if ($newKey == 'pack_id') {
+        // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_ucl_br_local', 'id');
         $mappedData['nva_alias_type'] = 'alias_type_packid';
         $mappedData['nva_external_id'] = $value;
 
@@ -369,7 +392,26 @@ class CRM_Nihrbackbone_NihrImportCsv
     return $mappedData;
   }
 
-  /**
+  private function formatData($xData)
+  {
+    $this->formatDataItem($xData['first_name']);
+    $this->formatDataItem($xData['last_name']);
+    $xData['email'] = strtolower($xData['email']);
+    $this->formatDataItem($xData['address_1']);
+    $this->formatDataItem($xData['address_2']);
+    $this->formatDataItem($xData['address_3']);
+    $this->formatDataItem($xData['address_4']);
+    return $xData;
+  }
+
+  private function formatDataItem(&$dataItem)
+  {
+    $dataItem = ucwords(strtolower($dataItem), '- ');
+    $dataItem = trim($dataItem);
+  }
+
+
+    /**
    * @param $data
    * @return int
    * @throws Exception
@@ -585,7 +627,9 @@ class CRM_Nihrbackbone_NihrImportCsv
       if (isset($externalID)) {
         $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomGroup('table_name');
 
-        // check if alias already exists
+        // --- check if alias already exists ---------------------------------------------------------------------
+
+        // todo compare on strings removing blanks and special chars
         $query = "SELECT nva_external_id
                     from $table
                     where entity_id = %1
@@ -597,7 +641,15 @@ class CRM_Nihrbackbone_NihrImportCsv
         $dbExternalID = CRM_Core_DAO::singleValueQuery($query, $queryParams);
 
         if (!isset($dbExternalID)) {
-          // insert
+          // --- insert --------------------------------------------------------------------------------------------
+
+          if ($aliasType == 'alias_type_nhs_number') {
+            // todo check if nhs number format is correct (subroutine to be written by JB)
+            // reformat NHS number
+            $externalID = substr($externalID, 0, 3) . ' ' . substr($externalID, 3, 3) . ' ' . substr($externalID, 6, 4);
+          }
+
+
           $query = "insert into $table (entity_id,nva_alias_type, nva_external_id)
                             values (%1,%2,%3)";
           $queryParams = [

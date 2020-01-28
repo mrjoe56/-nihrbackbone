@@ -25,6 +25,7 @@
   "consent": "consent",
   "consent_date": "consent_date",
   "consent_version": "consent_version",
+  "information_leaflet_version": "information_leaflet_version",
   "ibdgc_no": "nva_ibdgc_number",
   "ethnicity": "ethnicity",
   "cohort": "cohort",
