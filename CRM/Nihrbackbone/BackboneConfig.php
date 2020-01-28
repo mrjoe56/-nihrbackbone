@@ -29,7 +29,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   // property for project campaign type
   private $_projectCampaignTypeId = NULL;
 
-  // properties for project (campagin) status
+  // properties for project (campaign) status
   private $_recruitingProjectStatus = NULL;
   private $_completedProjectStatus = NULL;
   private $_declinedProjectStatus = NULL;
