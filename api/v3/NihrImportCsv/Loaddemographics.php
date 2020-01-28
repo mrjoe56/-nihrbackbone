@@ -26,10 +26,8 @@ function civicrm_api3_nihr_import_csv_Loaddemographics($params) {
     // only use newest - last - file
     $csvFile = array_pop($csvFiles);
 
-    // todo firstRowHeaders always needs to be true as used for the mapping
     // process file
-    // todo $import = new CRM_Nihrbackbone_NihrImportCsv('demographics', $csvFile, $params['separator'], TRUE);
-    $import = new CRM_Nihrbackbone_NihrImportCsv('demographics', $csvFile);
+    $import = new CRM_Nihrbackbone_NihrImportCsv('demographics', $csvFile, $params);
     if ($import->validImportData()) {
       $returnValues = $import->processImport();
 

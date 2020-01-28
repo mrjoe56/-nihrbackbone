@@ -8,7 +8,8 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  * @date 26 Mar 2019
  * @license AGPL-3.0
  */
-class CRM_Nihrbackbone_NihrImportCsv {
+class CRM_Nihrbackbone_NihrImportCsv
+{
 
   private $_csvFile = NULL;
   private $_importId = NULL;
@@ -39,17 +40,40 @@ class CRM_Nihrbackbone_NihrImportCsv {
    * @throws Exception when error in logMessage
    */
 
-  public function __construct($type, $csvFileName, $separator = ';', $firstRowHeaders = TRUE, $originalFileName = NULL, $context = "job", $dataSource = '') {
+  public function __construct($type, $csvFileName, $additional_parameter = [])
+  {
+    if (isset($additional_parameter['separator'])) {
+      $this->_separator = $additional_parameter['separator'];
+    } else {
+      $this->_separator = ';';
+    }
+
+    if (isset($additional_parameter['firstRowHeaders'])) {
+      $this->_firstRowHeaders = $additional_parameter['firstRowHeaders'];
+    } else {
+      $this->_firstRowHeaders = 'TRUE';
+    }
+
+    if (isset($additional_parameter['context'])) {
+      $this->_context = $additional_parameter['context'];
+    } else {
+      $this->_context = "job";
+    }
+
+    if (isset($additional_parameter['dataSource'])) {
+      $this->_dataSource = $additional_parameter['dataSource'];
+    } else {
+      $this->_dataSource = "";
+    }
+
     $this->_logger = new CRM_Nihrbackbone_NihrLogger('nbrcsvimport_' . date('Ymdhis'));
     $this->_failed = 0;
     $this->_imported = 0;
     $this->_read = 0;
     $this->_importId = uniqid(rand());
-    $this->_context = $context;
-    if ($originalFileName) {
-      $this->_originalFileName = $originalFileName;
-    }
-    else {
+    if (isset($additional_parameter['originalFileName'])) {
+      $this->_originalFileName = $additional_parameter['originalFileName'];
+    } else {
       $this->_originalFileName = $csvFileName;
     }
 
@@ -66,9 +90,6 @@ class CRM_Nihrbackbone_NihrImportCsv {
       $message = E::ts('Empty parameter for name of csv file to be imported.');
       CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
     }
-    $this->_separator = $separator;
-    $this->_firstRowHeaders = $firstRowHeaders;
-    $this->_dataSource = $dataSource;
   }
 
   /**
@@ -78,7 +99,8 @@ class CRM_Nihrbackbone_NihrImportCsv {
    * @return bool
    * @throws
    */
-  public function validImportData($projectId = NULL) {
+  public function validImportData($projectId = NULL)
+  {
     // project id required with participation
     if ($projectId) {
       $project = new CRM_Nihrbackbone_NihrProject();
@@ -141,7 +163,8 @@ class CRM_Nihrbackbone_NihrImportCsv {
    * @return array|void
    * @throws Exception
    */
-  public function processImport($recallGroup = NULL) {
+  public function processImport($recallGroup = NULL)
+  {
     // get mapping
     $this->getMapping();
     switch ($this->_type) {
@@ -165,10 +188,10 @@ class CRM_Nihrbackbone_NihrImportCsv {
 
   /**
    * Method  to fill an array with the messages of the job (so they can be shown as returnValues in the scheduled job log)
-
    * @return array
    */
-  private function setJobReturnValues() {
+  private function setJobReturnValues()
+  {
     $result = [];
     try {
       $apiMessages = civicrm_api3('NbrImportLog', 'get', [
@@ -179,8 +202,7 @@ class CRM_Nihrbackbone_NihrImportCsv {
       foreach ($apiMessages['values'] as $message) {
         $result[] = $message['message_type'] . ": " . $message['message'];
       }
-    }
-    catch (CiviCRM_API3_Exception $ex) {
+    } catch (CiviCRM_API3_Exception $ex) {
     }
     return $result;
   }
@@ -188,13 +210,12 @@ class CRM_Nihrbackbone_NihrImportCsv {
   /**
    * Method to get the data mapping based on the name of the csv file
    */
-  private function getMapping() {
+  private function getMapping()
+  {
     if ($this->_type != 'participation') {
-      // todo : $this->_dataSource needs to hold the param!!
       $container = CRM_Extension_System::singleton()->getFullContainer();
       $resourcePath = $container->getPath('nihrbackbone') . '/resources/';
-      // todo $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . $this->_dataSource . $this->_type . "_mapping.json";
-      $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . "ucl" . "_mapping.json";
+      $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . $this->_dataSource . "_mapping.json";
       if (!file_exists($mappingFile)) {
         $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . $this->_type . "_default_mapping.json";
       }
@@ -208,7 +229,8 @@ class CRM_Nihrbackbone_NihrImportCsv {
    *
    * @throws
    */
-  private function importParticipation($recallGroup = NULL) {
+  private function importParticipation($recallGroup = NULL)
+  {
     $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
     while (!feof($this->_csv)) {
       $data = fgetcsv($this->_csv, 0, $this->_separator);
@@ -264,27 +286,53 @@ class CRM_Nihrbackbone_NihrImportCsv {
       if ($data) {
         // map data based on filename
         $data = $this->applyMapping($data);
+        // format data (e.g. mixed case, trim...)
+        $data = $this->formatData($data);
 
         list($contactId, $new_volunteer) = $this->addContact($data);
-        $this->addEmail($data, $contactId);
-        $this->addAddress($data, $contactId);
-        $this->addPhone($data, $contactId); // todo home phone only at the moment, add mobile and work
+        $this->addEmail($contactId, $data);
+        $this->addAddress($contactId, $data);
+        $this->addPhone($contactId, $data, 'phone_home', 'Home', 'Phone');
+        $this->addPhone($contactId, $data, 'phone_work', 'Work', 'Phone');
+        $this->addPhone($contactId, $data, 'phone_mobile', 'Main', 'Mobile');
+
+        $this->addAlias($contactId, 'alias_type_nhs_number', $data['nhs_number'], 0);
+        $this->addAlias($contactId, 'alias_type_packid', $data['pack_id'], 0);
 
         // *** add recruitment case, if volunteer record newly created
+        $caseID = '';
         if ($new_volunteer) {
           try {
-            civicrm_api3('NbrVolunteerCase', 'create', [
+            $caseID = civicrm_api3('NbrVolunteerCase', 'create', [
               'contact_id' => $contactId,
               'case_type' => 'recruitment'
             ]);
             $message = E::ts('Recruitment case for volunteer ' . $contactId . '  added');
             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
           } catch (CiviCRM_API3_Exception $ex) {
-            $message = E::ts('Error message when creating recruitment case for volunteer ') . $contactId
+            $message = E::ts('Error when creating recruitment case for volunteer ') . $contactId
               . E::ts(' from API NbrVolunteerCase create : ') . $ex->getMessage();
             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
           }
+
+          if ($data['nihr_paper_questionnaire'] == 'yes') {
+              // add action
+            try {
+              civicrm_api3('Activity', 'create', [
+                'source_contact_id' => $contactId,
+                'case_id' => $caseID,
+                'activity_type_id' => "nihr_paper_questionnaire",
+              ]);
+            } catch (CiviCRM_API3_Exception $ex) {
+               $message = E::ts('Error when adding paper questionnaire activity to recruitment case for volunteer ') . $contactId
+                . E::ts(' from API Activity create : ') . $ex->getMessage();
+             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
+            }
+          }
         }
+
+        // add consent to recruitment case
+        CRM_Nihrbackbone_NbrConsent::addConsent($contactId, $caseID, 'consent_form_status_not_valid', $data);
       }
     }
   }
@@ -308,6 +356,9 @@ class CRM_Nihrbackbone_NihrImportCsv {
         $newKey = $key;
       }
 
+      // NOTE: keep names for aliases, need to be added to the database separately
+
+
       if ($newKey == 'ethnicity') {
         $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_ethnicity_id', 'id');
       }
@@ -317,29 +368,64 @@ class CRM_Nihrbackbone_NihrImportCsv {
       if ($newKey == 'height_m') {
         $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_height_m', 'id');
       }
+
       if ($newKey == 'local_ucl_id') {
-        // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nva_ucl_br_local', 'id');
+        // todo use new fct from Erik $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nva_ucl_br_local', 'id');
         $mappedData[$newKey] = $value;
         // mapping ID is entered twice, once for insert (custom ID) and once for mapping (local_ucl_id)
-        $newKey = 'custom_218';
+        $newKey = 'custom_253';
+        // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_ucl_br_local', 'id');
+
       }
+      // todo don't use hardcoded
+      if ($newKey == 'pack_id') {
+        // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_ucl_br_local', 'id');
+        $mappedData['nva_alias_type'] = 'alias_type_packid';
+        $mappedData['nva_external_id'] = $value;
+
+      /*  $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('alias_type_ibd_id', 'id');
+        $mappedData[$newKey] = $value;
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_external_id', 'id');
+        $mappedData[$newKey] = $value;
+        // mapping ID is entered twice, once for insert (custom ID) and once for mapping (local_ucl_id)
+        $newKey = 'custom_'.CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_alias_type', 'id');
+        ; */
+      }
+
       $mappedData[$newKey] = $value;
     }
     return $mappedData;
   }
 
-  /**
+  private function formatData($xData)
+  {
+    $this->formatDataItem($xData['first_name']);
+    $this->formatDataItem($xData['last_name']);
+    $xData['email'] = strtolower($xData['email']);
+    $this->formatDataItem($xData['address_1']);
+    $this->formatDataItem($xData['address_2']);
+    $this->formatDataItem($xData['address_3']);
+    $this->formatDataItem($xData['address_4']);
+    return $xData;
+  }
+
+  private function formatDataItem(&$dataItem)
+  {
+    $dataItem = ucwords(strtolower($dataItem), '- ');
+    $dataItem = trim($dataItem);
+  }
+
+
+    /**
    * @param $data
    * @return int
    * @throws Exception
    */
-  private function addContact($data) {
+  private function addContact($data)
+  {
     // *** add or update volunteer
 
     $new_volunteer = 1;
-
-    // todo replace with param $dataSource
-    $xdataSource = 'ucl';
 
     // todo move to volunteer class (?)
 
@@ -350,10 +436,17 @@ class CRM_Nihrbackbone_NihrImportCsv {
 
     $mappingID = NULL;
     $identifierType = NULL;
-    switch ($xdataSource) {
-      case "ucl": $mappingID = "local_ucl_id";  $identifierType = 'alias_type_ucl_br_local'; break;
-      case "ibd": $mappingID = "ibd_id";        $identifierType = 'alias_type_ibd_id';       break;
-      default: $this->_logger->logMessage('ERROR: no default mapping for ' . $xdataSource, 'error');
+    switch ($this->_dataSource) {
+      case "ucl":
+        $mappingID = "local_ucl_id";
+        $identifierType = 'alias_type_ucl_br_local';
+        break;
+      case "ibd":
+        $mappingID = "pack_id";
+        $identifierType = 'alias_type_packid';
+        break;
+      default:
+        $this->_logger->logMessage('ERROR: no default mapping for ' . $this->_dataSource, 'error');
     }
 
     $contactId = $volunteer->findVolunteerByIdentity($data[$mappingID], $identifierType);
@@ -365,92 +458,221 @@ class CRM_Nihrbackbone_NihrImportCsv {
     try {
       $result = civicrm_api3("Contact", "create", $data);
       $this->_logger->logMessage('Volunteer succesfully loaded/updated');
+      return array((int)$result['id'], $new_volunteer);
+    } catch (CiviCRM_API3_Exception $ex) {
+      $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . " " . $ex->getMessage() . 'error');
     }
-    catch (CiviCRM_API3_Exception $ex) {
-      $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . " " . $ex->getMessage(). 'error');
-    }
-    return array ((int) $result['id'], $new_volunteer);
   }
 
 
-  private function addEmail($data, $contactID) {
+  private function addEmail($contactID, $data)
+  {
     // *** add or update volunteer email address
 
-    // only add if not already on database
-    $result = civicrm_api3('Email', 'get', [
-      'sequential' => 1,
-      'email' => $data['email'],
-      'contact_id' => $contactID,
-    ]);
-    if ($result['count'] == 0) {
-      // todo check if not former email address
-      try {
-        $result = civicrm_api3('Email', 'create', [
-          'contact_id' => $contactID,
-          'email' => $data['email'],
-        ]);
-        $this->_logger->logMessage('Volunteer email succesfully loaded/updated');
-      } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error message when adding volunteer email ' . $contactID . $ex->getMessage(), 'error');
+    if (isset ($data['email']) && $data['email'] <> '') {
+      // --- only add if not already on database
+      $result = civicrm_api3('Email', 'get', [
+        'sequential' => 1,
+        'email' => $data['email'],
+        'contact_id' => $contactID,
+      ]);
+      if ($result['count'] == 0) {
+
+        // --- only add if not former email address either
+        $sql = "select count(*)
+          from cividev_civi.civicrm_value_fcd_former_comm_data
+          where entity_id = %1
+          and fcd_communication_type = 'email'
+          and fcd_details like %2";
+
+        $queryParams = [
+          1 => [$contactID, 'Integer'],
+          2 => ['%' . $data['email'] . '%', 'String'],
+        ];
+
+        try {
+          $count = CRM_Core_DAO::singleValueQuery($sql, $queryParams);
+        } catch (CiviCRM_API3_Exception $ex) {
+        }
+
+        if ($count == 0) {
+          try {
+            $result = civicrm_api3('Email', 'create', [
+              'contact_id' => $contactID,
+              'email' => $data['email'],
+            ]);
+            $this->_logger->logMessage('Volunteer email succesfully loaded/updated');
+          } catch (CiviCRM_API3_Exception $ex) {
+            $this->_logger->logMessage('Error message when adding volunteer email ' . $contactID . $ex->getMessage(), 'error');
+          }
+        }
       }
     }
   }
 
-  private function addAddress($data, $contactID) {
+  private function addAddress($contactID, $data)
+  {
     // *** add or update volunteer home address
 
-    // only add if not already on database
-    $result = civicrm_api3('Address', 'get', [
-      'sequential' => 1,
-      'contact_id' => $contactID,
-      'street_address' => $data['address_1'],
-      'postal_code' => $data['postcode'],
-    ]);
-    if ($result['count'] == 0) {
-      // todo check if not former address
-      try {
-        $result = civicrm_api3('Address', 'create', [
-          'contact_id' => $contactID,
-          'location_type_id' => "Home",
-          'street_address' => $data['address_1'],
-          'supplemental_address_1' => $data['address_2'], // todo only add this line, if there is data
-          'supplemental_address_2' => $data['address_3'], // todo only add this line, if there is data
-          'city' => $data['address_4'],
-          'postal_code' => $data['postcode'],
-        ]);
+    if (isset($data['address_1']) && isset($data['postcode']) &&
+      $data['address_1'] <> '' && $data['postcode'] <> '') {
 
-        //$this->_logger->logMessage('Volunteer ' . $data["last_name"] . ' ' . $data["first_name"] . ' succesfully loaded');
-        $this->_logger->logMessage('Volunteer address succesfully loaded/updated');
-      } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error message when adding volunteer address ' . $contactID . $ex->getMessage(), 'error');
+      // --- only add if not already on database
+      $result = civicrm_api3('Address', 'get', [
+        'sequential' => 1,
+        'contact_id' => $contactID,
+        'street_address' => $data['address_1'],
+        'postal_code' => $data['postcode'],
+      ]);
+      if ($result['count'] == 0) {
+
+        // --- only add if not former address either
+        $sql = "select count(*)
+          from cividev_civi.civicrm_value_fcd_former_comm_data
+          where entity_id = %1
+          and fcd_communication_type = 'address'
+          and fcd_details like %2";
+
+        $queryParams = [
+          1 => [$contactID, 'Integer'],
+          2 => ['%' . $data['address_1'] . '%' . $data['postcode'] . '%', 'String'],
+        ];
+
+        try {
+          $count = CRM_Core_DAO::singleValueQuery($sql, $queryParams);
+        } catch (CiviCRM_API3_Exception $ex) {
+        }
+
+        if ($count == 0) {
+          $fields = [
+            'contact_id' => $contactID,
+            'location_type_id' => "Home",
+            'street_address' => $data['address_1'],
+            'city' => $data['address_4'],
+            'postal_code' => $data['postcode'],
+          ];
+          // optional fields, only add if there is data
+          if (isset($data['address_2'])) {
+            $fields['supplemental_address_1'] = $data['address_2'];
+          }
+          if (isset($data['address_3'])) {
+            $fields['supplemental_address_2'] = $data['address_3'];
+          }
+
+          try {
+            $result = civicrm_api3('Address', 'create', $fields);
+
+            //$this->_logger->logMessage('Volunteer ' . $data["last_name"] . ' ' . $data["first_name"] . ' succesfully loaded');
+            $this->_logger->logMessage('Volunteer address succesfully loaded/updated');
+          } catch (CiviCRM_API3_Exception $ex) {
+            $this->_logger->logMessage('Error message when adding volunteer address ' . $contactID . $ex->getMessage(), 'error');
+          }
+        }
       }
     }
   }
 
-  private function addPhone($data, $contactID) {
-    // *** add or update volunteer home address
+  private function addPhone($contactID, $data, $fieldName, $phoneLocation, $phoneType)
+  {
+    // *** add or update volunteer phone
 
-    // only add if not already on database
-    $result = civicrm_api3('Phone', 'get', [
-      'sequential' => 1,
-      'contact_id' => $contactID,
-      'phone' => $data['phone_home']
-    ]);
-    if ($result['count'] == 0) {
-      // todo check if not former phone
-      try {
-        $result = civicrm_api3('Phone', 'create', [
-          'contact_id' => $contactID,
-          'phone' => $data['phone_home'],
-          'phone_type_id' => "Phone"
-        ]);
-        // todo for Mobile and work phone (add new phone type, if possible)
+    if (isset($data[$fieldName]) && $data[$fieldName] <> '') {
+      $phoneNumber = $data[$fieldName];
 
-        $this->_logger->logMessage('Volunteer phone succesfully loaded/updated');
-      } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error message when adding volunteer phone ' . $contactID . $ex->getMessage(), 'error');
+      // only add if not already on database (do ignore type and location)
+      $result = civicrm_api3('Phone', 'get', [
+        'sequential' => 1,
+        'contact_id' => $contactID,
+        'phone' => $phoneNumber,
+      ]);
+      if ($result['count'] == 0) {
+
+        // only add if not former phone number either (do ignore type and location)
+        // todo other phone types
+        $sql = "select count(*)
+          from cividev_civi.civicrm_value_fcd_former_comm_data
+          where entity_id = %1
+          and fcd_communication_type = 'phone'
+          and fcd_details like %2";
+
+        $queryParams = [
+          1 => [$contactID, 'Integer'],
+          2 => ['%' . $phoneNumber . '%', 'String'],
+        ];
+
+        try {
+          $count = CRM_Core_DAO::singleValueQuery($sql, $queryParams);
+        } catch (CiviCRM_API3_Exception $ex) {
+        }
+
+        if ($count == 0) {
+          try {
+            $result = civicrm_api3('Phone', 'create', [
+              'contact_id' => $contactID,
+              'phone' => $phoneNumber,
+              'location_type_id' => $phoneLocation,
+              'phone_type_id' => $phoneType,
+            ]);
+            $this->_logger->logMessage('Volunteer phone succesfully loaded/updated');
+          } catch (CiviCRM_API3_Exception $ex) {
+            $this->_logger->logMessage('Error message when adding volunteer phone ' . $contactID . $ex->getMessage(), 'error');
+          }
+        }
       }
     }
   }
 
+  private function addAlias($contactID, $aliasType, $externalID, $update)
+  {
+    // *** add alias
+
+    if (isset($aliasType))
+      // todo and check if aliasType exists
+    {
+      if (isset($externalID)) {
+        $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomGroup('table_name');
+
+        // --- check if alias already exists ---------------------------------------------------------------------
+
+        // todo compare on strings removing blanks and special chars
+        $query = "SELECT nva_external_id
+                    from $table
+                    where entity_id = %1
+                    and nva_alias_type = %2";
+        $queryParams = [
+          1 => [$contactID, "Integer"],
+          2 => [$aliasType, "String"],
+        ];
+        $dbExternalID = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+
+        if (!isset($dbExternalID)) {
+          // --- insert --------------------------------------------------------------------------------------------
+
+          if ($aliasType == 'alias_type_nhs_number') {
+            // todo check if nhs number format is correct (subroutine to be written by JB)
+            // reformat NHS number
+            $externalID = substr($externalID, 0, 3) . ' ' . substr($externalID, 3, 3) . ' ' . substr($externalID, 6, 4);
+          }
+
+
+          $query = "insert into $table (entity_id,nva_alias_type, nva_external_id)
+                            values (%1,%2,%3)";
+          $queryParams = [
+            1 => [$contactID, "Integer"],
+            2 => [$aliasType, "String"],
+            3 => [$externalID, "String"],
+          ];
+          CRM_Core_DAO::executeQuery($query, $queryParams);
+
+        }
+        else {
+          // only update if update flag is set
+          if($dbExternalID <> $externalID and $update == 1)
+          {
+            // todo update alias
+          }
+        }
+      }
+    }
+  }
 }
