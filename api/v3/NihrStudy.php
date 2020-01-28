@@ -42,7 +42,7 @@ function _civicrm_api3_nihr_study_create_spec(&$spec) {
     'name' => 'long_name',
     'title' => 'Long Name',
     'description' => 'Study Long Name',
-    'api.required' => 1,
+    'api.required' => 0,
     'type' => CRM_Utils_Type::T_STRING,
   ];
   $spec['description'] = [

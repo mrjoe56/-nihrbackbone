@@ -377,39 +377,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     }
   }
 
-  /**
-   * Method to count the number of participation cases for a volunteer in the last xxx months
-   *
-   * @param $volunteerdId
-   * @param $numberOfMonths
-   * @return int|string|null
-   */
-  public static function countVolunteerParticipations($volunteerdId, $numberOfMonths) {
-    // start date should be after or on the date xxx months ago
-    try {
-      $startDate = new DateTime();
-      $modifier = '-' . $numberOfMonths . ' months';
-      $startDate->modify($modifier);
-      $query = "SELECT COUNT(*) FROM civicrm_case_contact AS a
-      JOIN civicrm_case AS b ON a.case_id = b.id
-      WHERE b.case_type_id = %1 AND b.is_deleted = %2 AND b.status_id != %3  AND a.contact_id = %4
-      AND b.start_date >= %5";
-      $queryParams = [
-        1 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), 'Integer'],
-        2 => [0, 'Integer'],
-        3 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), 'Integer'],
-        4 => [$volunteerdId, 'Integer'],
-        5 => [$startDate->format('Y-m-d'), 'String'],
-      ];
-      $count = CRM_Core_DAO::singleValueQuery($query, $queryParams);
-      if ($count) {
-        return $count;
-      }
-    }
-    catch (Exception $ex) {
-    }
-    return 0;
-  }
 
   /**
    * Method to get all participation case ids for volunteer
@@ -510,5 +477,38 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         . $contactId . E::ts(', error from API Activity create: ') . $ex->getMessage());
       return FALSE;
     }
+  }
+
+  /**
+   * Method to check if the volunteer has been invited in the relevant study
+   *
+   * @param $contactId
+   * @param $studyId
+   * @return bool
+   */
+  public static function hasBeenInvited($contactId, $studyId) {
+    if (empty($contactId) || empty($studyId)) {
+      return FALSE;
+    }
+    $query = "SELECT COUNT(*)
+      FROM civicrm_value_nihr_project_data AS a
+      LEFT JOIN civicrm_value_nihr_participation_data AS b ON a.entity_id = b.nvpd_project_id
+      LEFT JOIN civicrm_case_activity AS c ON b.entity_id = c.case_id
+      LEFT JOIN civicrm_case_contact AS d ON c.case_id = d.case_id
+      LEFT JOIN civicrm_case AS e ON c.case_id = e.id
+      LEFT JOIN civicrm_activity AS f ON c.activity_id = f.id
+      WHERE a.npd_study_id = %1 AND d.contact_id = %2 AND e.is_deleted = %3
+        AND f.is_current_revision = %4 AND f.is_deleted = %3 AND f.activity_type_id = %5";
+    $count = (int) CRM_Core_DAO::singleValueQuery($query, [
+      1 => [(int) $studyId, "Integer"],
+      2 => [(int) $contactId, "Integer"],
+      3 => [0, "Integer"],
+      4 => [1, "Integer"],
+      5 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getInviteProjectActivityTypeId(), "Integer"],
+    ]);
+    if ($count > 0) {
+      return TRUE;
+    }
+    return FALSE;
   }
 }
