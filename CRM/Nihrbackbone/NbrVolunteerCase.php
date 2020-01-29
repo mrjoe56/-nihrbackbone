@@ -511,4 +511,51 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     }
     return FALSE;
   }
+
+  /**
+   * Get all active participation cases that have a certain eligibility status
+   *
+   * @return array
+   */
+  public static function getEligibilityCases($statusId) {
+    $result = [];
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+    $eligibleColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
+    $projectIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
+    $query = "SELECT a.entity_id AS case_id, c.contact_id, a." . $eligibleColumn . " AS eligible, a." . $projectIdColumn . " AS project_id
+        FROM " . $tableName . " AS a
+        JOIN civicrm_case AS b ON a.entity_id = b.id
+        JOIN civicrm_case_contact AS c ON b.id = c.case_id
+        WHERE b.is_deleted = %1 AND b.case_type_id = %2 AND a." . $eligibleColumn . " LIKE %3";
+    $statusId = CRM_Core_DAO::VALUE_SEPARATOR . $statusId . CRM_Core_DAO::VALUE_SEPARATOR;
+    $queryParams = [
+      1 => [0, "Integer"],
+      2 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+      3 => ["%" . $statusId . "%", "String"],
+    ];
+    $index = 3;
+    $clauses = [];
+    $valids = Civi::settings()->get('nbr_inv_case_status');
+    if (!empty($valids)) {
+      $statuses = explode(",", $valids);
+      foreach ($statuses as $status) {
+        $index++;
+        $clauses[] = "%" . $index;
+        $queryParams[$index] = [$status, "String"];
+      }
+      $query .= " AND b.status_id IN (" . implode(",", $clauses) . ")";
+    }
+    $dao = CRM_Core_DAO::executeQuery($query, $queryParams);
+    while ($dao->fetch()) {
+      $case = [
+        'case_id' => $dao->case_id,
+        'contact_id' => $dao->contact_id,
+      ];
+      $case[$eligibleColumn] = $dao->eligible;
+      $case[$projectIdColumn] = $dao->project_id;
+      $result[] = $case;
+    }
+    return $result;
+  }
+
 }
