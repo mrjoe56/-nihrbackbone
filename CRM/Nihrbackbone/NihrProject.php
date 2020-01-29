@@ -287,12 +287,15 @@ class CRM_Nihrbackbone_NihrProject {
   public static function checkMeetsAge() {
     $criteriaStatusId = CRM_Nihrbackbone_BackboneConfig::singleton()->getCriteriaNotMetEligibleStatusId();
     $projectIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
-    // first step: retrieve all active cases with eligible status does not meet criteria
-    $cases = CRM_Nihrbackbone_NbrVolunteerCase::getEligibilityCases($criteriaStatusId);
-    // for each of those, check if it is still valid and if not remove status
+    $meetStatus = CRM_Nihrbackbone_BackboneConfig::singleton()->getCriteriaNotMetEligibleStatusId();
+    $cases = CRM_Nihrbackbone_NbrVolunteerCase::getAllActiveParticipations();
+    // for each of those, check if I need to add or remove the status
     foreach ($cases as $caseData) {
       if (!CRM_Nihrbackbone_NihrVolunteer::meetsProjectSelectionCriteria($caseData['contact_id'], $caseData[$projectIdColumn])) {
         CRM_Nihrbackbone_NbrVolunteerCase::removeEligibilityStatus($caseData['case_id'], $caseData[$projectIdColumn], $criteriaStatusId);
+      }
+      else {
+        CRM_Nihrbackbone_NbrVolunteerCase::setEligibilityStatus($meetStatus, $caseData['case_id']);
       }
     }
   }
