@@ -494,6 +494,22 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Method to check if the cases with max invitations still need it
+   */
+  public static function checkMaxInvitations() {
+    $eligibleColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
+    $maxStatusId = CRM_Nihrbackbone_BackboneConfig::singleton()->getMaxReachedEligibleStatusId();
+    // first step: retrieve all active cases with eligible status max invitations reached
+    $cases = CRM_Nihrbackbone_NbrVolunteerCase::getEligibilityCases($maxStatusId);
+    // for each of those, check if still applicable and if not, remove status
+    foreach ($cases as $caseData) {
+      if (!self::hasMaxStudyInvitationsNow($caseData['contact_id'])) {
+        CRM_Nihrbackbone_NbrVolunteerCase::removeEligibilityStatus($caseData['case_id'], $caseData[$eligibleColumn], $maxStatusId);
+      }
+    }
+  }
+
+  /**
    * Method to get the project participation statuses to be considered as invited
    *
    * @return array
