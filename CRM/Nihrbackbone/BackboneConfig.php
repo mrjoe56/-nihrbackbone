@@ -26,8 +26,8 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_consentVersionOptionGroupId = NULL;
   private $_caseStatusOptionGroupId = NULL;
 
-  // property for project campaign type
-  private $_projectCampaignTypeId = NULL;
+  // property for study campaign type
+  private $_studyCampaignTypeId = NULL;
 
   // properties for project (campaign) status
   private $_recruitingProjectStatus = NULL;
@@ -654,8 +654,8 @@ class CRM_Nihrbackbone_BackboneConfig {
    *
    * @return null
    */
-  public function getProjectCampaignTypeId() {
-    return $this->_projectCampaignTypeId;
+  public function getStudyCampaignTypeId() {
+    return $this->_studyCampaignTypeId;
   }
 
   /**
@@ -901,10 +901,10 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   private function setCampaignTypes() {
     try {
-      $this->_projectCampaignTypeId = civicrm_api3('OptionValue', 'getvalue', [
+      $this->_studyCampaignTypeId = civicrm_api3('OptionValue', 'getvalue', [
         'option_group_id' => 'campaign_type',
         'return' => "value",
-        'name' => 'nihr_project',
+        'name' => 'nbr_study',
       ]);
     }
     catch (CiviCRM_API3_Exception $ex) {

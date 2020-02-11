@@ -11,13 +11,13 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  */
 class CRM_Nihrbackbone_NihrProject {
 
-  private $_projectCampaignTypeId = NULL;
+  private $_studyCampaignTypeId = NULL;
 
   /**
    * CRM_Nihrbackbone_NihrProject constructor.
    */
   public function __construct() {
-    $this->_projectCampaignTypeId = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCampaignTypeId();
+    $this->_studyCampaignTypeId = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCampaignTypeId();
   }
 
   /**
@@ -32,7 +32,7 @@ class CRM_Nihrbackbone_NihrProject {
         'id' => $campaignId,
         'return' => 'campaign_type_id',
       ]);
-      if ($campaignTypeId == $this->_projectCampaignTypeId) {
+      if ($campaignTypeId == $this->_studyCampaignTypeId) {
         return TRUE;
       }
     }
@@ -44,113 +44,6 @@ class CRM_Nihrbackbone_NihrProject {
   }
 
   /**
-   * Method to get the researchers on a project
-   *
-   * @param $projectId
-   * @return array
-   */
-  public function getProjectResearchers($projectId) {
-    $result = [];
-    try {
-      $researchers = civicrm_api3('NihrCampaignResearcher', 'get', [
-        'sequential' => 1,
-        'project_id' => $projectId,
-        'options' => ['limit' => 0],
-      ]);
-      foreach ($researchers['values'] as $researcher) {
-        $result[] = $researcher['researcher_id'];
-      }
-    } catch (CiviCRM_API3_Exception $ex) {
-    }
-    return $result;
-  }
-
-  /**
-   * Method to determine if the campaign is a NIHR project
-   *
-   * @param $campaignId
-   * @return bool
-   */
-  public function isProjectCampaign($campaignId) {
-    try {
-      $campaignTypeId = (int) civicrm_api3('Campaign', 'getvalue', [
-        'id' => $campaignId,
-        'return' => 'campaign_type_id',
-      ]);
-      if ($campaignTypeId && $campaignTypeId == $this->_projectCampaignTypeId) {
-        return TRUE;
-      }
-    }
-    catch (CiviCRM_API3_Exception $ex) {
-    }
-    return FALSE;
-  }
-
-  /**
-   * Method to determine if project is active
-   *
-   * @param int $projectId
-   * @return  bool
-   */
-  public static function isProjectActive($projectId) {
-    try {
-      $count = (int) civicrm_api3('Campaign', 'getcount', [
-        'id' => $projectId,
-        'campaign_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCampaignTypeId(),
-        'status_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingProjectStatus(),
-      ]);
-      if ($count == 1) {
-        return TRUE;
-      }
-    }
-    catch (CiviCRM_API3_Exception $ex) {
-    }
-    return FALSE;
-  }
-
-  /**
-   * Method to get the study id of a project
-   *
-   * @param $projectId
-   * @return bool|string|null
-   */
-  public static function getProjectStudyId($projectId) {
-    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectDataCustomGroup('table_name');
-    $studyColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'column_name');
-    $query = "SELECT " . $studyColumn . " FROM " . $tableName . " WHERE entity_id = %1";
-    $studyId = CRM_Core_DAO::singleValueQuery($query, [1 => [$projectId, 'Integer']]);
-    if ($studyId) {
-      return $studyId;
-    }
-    return FALSE;
-  }
-
-  /**
-   * Method to set the study id in a project
-   *
-   * @param $studyId
-   * @param $projectId
-   * @return bool
-   */
-  public function setProjectStudyId($studyId, $projectId) {
-    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectDataCustomGroup('table_name');
-    $studyColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'column_name');
-    $query = "UPDATE " . $tableName . " SET " . $studyColumn . " = %1 WHERE entity_id = %2";
-    try {
-      CRM_Core_DAO::executeQuery($query, [
-        1 => [$studyId, 'Integer'],
-        2 => [$projectId, 'Integer'],
-      ]);
-      return TRUE;
-    }
-    catch (Exception $ex) {
-      Civi::log()->error(E::ts('Error when updating project with ID ') . $projectId . E::ts(' with study becoming ')
-        . $studyId . E::ts(', error from CRM_Core_DAO::executeQuery: '). $ex->getMessage() . E::ts(' in ') . __METHOD__);
-      return FALSE;
-    }
-  }
-
-  /**
    * Method to check if a project exists
    *
    * @param $projectId
@@ -159,7 +52,7 @@ class CRM_Nihrbackbone_NihrProject {
   public function projectExists($projectId) {
     try {
       $result = civicrm_api3('Campaign', 'getcount', [
-        'campaign_type_id' => $this->_projectCampaignTypeId,
+        'campaign_type_id' => $this->_studyCampaignTypeId,
         'id' => $projectId,
       ]);
       if ($result == 0) {
@@ -174,34 +67,6 @@ class CRM_Nihrbackbone_NihrProject {
       return FALSE;
     }
 
-  }
-
-  /**
-   * Method to get the project attribute with id
-   *
-   * @param int $projectId
-   * @param string $attribute
-   * @return bool|array
-   */
-  public function getProjectAttributeWithId($projectId, $attribute) {
-    $customFieldId = CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField($attribute, 'id');
-    if ($customFieldId) {
-      try {
-        return civicrm_api3('Campaign', 'getvalue', [
-          'id' => $projectId,
-          'campaign_type_id' => $this->_projectCampaignTypeId,
-          'return' => 'custom_' . $customFieldId,
-        ]);
-      }
-      catch (CiviCRM_API3_Exception $ex) {
-        Civi::log()->warning(E::ts('Error retrieving ') . $attribute . E::ts(' for project ') . $projectId . E::ts(' in ') . __METHOD__ . E::ts(', error from API Campaign getvalue"') . $ex->getMessage());
-        return FALSE;
-      }
-    }
-    else {
-      Civi::log()->error(E::ts('No attribute with name ') . $attribute . E::ts(' for project in ') . __METHOD__);
-      return FALSE;
-    }
   }
 
   /**
@@ -298,6 +163,25 @@ class CRM_Nihrbackbone_NihrProject {
         CRM_Nihrbackbone_NbrVolunteerCase::setEligibilityStatus($meetStatus, $caseData['case_id']);
       }
     }
+  }
+
+  /**
+   * Method to get the centre of origin of a study
+   *
+   * @param $studyId
+   * @return array|bool
+   */
+  public static function getCentreOfOrigin($studyId) {
+    $centreField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_centre_of_origin', 'id');
+    try {
+      return civicrm_api3('Campaign', 'getvalue', [
+        'id' => $studyId,
+        'return' => $centreField,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return FALSE;
   }
 
 }

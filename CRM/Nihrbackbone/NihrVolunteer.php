@@ -175,7 +175,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
     if (!$checkDate instanceof DateTime) {
       $checkDate = new DateTime($checkDate);
     }
-    $studyQuery = "SELECT COUNT(DISTINCT(proj.npd_study_id))
+    $studyQuery = "SELECT COUNT(DISTINCT(proj.npd_study_number))
         FROM civicrm_value_nihr_project_data AS proj
         LEFT JOIN civicrm_value_nihr_participation_data AS nvpd ON proj.entity_id = nvpd.nvpd_project_id
         LEFT JOIN civicrm_case AS cc ON nvpd.entity_id = cc.id
@@ -205,7 +205,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
   public static function getCurrentSelectedStudies($contactId) {
     $studies = [];
     if (!empty($contactId)) {
-      $studyQuery = "SELECT DISTINCT(d.npd_study_id) AS study_id
+      $studyQuery = "SELECT DISTINCT(d.npd_study_number) AS study_id
         FROM civicrm_case_contact AS a
         JOIN civicrm_case AS b ON a.case_id = b.id
         LEFT JOIN civicrm_value_nihr_participation_data AS c ON a.case_id = c.entity_id

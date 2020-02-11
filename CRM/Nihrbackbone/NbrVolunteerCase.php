@@ -497,7 +497,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       LEFT JOIN civicrm_case_contact AS d ON c.case_id = d.case_id
       LEFT JOIN civicrm_case AS e ON c.case_id = e.id
       LEFT JOIN civicrm_activity AS f ON c.activity_id = f.id
-      WHERE a.npd_study_id = %1 AND d.contact_id = %2 AND e.is_deleted = %3
+      WHERE a.npd_study_number = %1 AND d.contact_id = %2 AND e.is_deleted = %3
         AND f.is_current_revision = %4 AND f.is_deleted = %3 AND f.activity_type_id = %5";
     $count = (int) CRM_Core_DAO::singleValueQuery($query, [
       1 => [(int) $studyId, "Integer"],

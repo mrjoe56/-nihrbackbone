@@ -7,7 +7,7 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  * @date 10 Feb 2020
  * @license AGPL-3.0
  */
-class CRM_Nihrbackbone_Page_NbrProject extends CRM_Core_Page {
+class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
 
   private $_studyId = NULL;
 
@@ -18,48 +18,44 @@ class CRM_Nihrbackbone_Page_NbrProject extends CRM_Core_Page {
    */
   function run() {
     $this->setPageConfiguration();
-    $this->assign('nbr_projects', $this->getProjects());
+    $this->assign('nbr_studies', $this->getStudies());
     parent::run();
   }
 
   /**
-   * Function to get the project(s) in the study if not empty (else all projects)
+   * Function to get the studies
    *
-   * @return array $projects
+   * @return array $studies
    * @access protected
    */
-  private function getProjects() {
-    $projects = [];
-    $studyCustomFieldId = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('nd_study_id', 'id');
+  private function getStudies() {
+    $studies = [];
     try {
       $apiParams = [
         'sequential' => 1,
-        'campaign_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCampaignTypeId(),
+        'campaign_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCampaignTypeId(),
         'is_active' => 1,
       ];
-      if ($this->_studyId) {
-        $apiParams[$studyCustomFieldId] = $this->_studyId;
-      }
       $result = civicrm_api3('Campaign', 'get', $apiParams);
-      foreach ($result['values'] as $apiProject) {
-        $projects[] = $this->assembleProjectRow($apiProject);
+      foreach ($result['values'] as $apiStudy) {
+        $studies[] = $this->assembleStudyRow($apiStudy);
       }
     }
     catch (CiviCRM_API3_Exception $ex) {
-      Civi::log()->error(E::ts('Error getting projects with API Campaign get in ') . __METHOD__
+      Civi::log()->error(E::ts('Error getting studies with API Campaign get in ') . __METHOD__
         . E::ts(', error message: '). $ex->getMessage());
     }
-    return $projects;
+    return $studies;
   }
 
   /**
-   * Method to assemble the project row from the api result row
+   * Method to assemble the study row from the api result row
    *
-   * @param $apiProject
+   * @param $apiStudy
    * @return array
    */
-  private function assembleProjectRow($apiProject) {
-    $project = [];
+  private function assembleStudyRow($apiStudy) {
+    $study = [];
     $site = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_site', 'id');
     $dataOnly = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_data_only', 'id');
     $multiVisit = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_multiple_visits', 'id');
@@ -82,44 +78,44 @@ class CRM_Nihrbackbone_Page_NbrProject extends CRM_Core_Page {
       $travel => 'travel_required',
     ];
     foreach ($elements as $in => $out) {
-      if (isset($apiProject[$in])) {
-        $project[$out] = $apiProject[$in];
+      if (isset($apiStudy[$in])) {
+        $study[$out] = $apiStudy[$in];
       }
     }
     $yesNos = ['sample_only', 'data_only', 'multi_visit', 'online', 'blood_required', 'travel_required'];
     foreach ($yesNos as $yesNo) {
-      if (isset($project[$yesNo]) && $project[$yesNo] == "1") {
-        $project[$yesNo] = "Yes";
+      if (isset($study[$yesNo]) && $study[$yesNo] == "1") {
+        $study[$yesNo] = "Yes";
       }
       else {
-        $project[$yesNo] = "No";
+        $study[$yesNo] = "No";
       }
     }
-    if (isset($project['status_id']) && !empty($project['status_id'])) {
-      $project['status'] = CRM_Nihrbackbone_Utils::getOptionValueLabel($project['status_id'], 'campaign_status');
+    if (isset($study['status_id']) && !empty($study['status_id'])) {
+      $study['status'] = CRM_Nihrbackbone_Utils::getOptionValueLabel($study['status_id'], 'campaign_status');
     }
-    $project['actions'] = $this->setRowActions($apiProject);
-    return $project;
+    $study['actions'] = $this->setRowActions($apiStudy);
+    return $study;
   }
 
   /**
    * Function to set the row action urls and links for each row
    *
-   * @param array $project
+   * @param array $study
    * @return array $actions
    * @access protected
    */
-  protected function setRowActions($project) {
+  protected function setRowActions($study) {
     $rowActions = [];
     $csId = CRM_Nihrbackbone_Utils::getVolunteerCsId();
     if ($csId) {
       $volunteersUrl = CRM_Utils_System::url('civicrm/contact/search/custom' , 'reset=1&csid=' . $csId, TRUE);
       $rowActions[] = '<a class="action-item" title="Volunteers" href="' . $volunteersUrl .'">' . E::ts('Volunteers') . '</a>';
     }
-    $viewUrl = CRM_Utils_System::url('civicrm/nihrbackbone/form/nbrproject', 'reset=1&action=view&id='.
-      $project['id']);
-    $updateUrl = CRM_Utils_System::url('civicrm/nihrbackbone/form/nbrproject', 'reset=1&action=update&id='.
-      $project['id']);
+    $viewUrl = CRM_Utils_System::url('civicrm/nihrbackbone/form/nbrstudy', 'reset=1&action=view&id='.
+      $study['id']);
+    $updateUrl = CRM_Utils_System::url('civicrm/nihrbackbone/form/nbrstudy', 'reset=1&action=update&id='.
+      $study['id']);
     $rowActions[] = '<a class="action-item" title="Update" href="' . $updateUrl .'">' . E::ts('Edit') . '</a>';
     $rowActions[] = '<a class="action-item" title="View" href="' . $viewUrl .'">' . E::ts('View') . '</a>';
     return $rowActions;
@@ -131,17 +127,11 @@ class CRM_Nihrbackbone_Page_NbrProject extends CRM_Core_Page {
    * @access protected
    */
   protected function setPageConfiguration() {
-    $title = E::ts("NIHR BioResource projects");
-    $studyId = CRM_Utils_Request::retrieveValue('sid', "Integer");
-    if ($studyId) {
-      $this->_studyId = $studyId;
-      $title .= " in study " . CRM_Nihrbackbone_BAO_NihrStudy::getStudyNumber($this->_studyId);
-    }
-    CRM_Utils_System::setTitle(ts('NIHR BioResource projects'));
-    $this->assign('add_url', CRM_Utils_System::url('civicrm/nihrbackbone/form/nbrproject',
+    CRM_Utils_System::setTitle(ts('NIHR BioResource studies'));
+    $this->assign('add_url', CRM_Utils_System::url('civicrm/nihrbackbone/form/nbrstudy',
       'reset=1&action=add', TRUE));
     $session = CRM_Core_Session::singleton();
-    $session->pushUserContext(CRM_Utils_System::url('civicrm/nihrbackbone/page/nbrproject', 'reset=1', TRUE));
+    $session->pushUserContext(CRM_Utils_System::url('civicrm/nihrbackbone/page/nbrstudy', 'reset=1', TRUE));
   }
 
 }
