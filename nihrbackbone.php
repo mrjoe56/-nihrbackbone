@@ -128,15 +128,7 @@ function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask
         'class' => 'no-popup',
         'qs' => 'reset=1&pid=%%id%%',
         ];
-      try {
-        $csId = (int) civicrm_api3('OptionValue', 'getvalue', [
-          'return' => "value",
-          'option_group_id' => "custom_search",
-          'name' => "CRM_Nbrprojectvolunteerlist_Form_Search_VolunteerList",
-        ]);
-      } catch (CiviCRM_API3_Exception $ex) {
-        $csId = NULL;
-      }
+      $csId = CRM_Nihrbackbone_Utils::getVolunteerCsId();
       if ($csId) {
         $links[] = [
           'name' => ts('Volunteers'),
@@ -164,6 +156,14 @@ function nihrbackbone_civicrm_navigationMenu(&$menu) {
     'operator' => 'OR',
     'separator' => 0,
   ));
+  _nihrbackbone_civix_insert_navigation_menu($menu, '', [
+    'label' => E::ts('NIHR BioResource Studies'),
+    'name' => 'nbrstudies',
+    'url' => 'civicrm/nihrbackbone/page/nbrproject',
+    'permission' => 'access CiviCRM',
+    'operator' => 'OR',
+    'separator' => 0,
+  ]);
 
   _nihrbackbone_civix_navigationMenu($menu);
 }

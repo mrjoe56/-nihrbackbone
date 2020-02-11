@@ -121,4 +121,21 @@ class CRM_Nihrbackbone_Utils {
     }
   }
 
+  /**
+   * Method to get the custom search id for the project volunteer list
+   *
+   * @return bool|int
+   */
+  public static function getVolunteerCsId() {
+    try {
+      return (int) civicrm_api3('OptionValue', 'getvalue', [
+        'return' => "value",
+        'option_group_id' => "custom_search",
+        'name' => "CRM_Nbrprojectvolunteerlist_Form_Search_VolunteerList",
+      ]);
+    } catch (CiviCRM_API3_Exception $ex) {
+    }
+    return FALSE;
+  }
+
 }
