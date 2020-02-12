@@ -28,7 +28,7 @@
       {assign var="row_class" value="odd-row"}
       {foreach from=$nbr_studies key=study_id item=study}
         <tr id="nbr_study-{$study_id}" class="crm-entity {cycle values="odd-row,even-row"} {$row.class} nbr-study-row">
-          <td>{$study.number}</td>
+          <td>{$study.study_number}</td>
           <td>{$study.name}</td>
           <td>{$study.status}</td>
           <td>{$study.site}</td>

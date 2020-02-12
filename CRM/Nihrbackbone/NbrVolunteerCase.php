@@ -201,7 +201,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $projectIdCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'id');
     $pvStatusCustomFieldId = 'custom_'. CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_participation_status', 'id');
     $recallGroupCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'id');
-    $projectName = CRM_Nihrbackbone_NihrProject::getProjectNameWithId($this->_apiParams['project_id']);
+    $projectName = CRM_Nihrbackbone_NbrStudy::getStudyNameWithId($this->_apiParams['project_id']);
     if ($projectName) {
       $subject = E::ts("Selected for project ") . $projectName;
     }
@@ -491,13 +491,13 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       return FALSE;
     }
     $query = "SELECT COUNT(*)
-      FROM civicrm_value_nihr_project_data AS a
-      LEFT JOIN civicrm_value_nihr_participation_data AS b ON a.entity_id = b.nvpd_project_id
+      FROM civicrm_value_nbr_study_data AS a
+      LEFT JOIN civicrm_value_nbr_participation_data AS b ON a.entity_id = b.nvpd_study_id
       LEFT JOIN civicrm_case_activity AS c ON b.entity_id = c.case_id
       LEFT JOIN civicrm_case_contact AS d ON c.case_id = d.case_id
       LEFT JOIN civicrm_case AS e ON c.case_id = e.id
       LEFT JOIN civicrm_activity AS f ON c.activity_id = f.id
-      WHERE a.npd_study_number = %1 AND d.contact_id = %2 AND e.is_deleted = %3
+      WHERE a.nsd_study_number = %1 AND d.contact_id = %2 AND e.is_deleted = %3
         AND f.is_current_revision = %4 AND f.is_deleted = %3 AND f.activity_type_id = %5";
     $count = (int) CRM_Core_DAO::singleValueQuery($query, [
       1 => [(int) $studyId, "Integer"],

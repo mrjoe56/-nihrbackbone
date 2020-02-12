@@ -1,15 +1,13 @@
 <?php
 use CRM_Nihrbackbone_ExtensionUtil as E;
 /**
- * Page NbrProject to show all projects (within a study
+ * Page NbrProject to show all studies
  *
  * @author Erik Hommel <erik.hommel@civicoop.org>
  * @date 10 Feb 2020
  * @license AGPL-3.0
  */
 class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
-
-  private $_studyId = NULL;
 
   /**
    * Standard run function created when generating page with Civix
@@ -56,18 +54,20 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
    */
   private function assembleStudyRow($apiStudy) {
     $study = [];
-    $site = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_site', 'id');
-    $dataOnly = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_data_only', 'id');
-    $multiVisit = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_multiple_visits', 'id');
-    $sampleOnly = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_sample_only', 'id');
-    $online = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_online_project', 'id');
-    $nurse = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_primary_nurse', 'id');
+    $studyNumber = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_study_number', 'id');
+    $site = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_site', 'id');
+    $dataOnly = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_data_only', 'id');
+    $multiVisit = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_multiple_visits', 'id');
+    $sampleOnly = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_sample_only', 'id');
+    $online = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_online_project', 'id');
+    $nurse = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_primary_nurse', 'id');
     $blood = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_blood_required', 'id');
     $travel = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_travel_required', 'id');
     $elements = [
       'title' => 'name',
       'status_id' => 'status_id',
       'start_date' => 'start_date',
+      $studyNumber => 'study_number',
       $site => 'site',
       $dataOnly => 'data_only',
       $multiVisit => 'multi_visit',

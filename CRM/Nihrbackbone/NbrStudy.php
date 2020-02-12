@@ -2,31 +2,31 @@
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /**
- * Class for NIHR BioResource NIHR BioResource Project
+ * Class for NIHR BioResource NIHR BioResource Study
  *
  * @author Erik Hommel <erik.hommel@civicoop.org>
- * @date 27 Feb 2019
+ * @date 12 Feb 2020
  * @license AGPL-3.0
 
  */
-class CRM_Nihrbackbone_NihrProject {
+class CRM_Nihrbackbone_NbrStudy {
 
   private $_studyCampaignTypeId = NULL;
 
   /**
-   * CRM_Nihrbackbone_NihrProject constructor.
+   * CRM_Nihrbackbone_NbrStudy constructor.
    */
   public function __construct() {
     $this->_studyCampaignTypeId = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCampaignTypeId();
   }
 
   /**
-   * Method to check if campaign is a project
+   * Method to check if campaign is a study
    *
    * @param $campaignId
    * @return bool
    */
-  public function isNihrProject($campaignId) {
+  public function isNbrStudy($campaignId) {
     try {
       $campaignTypeId = (int) civicrm_api3('Campaign', 'getvalue', [
         'id' => $campaignId,
@@ -44,16 +44,16 @@ class CRM_Nihrbackbone_NihrProject {
   }
 
   /**
-   * Method to check if a project exists
+   * Method to check if a study exists
    *
-   * @param $projectId
+   * @param $studyId
    * @return bool
    */
-  public function projectExists($projectId) {
+  public function studyExists($studyId) {
     try {
       $result = civicrm_api3('Campaign', 'getcount', [
         'campaign_type_id' => $this->_studyCampaignTypeId,
-        'id' => $projectId,
+        'id' => $studyId,
       ]);
       if ($result == 0) {
         return FALSE;
@@ -66,41 +66,20 @@ class CRM_Nihrbackbone_NihrProject {
       Civi::log()->warning(E::ts('Unexpected error using API Campaign getcount in ') . __METHOD__ . E::ts(', error from API: ') . $ex->getMessage());
       return FALSE;
     }
-
   }
 
   /**
-   * Method to get the project ID with a case ID
+   * Method to get the name of the study with the id
    *
-   * @param $caseId
-   * @return bool|int
-   */
-  public static function getProjectIdWithCaseId($caseId) {
-    if (!empty($caseId)) {
-      try {
-        return (int) civicrm_api3('Case', 'getvalue', [
-          'return' => "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'id'),
-          'id' => $caseId,
-        ]);
-      }
-      catch (CiviCRM_API3_Exception $ex) {
-      }
-    }
-    return FALSE;
-  }
-
-  /**
-   * Method to get the name of the project with the id
-   *
-   * @param $projectId
+   * @param $studyId
    * @return bool|string
    */
-  public static function getProjectNameWithId($projectId) {
-    if (!empty($projectId)) {
+  public static function getStudyNameWithId($studyId) {
+    if (!empty($studyId)) {
       try {
         return (string) civicrm_api3('Campaign', 'getvalue', [
           'return' => 'title',
-          'id' => $projectId,
+          'id' => $studyId,
         ]);
       }
       catch (CiviCRM_API3_Exception $ex) {
@@ -110,14 +89,35 @@ class CRM_Nihrbackbone_NihrProject {
   }
 
   /**
-   * Method to get the project selection criteria
+   * Method to get the study number with the id
    *
-   * @param $projectId
+   * @param $studyId
+   * @return bool|string
+   */
+  public static function getStudyNumberWithId($studyId) {
+    if (!empty($studyId)) {
+      $numberField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_study_number', 'id');
+      try {
+        return (string) civicrm_api3('Campaign', 'getvalue', [
+          'return' => $numberField,
+          'id' => $studyId,
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to get the study selection criteria
+   *
+   * @param $studyId
    * @return array
    */
-  public static function getSelectionCriteria($projectId) {
+  public static function getSelectionCriteria($studyId) {
     $criteria = [];
-    if (!empty($projectId)) {
+    if (!empty($studyId)) {
       $returns = [];
       $customFields = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('custom_fields');
       foreach ($customFields as $customField) {
@@ -125,7 +125,7 @@ class CRM_Nihrbackbone_NihrProject {
       }
       try {
         $customValues = civicrm_api3('Campaign', 'getsingle', [
-          'id' => $projectId,
+          'id' => $studyId,
           'return' => $returns,
         ]);
         foreach ($customFields as $customFieldId => $customField) {
@@ -151,13 +151,13 @@ class CRM_Nihrbackbone_NihrProject {
    */
   public static function checkMeetsAge() {
     $criteriaStatusId = CRM_Nihrbackbone_BackboneConfig::singleton()->getCriteriaNotMetEligibleStatusId();
-    $projectIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
+    $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
     $meetStatus = CRM_Nihrbackbone_BackboneConfig::singleton()->getCriteriaNotMetEligibleStatusId();
     $cases = CRM_Nihrbackbone_NbrVolunteerCase::getAllActiveParticipations();
     // for each of those, check if I need to add or remove the status
     foreach ($cases as $caseData) {
-      if (!CRM_Nihrbackbone_NihrVolunteer::meetsProjectSelectionCriteria($caseData['contact_id'], $caseData[$projectIdColumn])) {
-        CRM_Nihrbackbone_NbrVolunteerCase::removeEligibilityStatus($caseData['case_id'], $caseData[$projectIdColumn], $criteriaStatusId);
+      if (!CRM_Nihrbackbone_NihrVolunteer::meetsProjectSelectionCriteria($caseData['contact_id'], $caseData[$studyIdColumn])) {
+        CRM_Nihrbackbone_NbrVolunteerCase::removeEligibilityStatus($caseData['case_id'], $caseData[$studyIdColumn], $criteriaStatusId);
       }
       else {
         CRM_Nihrbackbone_NbrVolunteerCase::setEligibilityStatus($meetStatus, $caseData['case_id']);
@@ -172,7 +172,7 @@ class CRM_Nihrbackbone_NihrProject {
    * @return array|bool
    */
   public static function getCentreOfOrigin($studyId) {
-    $centreField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_centre_of_origin', 'id');
+    $centreField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_centre_of_origin', 'id');
     try {
       return civicrm_api3('Campaign', 'getvalue', [
         'id' => $studyId,

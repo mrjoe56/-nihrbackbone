@@ -15,11 +15,9 @@ class CRM_Nihrbackbone_BackboneConfig {
   private static $_singleton = NULL;
 
   // properties for option group ids
-  private $_studyStatusOptionGroupId = NULL;
   private $_ethicsApprovedOptionGroupId = NULL;
   private $_eligibleStatusOptionGroupId = NULL;
   private $_genderOptionGroupId = NULL;
-  private $_projectParticipationStatusOptionGroupId = NULL;
   private $_studyParticipationStatusOptionGroupId = NULL;
   private $_ethnicityOptionGroupId = NULL;
   private $_consentStatusOptionGroupId = NULL;
@@ -29,15 +27,15 @@ class CRM_Nihrbackbone_BackboneConfig {
   // property for study campaign type
   private $_studyCampaignTypeId = NULL;
 
-  // properties for project (campaign) status
-  private $_recruitingProjectStatus = NULL;
-  private $_completedProjectStatus = NULL;
-  private $_declinedProjectStatus = NULL;
-  private $_closedProjectStatus = NULL;
-  private $_pendingProjectStatus = NULL;
+  // properties for study (campaign) status
+  private $_recruitingStudyStatus = NULL;
+  private $_completedStudyStatus = NULL;
+  private $_declinedStudyStatus = NULL;
+  private $_closedStudyStatus = NULL;
+  private $_pendingStudyStatus = NULL;
 
   // properties for custom groups
-  private $_projectDataCustomGroup = [];
+  private $_studyDataCustomGroup = [];
   private $_participationDataCustomGroup = [];
   private $_volunteerDataCustomGroup = [];
   private $_volunteerStatusCustomGroup = [];
@@ -55,7 +53,6 @@ class CRM_Nihrbackbone_BackboneConfig {
 
   // propterties for activity type ids
   private $_changeStudyStatusActivityTypeId = NULL;
-  private $_changeProjectStatusActivityTypeId = NULL;
   private $_inviteProjectActivityTypeId = NULL;
 
   // properties for case status ids
@@ -236,17 +233,17 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
-   * Getter for project data custom group
+   * Getter for study data custom group
    *
    * @param null $key
    * @return array|mixed
    */
-  public function getProjectDataCustomGroup($key = NULL) {
-    if ($key && isset($this->_projectDataCustomGroup[$key])) {
-      return $this->_projectDataCustomGroup[$key];
+  public function getStudyDataCustomGroup($key = NULL) {
+    if ($key && isset($this->_studyDataCustomGroup[$key])) {
+      return $this->_studyDataCustomGroup[$key];
     }
     else {
-      return $this->_projectDataCustomGroup;
+      return $this->_studyDataCustomGroup;
     }
   }
 
@@ -419,14 +416,14 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
-   * Getter for project data custom field
+   * Getter for study data custom field
    *
    * @param $customFieldName
    * @param $key
    * @return mixed
    */
-  public function getProjectCustomField($customFieldName, $key = NULL) {
-    foreach ($this->_projectDataCustomGroup['custom_fields'] as $customField) {
+  public function getStudyCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_studyDataCustomGroup['custom_fields'] as $customField) {
       if ($customField['name'] == $customFieldName) {
         if ($key && isset($customField[$key])) {
           return $customField[$key];
@@ -659,56 +656,47 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
-   * Getter for closed project status
+   * Getter for closed study status
    *
    * @return null
    */
-  public function getClosedProjectStatus() {
-    return $this->_closedProjectStatus;
+  public function getClosedStudyStatus() {
+    return $this->_closedStudyStatus;
   }
 
   /**
-   * Getter for completed project status
+   * Getter for completed study status
    * @return null
    */
-  public function getCompletedProjectStatus() {
-    return $this->_completedProjectStatus;
+  public function getCompletedStudyStatus() {
+    return $this->_completedStudyStatus;
   }
 
   /**
-   * Getter for declined project status
+   * Getter for declined study status
    *
    * @return null
    */
-  public function getDeclinedProjectStatus() {
-    return $this->_declinedProjectStatus;
+  public function getDeclinedStudyStatus() {
+    return $this->_declinedStudyStatus;
   }
 
   /**
-   * Getter for pending project status
+   * Getter for pending study status
    *
    * @return null
    */
-  public function getPendingProjectStatus() {
-    return $this->_pendingProjectStatus;
+  public function getPendingStudyStatus() {
+    return $this->_pendingStudyStatus;
   }
 
   /**
-   * Getter for recruiting project status
+   * Getter for recruiting study status
    *
    * @return mixed
    */
-  public function getRecruitingProjectStatus() {
-    return $this->_recruitingProjectStatus;
-  }
-
-  /**
-   * Getter for study status option group id
-   *
-   * @return null
-   */
-  public function getStudyStatusOptionGroupId() {
-    return $this->_studyStatusOptionGroupId;
+  public function getRecruitingStudyStatus() {
+    return $this->_recruitingStudyStatus;
   }
 
   /**
@@ -741,15 +729,6 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function getConsentStatusOptionGroupId() {
     return $this->_consentStatusOptionGroupId;
-  }
-
-  /**
-   * Getter for volunteer project status option group id
-   *
-   * @return null
-   */
-  public function getProjectParticipationStatusOptionGroupId() {
-    return $this->_projectParticipationStatusOptionGroupId;
   }
 
   /**
@@ -796,14 +775,6 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
-   * Getter for change project status activity type id
-   * @return null
-   */
-  public function getChangeProjectStatusActivityTypeId() {
-    return $this->_changeProjectStatusActivityTypeId;
-  }
-
-  /**
    * Getter for change study status activity type id
    * @return null
    */
@@ -824,10 +795,8 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   private function setOptionGroups() {
     $optionGroupNames = [
-      'nbr_study_status',
       'nihr_ethics_approved',
       'nihr_eligible_status',
-      'nbr_project_participation_status',
       'nbr_study_participation_status',
       'nihr_ethnicity',
       'nbr_consent_status',
@@ -925,7 +894,7 @@ class CRM_Nihrbackbone_BackboneConfig {
         'options' => ['limit' => 0],
       ]);
       foreach ($apiResult['values'] as $apiValue) {
-        $property = "_" . strtolower($apiValue['name']) . "ProjectStatus";
+        $property = "_" . strtolower($apiValue['name']) . "StudyStatus";
         $this->$property = $apiValue['value'];
       }
     }
@@ -1023,8 +992,8 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   private function setCustomData() {
     $relevantCustomGroups = [
-      'nihr_project_data',
-      'nihr_participation_data',
+      'nbr_study_data',
+      'nbr_participation_data',
       'nihr_volunteer_data',
       'nihr_volunteer_status',
       'nihr_volunteer_general_observations',

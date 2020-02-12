@@ -30,7 +30,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
   }
 
   /**
-   * Upgrade 1040 (remove study table and rename campaign type)
+   * Upgrade 1040 (remove study table)
    *
    * @return TRUE on success
    * @throws Exception
@@ -39,23 +39,6 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     $this->ctx->log->info(E::ts('Applying update 1040 - delete table civicrm_nihr_study and rename campaign_type'));
     if (CRM_Core_DAO::checkTableExists('civicrm_nihr_study')) {
       CRM_Core_DAO::executeQuery("DROP TABLE civicrm_nihr_study");
-    }
-    try {
-      $campaignTypeId = civicrm_api3('OptionValue', 'getvalue', [
-        'return' => "id",
-        'option_group_id' => "campaign_type",
-        'name' => "nihr_project",
-      ]);
-      if ($campaignTypeId) {
-        civicrm_api3('OptionValue', 'create', [
-          'id' => (int) $campaignTypeId,
-          'name' => 'nbr_study',
-          'label' => 'Study',
-        ]);
-      }
-    }
-    catch (CiviCRM_API3_Exception $ex) {
-      throw new API_Exception(E::ts('Could not rename campaign type project to study in ') . __METHOD__ . E::ts(', error message from OptionValue get or create: ') . $ex->getMessage());
     }
     return TRUE;
   }

@@ -175,9 +175,9 @@ class CRM_Nihrbackbone_NihrVolunteer {
     if (!$checkDate instanceof DateTime) {
       $checkDate = new DateTime($checkDate);
     }
-    $studyQuery = "SELECT COUNT(DISTINCT(proj.npd_study_number))
-        FROM civicrm_value_nihr_project_data AS proj
-        LEFT JOIN civicrm_value_nihr_participation_data AS nvpd ON proj.entity_id = nvpd.nvpd_project_id
+    $studyQuery = "SELECT COUNT(DISTINCT(std.nsd_study_number))
+        FROM civicrm_value_nbr_study_data AS std
+        LEFT JOIN civicrm_value_nbr_participation_data AS nvpd ON std.entity_id = nvpd.nvpd_study_id
         LEFT JOIN civicrm_case AS cc ON nvpd.entity_id = cc.id
         LEFT JOIN civicrm_case_contact AS cont ON cc.id = cont.case_id
         LEFT JOIN civicrm_case_activity AS cac ON cc.id = cac.case_id
@@ -205,20 +205,19 @@ class CRM_Nihrbackbone_NihrVolunteer {
   public static function getCurrentSelectedStudies($contactId) {
     $studies = [];
     if (!empty($contactId)) {
-      $studyQuery = "SELECT DISTINCT(d.npd_study_number) AS study_id
+      $studyQuery = "SELECT DISTINCT(c.nvpd_study_id) AS study_id
         FROM civicrm_case_contact AS a
         JOIN civicrm_case AS b ON a.case_id = b.id
-        LEFT JOIN civicrm_value_nihr_participation_data AS c ON a.case_id = c.entity_id
-        LEFT JOIN civicrm_value_nihr_project_data AS d ON c.nvpd_project_id = d.entity_id
-        LEFT JOIN civicrm_campaign AS e ON d.entity_id = e.id
+        LEFT JOIN civicrm_value_nbr_participation_data AS c ON a.case_id = c.entity_id
+        LEFT JOIN civicrm_campaign AS d ON d.id = c.nvpd_study_id
         WHERE a.contact_id = %1 AND b.is_deleted = %2 AND b.case_type_id = %3
-          AND e.status_id in (%4, %5)";
+          AND d.status_id in (%4, %5)";
       $dao = CRM_Core_DAO::executeQuery($studyQuery, [
         1 => [(int) $contactId, 'Integer'],
         2 => [0, 'Integer'],
         3 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), 'Integer'],
-        4 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingProjectStatus(), 'Integer'],
-        5 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getPendingProjectStatus(), 'Integer'],
+        4 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), 'Integer'],
+        5 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getPendingStudyStatus(), 'Integer'],
       ]);
       while ($dao->fetch()) {
         if (!CRM_Nihrbackbone_NbrVolunteerCase::hasBeenInvited($contactId, $dao->study_id)) {
@@ -398,7 +397,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     // if no criteria passed as parameter, take the ones from the project
     if (empty($criteria)) {
-      $criteria = CRM_Nihrbackbone_NihrProject::getSelectionCriteria($projectId);
+      $criteria = CRM_Nihrbackbone_NbrStudy::getSelectionCriteria($projectId);
     }
     // if the project requires blood, the volunteer should not have the exclude from blood studies flag
     if ($criteria['nsc_blood_required'] && !CRM_Nihrbackbone_NihrVolunteer::availableForBlood($volunteerId)) {
@@ -451,7 +450,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
         LEFT JOIN civicrm_campaign AS proj ON cvnpd. " . $projectIdColumn . " = proj.id AND proj.status_id = %1
         WHERE cvnpd.entity_id != %2 AND cc.is_deleted = %3 AND cont.contact_id = %4";
     $queryParams = [
-      1 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingProjectStatus(), 'Integer'],
+      1 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), 'Integer'],
       2 => [(int) $caseId, 'Integer'],
       3 => [0, 'Integer'],
       4 => [(int) $contactId, 'Integer']
