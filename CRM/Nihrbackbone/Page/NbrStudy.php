@@ -1,7 +1,8 @@
 <?php
+
 use CRM_Nihrbackbone_ExtensionUtil as E;
 /**
- * Page NbrProject to show all studies
+ * Page NbrStudy to show all studies
  *
  * @author Erik Hommel <erik.hommel@civicoop.org>
  * @date 10 Feb 2020
