@@ -480,7 +480,7 @@ class CRM_Nihrbackbone_NihrImportCsv
 
         // --- only add if not former email address either
         $sql = "select count(*)
-          from cividev_civi.civicrm_value_fcd_former_comm_data
+          from civicrm_value_fcd_former_comm_data
           where entity_id = %1
           and fcd_communication_type = 'email'
           and fcd_details like %2";
@@ -528,7 +528,7 @@ class CRM_Nihrbackbone_NihrImportCsv
 
         // --- only add if not former address either
         $sql = "select count(*)
-          from cividev_civi.civicrm_value_fcd_former_comm_data
+          from civicrm_value_fcd_former_comm_data
           where entity_id = %1
           and fcd_communication_type = 'address'
           and fcd_details like %2";
@@ -590,7 +590,7 @@ class CRM_Nihrbackbone_NihrImportCsv
         // only add if not former phone number either (do ignore type and location)
         // todo other phone types
         $sql = "select count(*)
-          from cividev_civi.civicrm_value_fcd_former_comm_data
+          from civicrm_value_fcd_former_comm_data
           where entity_id = %1
           and fcd_communication_type = 'phone'
           and fcd_details like %2";
