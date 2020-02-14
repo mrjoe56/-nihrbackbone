@@ -128,9 +128,10 @@ class CRM_Nihrbackbone_NihrVolunteer {
       $id = '';
 
       // todo possible to select count(*) and entity_id in one query?
+      // &&&& todo database name hardcoded
       $sql = "
         SELECT count(*)
-        FROM cividev_drupal.civicrm_value_nihr_volunteer_alias
+        FROM civicrm_value_nihr_volunteer_alias
         where nva_alias_type = %1
         and nva_external_id = %2";
 
@@ -150,7 +151,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
       if ($count == 1) {
         $sql = "
             SELECT entity_id
-            FROM cividev_drupal.civicrm_value_nihr_volunteer_alias
+            FROM civicrm_value_nihr_volunteer_alias
             where nva_alias_type = %1
             and nva_external_id = %2";
 
