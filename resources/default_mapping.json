@@ -1,7 +1,6 @@
 {
-  "_ibd_name": "_civi_name",
+  "_default_mapping": "_ideally_should_used_by_all_panels",
   "pat_bio_no": "pack_id",
-  "ibd_id": "ibd_id",
   "demographic_title": "title",
   "demographic_firstname": "first_name",
   "demographic_preferredname": "xx",

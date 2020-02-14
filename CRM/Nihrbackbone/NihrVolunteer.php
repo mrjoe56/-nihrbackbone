@@ -113,6 +113,66 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Method to find volunteer by any alias ID
+   *
+   * @param $identifier
+   * @param $identifierType
+   * @return int|bool
+   */
+  public function findVolunteerByAlias($identifier, $alias_type)
+  {
+
+    try {
+      // for participant ID: $xID = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomField('nva_participant_id', 'id');
+
+      $id = '';
+
+      // todo possible to select count(*) and entity_id in one query?
+      $sql = "
+        SELECT count(*)
+        FROM cividev_drupal.civicrm_value_nihr_volunteer_alias
+        where nva_alias_type = %1
+        and nva_external_id = %2";
+
+      $queryParams = [
+        1 => [$alias_type, 'String'],
+        2 => [$identifier, 'String'],
+      ];
+
+      try {
+        $count = CRM_Core_DAO::singleValueQuery($sql, $queryParams);
+      } catch (CiviCRM_API3_Exception $ex) {
+      }
+
+      // TODO &&& cnt > 1 -> error, don't store data
+      // TODO cnt = 0 -> check further (e.g. name and dob, nhs?)
+      // cnt = 1 -> get ID and use this ID
+      if ($count == 1) {
+        $sql = "
+            SELECT entity_id
+            FROM cividev_drupal.civicrm_value_nihr_volunteer_alias
+            where nva_alias_type = %1
+            and nva_external_id = %2";
+
+        $queryParams = [
+          1 => [$alias_type, 'String'],
+          2 => [$identifier, 'String'],
+        ];
+
+        try {
+          $id = CRM_Core_DAO::singleValueQuery($sql, $queryParams);
+        } catch (CiviCRM_API3_Exception $ex) {
+        }
+
+        return $id;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      // TODO
+    }
+  }
+
+  /**
    * Method to calculate BMI
    *
    * @param $weight
