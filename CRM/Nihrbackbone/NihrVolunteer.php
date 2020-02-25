@@ -440,6 +440,9 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @return bool
    */
   public static function isInvitedOnOtherProjects($contactId, $caseId) {
+    if (empty($contactId) || emty($caseId)) {
+      return FALSE;
+    }
     $participationTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
     $projectIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
     $statusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_participation_status', 'column_name');
@@ -449,6 +452,11 @@ class CRM_Nihrbackbone_NihrVolunteer {
         JOIN civicrm_case_contact AS cont ON cc.id = cont.case_id
         LEFT JOIN civicrm_campaign AS proj ON cvnpd. " . $projectIdColumn . " = proj.id AND proj.status_id = %1
         WHERE cvnpd.entity_id != %2 AND cc.is_deleted = %3 AND cont.contact_id = %4";
+    $recruitingStatus = CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus();
+    if (!$recruitingStatus || empty($recruitingStatus)) {
+      Civi::log()->warning('Could not find a recruiting study status (Civi term: campaign status) in ' . __METHOD__);
+      return FALSE;
+    }
     $queryParams = [
       1 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), 'Integer'],
       2 => [(int) $caseId, 'Integer'],

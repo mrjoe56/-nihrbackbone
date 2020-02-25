@@ -163,9 +163,25 @@ function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask
  */
 function nihrbackbone_civicrm_navigationMenu(&$menu) {
   _nihrbackbone_civix_insert_navigation_menu($menu, '', [
-    'label' => E::ts('NIHR BioResource Studies'),
+    'label' => E::ts('Studies'),
     'name' => 'nbrstudies',
+    'url' => '',
+    'permission' => 'access CiviCRM',
+    'operator' => 'OR',
+    'separator' => 0,
+  ]);
+  _nihrbackbone_civix_insert_navigation_menu($menu, 'nbrstudies', [
+    'label' => E::ts('Studies List'),
+    'name' => 'nbrstudieslist',
     'url' => 'civicrm/nihrbackbone/page/nbrstudy',
+    'permission' => 'access CiviCRM',
+    'operator' => 'OR',
+    'separator' => 0,
+  ]);
+  _nihrbackbone_civix_insert_navigation_menu($menu, 'nbrstudies', [
+    'label' => E::ts('New Study'),
+    'name' => 'newnbrstudy',
+    'url' => 'civicrm/nihrbackbone/form/nbrstudy?reset=1&action=add',
     'permission' => 'access CiviCRM',
     'operator' => 'OR',
     'separator' => 0,

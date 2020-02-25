@@ -59,6 +59,29 @@ class CRM_Nihrbackbone_Utils {
   }
 
   /**
+   * Method to get all active values for an option group
+   *
+   * @param $optionGroupName
+   * @return array
+   */
+  public static function getOptionValueList($optionGroupName) {
+    $result = [];
+    try {
+      $apiValues = civicrm_api3('OptionValue', 'get', [
+        'options' => ['limit' => 0],
+        'is_active' => 1,
+        'option_group_id' => $optionGroupName,
+      ]);
+      foreach ($apiValues['values'] as $key => $value) {
+        $result[$value['value']] = $value['label'];
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return $result;
+  }
+
+  /**
    * Method om dao in array te stoppen en de 'overbodige' data er uit te slopen
    *
    * @param  $dao

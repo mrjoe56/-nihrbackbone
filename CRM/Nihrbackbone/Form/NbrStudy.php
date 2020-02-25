@@ -13,6 +13,9 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
   private $_studyId = NULL;
   private $_studyData = [];
   private $_customFieldIdsAndColumns = [];
+  private $_ethicsApprovedList = [];
+  private $_genderList = [];
+  private $_campaignStatusList = [];
   /**
    * Method to add the form elements
    */
@@ -53,9 +56,10 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     ], FALSE);
     $this->add('datepicker', 'start_date', E::ts('Start Date'), [],TRUE, ['time' => FALSE]);
     $this->add('datepicker', 'end_date', E::ts('End Date'), [],FALSE, ['time' => FALSE]);
-    $this->addEntityRef('nsd_researcher', E::ts('Researcher'), [
+    $this->addEntityRef('nsd_researcher', E::ts('Researcher(s)'), [
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
-      'placeholder' => '- select researcher -',
+      'placeholder' => '- select researcher(s) -',
+      'multiple' => TRUE,
     ], FALSE);
     $this->addEntityRef('nsd_centre_origin', E::ts('Centre of Origin'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_centre']],
@@ -65,7 +69,16 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'api' => ['params' => ['contact_sub_type' => 'nbr_site']],
       'placeholder' => '- select site -',
     ], FALSE);
+    $this->addEntityRef('nsd_principal_investigator', E::ts('Principal Investigator'), [
+      'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
+      'placeholder' => '- select investigator -',
+    ], FALSE);
     $this->add('text', 'nsd_study_long_name', E::ts("Long Name"), ['size' => 100], FALSE);
+    $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [], FALSE);
+    $this->add('select', 'nsd_ethics_approved_id', E::ts('Ethics Approved'), $this->_ethicsApprovedList,TRUE, [
+      'class' => 'crm-select2',
+      'placeholder' => '- select approved status -']);
+    $this->add('datepicker', 'nsd_ethics_approved_date', E::ts('Ethics Approved Date'), [],FALSE, ['time' => FALSE]);
     $this->add('textarea', 'nsd_study_notes', E::ts('Notes'), ['rows' => 4, 'cols' => 100], FALSE);
     $this->add('advcheckbox', 'nsd_sample_only', E::ts('Sample only?'), [], FALSE);
     $this->add('advcheckbox', 'nsd_data_only', E::ts('Data only?'), [], FALSE);
@@ -125,6 +138,15 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'size' => 100,
       'disabled' => 'disabled',
       ], FALSE);
+    $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [
+      'disabled' => 'disabled',
+    ], FALSE);
+    $this->add('select', 'nsd_ethics_approved_id', E::ts('Ethics Approved'), $this->_ethicsApprovedList,TRUE, [
+      'class' => 'crm-select2',
+      'disabled' => 'disabled']);
+    $this->add('datepicker', 'nsd_ethics_approved_date', E::ts('Ethics Approved Date'), [
+      'disabled' => 'disabled',
+    ],FALSE, ['time' => FALSE]);
     $this->add('textarea', 'nsd_study_notes', E::ts('Notes'), [
       'rows' => 4,
       'cols' => 100,
@@ -139,6 +161,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'placeholder' => '- select a nurse -',
       'disabled' => 'disabled',
     ], FALSE);
+
     $this->addEntityRef('nsc_gender_id', E::ts('Gender'), [
       'entity' => 'option_value',
       'api' => ['params' => ['option_group_id' => 'gender']],
@@ -291,6 +314,9 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
         $title = "Study";
         break;
     }
+    $this->_ethicsApprovedList = CRM_Nihrbackbone_Utils::getOptionValueList('nihr_ethics_approved');
+    $this->_campaignStatusList = CRM_Nihrbackbone_Utils::getOptionValueList('campaign_status');
+    $this->_genderList = CRM_Nihrbackbone_Utils::getOptionValueList('gender');
     CRM_Utils_System::setTitle($title);
     // get study id from request
     $studyId = CRM_Utils_Request::retrieveValue("id", "Integer");
