@@ -49,11 +49,10 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
    */
   private function addElements() {
     $this->add('text', 'title', E::ts('Name'), [], TRUE);
-    $this->addEntityRef('status_id', E::ts('Status'), [
-      'entity' => 'option_value',
-      'api' => ['params' => ['option_group_id' => 'campaign_status']],
-      'placeholder' => '- select status -'
-    ], FALSE);
+    $this->add('select', 'status_id', E::ts('Status'), $this->_campaignStatusList,TRUE, [
+      'class' => 'crm-select2',
+      'placeholder' => '- select status -',
+      ]);
     $this->add('datepicker', 'start_date', E::ts('Start Date'), [],TRUE, ['time' => FALSE]);
     $this->add('datepicker', 'end_date', E::ts('End Date'), [],FALSE, ['time' => FALSE]);
     $this->addEntityRef('nsd_researcher', E::ts('Researcher(s)'), [
@@ -75,7 +74,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     ], FALSE);
     $this->add('text', 'nsd_study_long_name', E::ts("Long Name"), ['size' => 100], FALSE);
     $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [], FALSE);
-    $this->add('select', 'nsd_ethics_approved_id', E::ts('Ethics Approved'), $this->_ethicsApprovedList,TRUE, [
+    $this->add('select', 'nsd_ethics_approved_id', E::ts('Ethics Approved'), $this->_ethicsApprovedList,FALSE, [
       'class' => 'crm-select2',
       'placeholder' => '- select approved status -']);
     $this->add('datepicker', 'nsd_ethics_approved_date', E::ts('Ethics Approved Date'), [],FALSE, ['time' => FALSE]);
@@ -88,11 +87,9 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'api' => ['params' => ['group' => 'nbr_bioresourcers']],
       'placeholder' => '- select a nurse -',
     ], FALSE);
-    $this->addEntityRef('nsc_gender_id', E::ts('Gender'), [
-      'entity' => 'option_value',
-      'api' => ['params' => ['option_group_id' => 'gender']],
-      'placeholder' => '- select gender -'
-    ], FALSE);
+    $this->add('select', 'nsc_gender_id', E::ts('Gender'), $this->_genderList,FALSE, [
+      'class' => 'crm-select2',
+      'placeholder' => '- select gender -']);
     $this->add('advcheckbox', 'nsc_blood_required', E::ts('Blood required?'), [], FALSE);
     $this->add('advcheckbox', 'nsc_travel_required', E::ts('Travel required?'), [], FALSE);
     $this->addEntityRef('nsc_ethnicity_id', E::ts('Ethnicity'), [
@@ -111,12 +108,11 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
    */
   private function addViewElements() {
     $this->add('text', 'title', E::ts('Name'), ['disabled' => 'disabled'], TRUE);
-    $this->addEntityRef('status_id', E::ts('Status'), [
-      'entity' => 'option_value',
-      'api' => ['params' => ['option_group_id' => 'campaign_status']],
+    $this->add('select', 'status_id', E::ts('Status'), $this->_campaignStatusList,TRUE, [
+      'class' => 'crm-select2',
+      'placeholder' => '- select status -',
       'disabled' => 'disabled',
-      'placeholder' => '- select status -'
-    ], FALSE);
+    ]);
     $this->add('datepicker', 'start_date', E::ts('Start Date'), ['disabled' => 'disabled'],TRUE, ['time' => FALSE]);
     $this->add('datepicker', 'end_date', E::ts('End Date'), ['disabled' => 'disabled'],FALSE, ['time' => FALSE]);
     $this->addEntityRef('nsd_researcher', E::ts('Researcher'), [
@@ -143,7 +139,9 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     ], FALSE);
     $this->add('select', 'nsd_ethics_approved_id', E::ts('Ethics Approved'), $this->_ethicsApprovedList,TRUE, [
       'class' => 'crm-select2',
-      'disabled' => 'disabled']);
+      'placeholder' => '- select approved status -',
+      'disabled' => 'disabled',
+      ]);
     $this->add('datepicker', 'nsd_ethics_approved_date', E::ts('Ethics Approved Date'), [
       'disabled' => 'disabled',
     ],FALSE, ['time' => FALSE]);
@@ -161,13 +159,11 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'placeholder' => '- select a nurse -',
       'disabled' => 'disabled',
     ], FALSE);
-
-    $this->addEntityRef('nsc_gender_id', E::ts('Gender'), [
-      'entity' => 'option_value',
-      'api' => ['params' => ['option_group_id' => 'gender']],
+    $this->add('select', 'nsc_gender_id', E::ts('Gender'), $this->_genderList,FALSE, [
+      'class' => 'crm-select2',
       'placeholder' => '- select gender -',
       'disabled' => 'disabled',
-    ], FALSE);
+      ]);
     $this->add('advcheckbox', 'nsc_blood_required', E::ts('Blood required?'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsc_travel_required', E::ts('Travel required?'), ['disabled' => 'disabled'], FALSE);
     $this->addEntityRef('nsc_ethnicity_id', E::ts('Ethnicity'), [
