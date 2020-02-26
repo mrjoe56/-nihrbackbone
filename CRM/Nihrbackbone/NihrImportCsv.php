@@ -17,7 +17,7 @@ class CRM_Nihrbackbone_NihrImportCsv
   private $_firstRowHeaders = NULL;
   private $_type = NULL;
   private $_csv = NULL;
-  private $_projectId = NULL;
+  private $_studyId = NULL;
   private $_mapping = [];
   private $_columnHeaders = [];
   private $_dataSource = NULL;
@@ -95,25 +95,26 @@ class CRM_Nihrbackbone_NihrImportCsv
   /**
    * Method to check if the import data is valid (depending on type)
    *
-   * @param null $projectId
+   * @param null $studyId
    * @return bool
    * @throws
    */
-  public function validImportData($projectId = NULL)
+  public function validImportData($studyId = NULL)
   {
-    // project id required with participation
-    if ($projectId) {
-      $project = new CRM_Nihrbackbone_NihrProject();
-      if (!$project->projectExists($projectId)) {
-        $message = E::ts('No project with ID ') . $projectId . E::ts(' found, csv import aborted.');
+    // study id required with participation
+    if ($studyId) {
+      $study = new CRM_Nihrbackbone_NbrStudy();
+      if (!$study->studyExists($studyId)) {
+        $message = E::ts('No study with ID ') . $studyId . E::ts(' found, csv import aborted.');
         CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
         return FALSE;
-      } else {
-        $this->_projectId = $projectId;
+      }
+      else {
+        $this->_studyId = $studyId;
       }
     } else {
       if ($this->_type == 'participation') {
-        $message = E::ts('No projectID parameter passed for participation type of csv import, is mandatory. Import aborted');
+        $message = E::ts('No studyID parameter passed for participation type of csv import, is mandatory. Import aborted');
         CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
         return FALSE;
       }
@@ -231,6 +232,7 @@ class CRM_Nihrbackbone_NihrImportCsv
    */
   private function importParticipation($recallGroup = NULL)
   {
+    $studyNumber = CRM_Nihrbackbone_NbrStudy::getStudyNameWithId($this->_studyId);
     $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
     while (!feof($this->_csv)) {
       $data = fgetcsv($this->_csv, 0, $this->_separator);
@@ -239,28 +241,38 @@ class CRM_Nihrbackbone_NihrImportCsv
         $contactId = $volunteer->findVolunteerByIdentity($data[0], 'cih_type_participant_id');
         if (!$contactId) {
           $this->_failed++;
-          $message = E::ts('Could not find a volunteer with participantID ') . $data[0] . E::ts(', not imported to project.');
+          $message = E::ts('Could not find a volunteer with participantID ') . $data[0] . E::ts(', not imported to study.');
           CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
-        } else {
-          $volunteerCaseParams = [
-            'project_id' => $this->_projectId,
-            'contact_id' => $contactId,
-            'case_type' => 'participation',
-          ];
-          if ($recallGroup) {
-            $volunteerCaseParams['recall_group'] = $recallGroup;
-          }
-          try {
-            civicrm_api3('NbrVolunteerCase', 'create', $volunteerCaseParams);
-            $this->_imported++;
-            $message = E::ts('Volunteer with participantID ') . $data[0] . E::ts(' succesfully added to projectID ') . $this->_projectId;
-            CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
-          } catch (CiviCRM_API3_Exception $ex) {
+        }
+        else {
+          // only if not already on study
+          if (CRM_Nihrbackbone_NbrVolunteerCase::isAlreadyOnStudy($contactId, $this->_studyId)) {
             $this->_failed++;
-            $message = E::ts('Error message when adding volunteer with contactID ') . $contactId
-              . E::ts(' to project ID ') . $this->_projectId . E::ts(' from API NbrVolunteerCase create: ')
-              . $ex->getMessage();
-            CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
+            $message = E::ts('Volunteer with participantID ') . $data[0] . E::ts(' is already on study ') . $studyNumber . E::ts(', not imported again.');
+            CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
+          }
+          else {
+            $volunteerCaseParams = [
+              'study_id' => $this->_studyId,
+              'contact_id' => $contactId,
+              'case_type' => 'participation',
+            ];
+            if ($recallGroup) {
+              $volunteerCaseParams['recall_group'] = $recallGroup;
+            }
+            try {
+              civicrm_api3('NbrVolunteerCase', 'create', $volunteerCaseParams);
+              $this->_imported++;
+              $message = E::ts('Volunteer with participantID ') . $data[0] . E::ts(' succesfully added to study ') . $studyNumber;
+              CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
+            }
+            catch (CiviCRM_API3_Exception $ex) {
+              $this->_failed++;
+              $message = E::ts('Error message when adding volunteer with contactID ') . $contactId
+                . E::ts(' to study ') . $studyNumber . E::ts(' from API NbrVolunteerCase create: ')
+                . $ex->getMessage();
+              CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
+            }
           }
         }
       }

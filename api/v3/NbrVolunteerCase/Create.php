@@ -10,10 +10,10 @@ use CRM_Nihrprototype_ExtensionUtil as E;
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC/API+Architecture+Standards
  */
 function _civicrm_api3_nbr_volunteer_case_Create_spec(&$spec) {
-  $spec['project_id'] = array(
-    'name' => 'project_id',
-    'title' => 'project_id',
-    'description' => 'Internal ID of the project',
+  $spec['study_id'] = array(
+    'name' => 'study_id',
+    'title' => 'study_id',
+    'description' => 'Internal ID of the study',
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_INT,
   );
@@ -55,8 +55,8 @@ function civicrm_api3_nbr_volunteer_case_Create($params) {
   if (!in_array($type, $validTypes)) {
     throw new API_Exception('invalid case type')     ;
   }
-  if ($type == 'participation' && !isset($params['project_id'])){
-    throw new API_Exception('project ID required for participation');
+  if ($type == 'participation' && !isset($params['study_id'])){
+    throw new API_Exception('study ID required for participation');
   }
   $pv = new CRM_Nihrbackbone_NbrVolunteerCase($params);
   return civicrm_api3_create_success($pv->createVolunteerCase($params['contact_id']), $params, 'NbrVolunteerCase', 'create');
