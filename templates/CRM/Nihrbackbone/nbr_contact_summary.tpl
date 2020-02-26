@@ -15,7 +15,6 @@
       /*    Display Volunteer IDs under contact name    */
       CRM.$("#crm-main-content-wrapper").prepend(CRM.$('#nbr_hdr'));             // prepend new nbr header to existing civi wrapper
       CRM.$('#nbr_hdr').append(CRM.$(".crm-summary-contactname-block")[0]);      // append existing civi contact name to new nbr header - NOT WORKING ON UBUNTU SO -
-      //CRM.$('#nbr_hdr').append(CRM.$(".crm-summary-display_name")[0]);           // SO USE THIS?
       var nbr_data_string = CRM.$("#nbr_data").html();                           // nbr_data - contactID~pid~bid~panel~centre~site
       var nbr_data = nbr_data_string.split("~");                                 // as array
 
@@ -26,16 +25,16 @@
       CRM.$("#nbr_panel3").html(nbr_data[5]);
       switch(nbr_data[6]) {                                                      // set header colour based on status
         case 'volunteer_status_pending':
-          $hdr_colour = '#FFD858';  //
+          $hdr_colour = '#FFD858';                                               // orange
           break;
         case 'volunteer_status_withdrawn':
-          $hdr_colour = '#FA8072'; //salmon
+          $hdr_colour = '#FA8072';                                               // red
           break;
         case 'volunteer_status_deceased':
           $hdr_colour = 'lightgray';
           break;
         default:
-          var $hdr_colour = '#badbae'; //
+          var $hdr_colour = '#badbae';                                           // green
       }
       CRM.$("#nbr_hdr").css('background-color', $hdr_colour);
     });
@@ -66,6 +65,7 @@
     }
     .nbr_ids {
       position:absolute;
+      top:55px;
       width:9%;
     }
     #nbr_bioresource_id {
