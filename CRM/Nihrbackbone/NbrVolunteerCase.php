@@ -124,10 +124,10 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   public function createVolunteerCase($contactId) {
     // todo use switch
     if ($this->_apiParams['case_type'] == 'recruitment') {
-      $this->createRecruitmentVolunteerCase($contactId);
+      return $this->createRecruitmentVolunteerCase($contactId);
   }
     elseif ($this->_apiParams['case_type'] == 'participation') {
-      $this->createParticipationVolunteerCase($contactId);
+      return $this->createParticipationVolunteerCase($contactId);
     }
   }
 

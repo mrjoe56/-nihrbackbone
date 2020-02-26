@@ -108,7 +108,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     $this->getMapping();
 
     // check if mapping contains mandatory columns according to source given
-    if (($this->_dataSource == 'ucl' && !isset($this->_mapping['local_ucl_id'])) ||
+    if (($this->_dataSource == 'ucl' && !isset($this->_mapping['local_id'])) ||
       ($this->_dataSource == 'ibd' && !isset($this->_mapping['pack_id']) && !isset($this->_mapping['ibd_id']))) {
       // todo : log error
     }
@@ -165,7 +165,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   private function importDemographics()
   {
     $this->_logger->logMessage('file: ' .$this->_csvFile . '; dataSource: ' . $this->_dataSource . '; separator: ' . $this->_separator);
-    $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
+
     while (!feof($this->_csv)) {
       $data = fgetcsv($this->_csv, 0, $this->_separator);
 
@@ -192,6 +192,14 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         if (!empty($data['ibd_id'])) {
           $this->addAlias($contactId, 'alias_type_ibd_id', $data['ibd_id'], 0);
         }
+        switch ($this->_dataSource) {
+          case "ucl":
+            $this->addAlias($contactId, 'alias_type_ucl_br_local', $data['local_id'], 0);
+            if (!empty($data['national_id'])) {
+              $this->addAlias($contactId, 'alias_type_ucl_br', $data['national_id'], 0);
+            }
+            break;
+        }
         /*
         if (!empty($data['ucl_id'])) {
           $this->addAlias($contactId, 'alias_type_local_ucl_id', $data['ucl_id'], 0);
@@ -203,10 +211,11 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $caseID = '';
         if ($new_volunteer) {
           try {
-            $caseID = civicrm_api3('NbrVolunteerCase', 'create', [
+            $result = civicrm_api3('NbrVolunteerCase', 'create', [
               'contact_id' => $contactId,
               'case_type' => 'recruitment'
             ]);
+            $caseID = $result['case_id'];
             $message = E::ts('Recruitment case for volunteer ' . $contactId . '  added');
             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
           } catch (CiviCRM_API3_Exception $ex) {
@@ -229,10 +238,13 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
               CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
             }
           }
-        }
 
-        // add consent to recruitment case
-        CRM_Nihrbackbone_NbrConsent::addConsent($contactId, $caseID, 'consent_form_status_not_valid', $data);
+          // TODO &&& CONSENT ONLY ADDED FOR NEW VOLUNTEERS; FOR EXISTING VOLUNTEERS: CHECK IF THIS SPECIFIC
+          // TODO     CONSENT ALREADY EXISTS AND IF NOT ADD (TO NEW CASE? TO ACTIVITIES?)
+          // add consent to recruitment case
+          $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
+          $nbrConsent->addConsent($contactId, $caseID, 'consent_form_status_not_valid', $data, $this->_logger);
+        }
       }
     }
   }
@@ -337,7 +349,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     switch ($this->_dataSource) {
       case "ucl":
-        $contactId = $volunteer->findVolunteerByAlias($data['local_ucl_id'], '$identifierType');
+        // todo check if ID is empty, if so, do not load record
+        $contactId = $volunteer->findVolunteerByAlias($data['local_id'], 'alias_type_ucl_br_local');
         break;
       case "ibd":
         if(!empty($data['pack_id'])) {
@@ -352,15 +365,22 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $this->_logger->logMessage('ERROR: no default mapping for ' . $this->_dataSource, 'error');
     }
 
+    if (!$contactId) {
+      // check if volunteer is already on Civi under a different panel/without the given ID
+      // TODO &&&
+    }
 
     if ($contactId) {
       // volunteer already exists
       $data['id'] = $contactId;
       $new_volunteer = 0;
     }
+
     try {
+      // todo &&& need to write new contact create that allows creation of record without name but only alias ID
+      // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       $result = civicrm_api3("Contact", "create", $data);
-      $this->_logger->logMessage('Volunteer succesfully loaded/updated');
+      $this->_logger->logMessage('Volunteer '.(int)$result['id'].' succesfully loaded/updated. New volunteer: '. $new_volunteer);
       return array((int)$result['id'], $new_volunteer);
     } catch (CiviCRM_API3_Exception $ex) {
       $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . " " . $ex->getMessage() . 'error');
