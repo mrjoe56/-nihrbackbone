@@ -44,7 +44,7 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 /** Implements hook_civicrm_summary JB 27/01/20 */
 function nihrbackbone_civicrm_summary($contactID, &$content, &$contentPlacement) {
   CRM_Nihrbackbone_NihrContactSummary::nihrbackbone_civicrm_summary($contactID);
-  Civi::log()->debug('civicrm_summary hookkk - $contactID : ' . $contactID);
+  #Civi::log()->debug('civicrm_summary hook - $contactID : ' . $contactID);
 }
 
 /** Implements hook_civicrm_tabset JB 27/01/20 */

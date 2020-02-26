@@ -18,23 +18,24 @@ function civicrm_api3_nihr_import_csv_Loaddemographics($params) {
   $loadFolder = Civi::settings()->get($folder);
   if ($loadFolder && !empty($loadFolder)) {
     // get all .csv files from folder
-    //$csvFiles = glob($loadFolder . DIRECTORY_SEPARATOR . "*demographics.csv");
     $csvFiles = glob($loadFolder . DIRECTORY_SEPARATOR . "*.csv");
-    // make sure it's sorted
+    // sort
     sort($csvFiles);
-
     // only use newest - last - file
     $csvFile = array_pop($csvFiles);
 
+    if (!$csvFile) {
+      throw new API_Exception(E::ts('Folder for import (' . $loadFolder . ') does not contain csv files'),  1001);
+    }
+
     // process file
-    $import = new CRM_Nihrbackbone_NihrImportCsv('demographics', $csvFile, $params);
+    $import = new CRM_Nihrbackbone_NihrImportDemographicsCsv($csvFile, $params);
     if ($import->validImportData()) {
       $returnValues = $import->processImport();
-
       return civicrm_api3_create_success($returnValues, $params, 'NihrImportCsv', 'loaddemographics');
     }
   }
   else {
-    throw new API_Exception(E::ts('Folder for csv import (setting nbr_csv_import_folder) not found or empty'),  1001);
+    throw new API_Exception(E::ts('Folder for import (' . $folder . ') not found or empty'),  1001);
   }
 }
