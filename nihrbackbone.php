@@ -41,8 +41,23 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 
 }
 
+/** Implements hook_civicrm_summary JB 27/01/20 */
+function nihrbackbone_civicrm_summary($contactID, &$content, &$contentPlacement) {
+  CRM_Nihrbackbone_NihrContactSummary::nihrbackbone_civicrm_summary($contactID);
+  #Civi::log()->debug('civicrm_summary hook - $contactID : ' . $contactID);
+}
 
-
+/** Implements hook_civicrm_tabset JB 27/01/20 */
+function nihrbackbone_civicrm_tabset($tabsetName, &$tabs, $context) {
+  if ($tabsetName == 'civicrm/contact/view') {
+    $customGroupId = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomGroup('id');
+    foreach ($tabs as $key => $value) {
+      if ($tabs[$key]['id'] == $customGroupId) {
+        unset ($tabs[$key]);
+      }
+    }
+  }
+}
 /**
  * Implements hook_civicrm_custom.
  *
@@ -73,8 +88,6 @@ function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
     }
   }
 }
-
-
 
 function writeBmi($entityID, $bmi) {
 
