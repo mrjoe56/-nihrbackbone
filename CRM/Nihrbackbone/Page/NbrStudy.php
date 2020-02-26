@@ -109,16 +109,18 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
   protected function setRowActions($study) {
     $rowActions = [];
     $csId = CRM_Nihrbackbone_Utils::getVolunteerCsId();
-    if ($csId) {
-      $volunteersUrl = CRM_Utils_System::url('civicrm/contact/search/custom' , 'reset=1&csid=' . $csId, TRUE);
-      $rowActions[] = '<a class="action-item" title="Volunteers" href="' . $volunteersUrl .'">' . E::ts('Volunteers') . '</a>';
-    }
     $viewUrl = CRM_Utils_System::url('civicrm/nihrbackbone/form/nbrstudy', 'reset=1&action=view&id='.
       $study['id']);
     $updateUrl = CRM_Utils_System::url('civicrm/nihrbackbone/form/nbrstudy', 'reset=1&action=update&id='.
       $study['id']);
+    $importUrl = CRM_Utils_System::url('civicrm/nihrbackbone/form/importcsvselect', 'reset=1&sid=' . $study['id'], TRUE);
     $rowActions[] = '<a class="action-item" title="Update" href="' . $updateUrl .'">' . E::ts('Edit') . '</a>';
     $rowActions[] = '<a class="action-item" title="View" href="' . $viewUrl .'">' . E::ts('View') . '</a>';
+    $rowActions[] = '<a class="action-item" title="Import" href="' . $importUrl .'">' . E::ts('Import') . '</a>';
+    if ($csId) {
+      $volunteersUrl = CRM_Utils_System::url('civicrm/contact/search/custom' , 'reset=1&force=1&csid=' . $csId . '&sid=' . $study['id'], TRUE);
+      $rowActions[] = '<a class="action-item" title="Volunteers" href="' . $volunteersUrl .'">' . E::ts('Volunteers') . '</a>';
+    }
     return $rowActions;
   }
 
