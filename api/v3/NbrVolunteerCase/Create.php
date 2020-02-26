@@ -59,6 +59,13 @@ function civicrm_api3_nbr_volunteer_case_Create($params) {
     throw new API_Exception('study ID required for participation');
   }
   $pv = new CRM_Nihrbackbone_NbrVolunteerCase($params);
-  $newCaseId = $pv->createRecruitmentVolunteerCase($params['contact_id']);
+  switch ($type) {
+    case 'recruitment':
+      $newCaseId = $pv->createRecruitmentVolunteerCase($params['contact_id']);
+      break;
+    case 'participation':
+      $newCaseId = $pv->createParticipationVolunteerCase($params['contact_id']);
+      break;
+  }
   return $newCaseId;
 }
