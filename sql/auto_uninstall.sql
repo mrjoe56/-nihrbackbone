@@ -33,7 +33,6 @@
 
 SET FOREIGN_KEY_CHECKS=0;
 
-DROP TABLE IF EXISTS `civicrm_nihr_study`;
 DROP TABLE IF EXISTS `civicrm_nbr_import_log`;
 
 SET FOREIGN_KEY_CHECKS=1;

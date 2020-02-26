@@ -1,18 +1,6 @@
 <?xml version="1.0"?>
 <menu>
   <item>
-    <path>civicrm/nihrbackbone/page/nihrstudy</path>
-    <page_callback>CRM_Nihrbackbone_Page_NihrStudy</page_callback>
-    <title>NihrStudy</title>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/nihrbackbone/form/nihrstudy</path>
-    <page_callback>CRM_Nihrbackbone_Form_NihrStudy</page_callback>
-    <title>NihrStudy</title>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-  <item>
     <path>civicrm/nihrbackbone/form/importcsvselect</path>
     <page_callback>CRM_Nihrbackbone_Form_ImportCsvSelect</page_callback>
     <title>ImportCsvSelect</title>
@@ -31,9 +19,15 @@
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/nihrbackbone/page/nbrproject</path>
-    <page_callback>CRM_Nihrbackbone_Page_NbrProject</page_callback>
-    <title>NbrProject</title>
+    <path>civicrm/nihrbackbone/page/nbrstudy</path>
+    <page_callback>CRM_Nihrbackbone_Page_NbrStudy</page_callback>
+    <title>NbrStudy</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nihrbackbone/form/nbrstudy</path>
+    <page_callback>CRM_Nihrbackbone_Form_NbrStudy</page_callback>
+    <title>NbrStudy</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 </menu>
