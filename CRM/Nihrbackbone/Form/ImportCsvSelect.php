@@ -26,6 +26,7 @@ class CRM_Nihrbackbone_Form_ImportCsvSelect extends CRM_Core_Form {
       $this->addRule('csv_file', E::ts('A valid file must be uploaded.'), 'uploadedfile');
       $this->addYesNo('first_row_headers', E::ts('First row contains headers?'), FALSE, TRUE);
       $this->add('select', 'separator_id', E::ts('Column separator'), ['Comma', 'Semi-colon'], TRUE);
+      $this->add('text', 'recall_group', E::ts("Recall Group"), [], FALSE);
       $this->addButtons([
         ['type' => 'next', 'name' => E::ts('Next'), 'isDefault' => TRUE],
         ['type' => 'cancel', 'name' => E::ts('Cancel')],
@@ -51,9 +52,19 @@ class CRM_Nihrbackbone_Form_ImportCsvSelect extends CRM_Core_Form {
    * @throws
    */
   public function postProcess() {
-    $import = new CRM_Nihrbackbone_NihrImportCsv('participation', $this->_submitFiles['csv_file']['tmp_name'], $this->getSeparator($this->_submitValues['separator_id']), $this->_submitValues['first_row_headers'], $this->_submitFiles['csv_file']['name'],"ui");
+    $importParams = [
+      'separator' => $this->getSeparator($this->_submitValues['separator_id']),
+      'firstRowHeaders' => $this->_submitValues['first_row_headers'],
+      // &&& only use for dataimport but not participation import: 'dataSource' => $this->_submitValues['data_source'],
+      'context' => "ui",
+    ];
+    $import = new CRM_Nihrbackbone_NihrImportCsv('participation', $this->_submitFiles['csv_file']['tmp_name'], $importParams);
     if ($import->validImportData($this->_submitValues['project_id'])) {
-      $import->processImport();
+      $recallGroup = NULL;
+      if (isset($this->_submitValues['recall_group'])) {
+        $recallGroup = $this->_submitValues['recall_group'];
+      }
+      $import->processImport($recallGroup);
     }
     parent::postProcess();
   }

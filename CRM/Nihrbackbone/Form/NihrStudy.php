@@ -41,7 +41,9 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
     $this->addEntityRef('investigator_id', E::ts('Principal Investigator'), [
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
     ], FALSE);
-    $this->add('text', 'study_number', E::ts('Study Number'), [], TRUE);
+    $this->add('text', 'study_number', E::ts('Study Number'), [
+      'disabled' => 'disabled'
+    ], FALSE);
     $this->add('text', 'short_name', E::ts('Short Name'), [], TRUE);
     $this->add('text', 'long_name', E::ts('Long Name'), ['size' => 120], FALSE);
     $this->add('textarea', 'description', E::ts('Description'), ['rows' => 4, 'cols' => 50], FALSE);
@@ -52,7 +54,7 @@ class CRM_Nihrbackbone_Form_NihrStudy extends CRM_Core_Form {
     $this->add('datepicker', 'valid_start_date', E::ts('Valid Start Date'), ['placeholder' => ts('Valid Start Date')],FALSE, ['time' => FALSE]);
     $this->add('datepicker', 'valid_end_date', E::ts('Valid End Date'), ['placeholder' => ts('Valid End Date')],FALSE, ['time' => FALSE]);
     $this->addEntityRef('centre_study_origin_id', E::ts('Centre Study Origin'), [
-      'api' => ['params' => ['group' => 'Study Centres']],
+      'api' => ['params' => ['contact_sub_type' => 'nbr_centre']],
     ], FALSE);
     $this->add('textarea', 'notes', E::ts('Notes'), ['rows' => 4, 'cols' => 50], FALSE);
     $this->add('select', 'status_id', E::ts('Study Status'), $this->_statusList,TRUE, ['class' => 'crm-select2']);

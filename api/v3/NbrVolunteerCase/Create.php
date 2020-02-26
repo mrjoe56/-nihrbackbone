@@ -31,6 +31,13 @@ function _civicrm_api3_nbr_volunteer_case_Create_spec(&$spec) {
     'api.required' => 1,
     'type' => CRM_Utils_Type::T_STRING,
   );
+  $spec['recall_group'] = array(
+    'name' => 'recall_group',
+    'title' => 'Recall group',
+    'description' => 'Recall Group',
+    'api.required' => 0,
+    'type' => CRM_Utils_Type::T_STRING,
+  );
 }
 
 /**

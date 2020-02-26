@@ -29,7 +29,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   // property for project campaign type
   private $_projectCampaignTypeId = NULL;
 
-  // properties for project (campagin) status
+  // properties for project (campaign) status
   private $_recruitingProjectStatus = NULL;
   private $_completedProjectStatus = NULL;
   private $_declinedProjectStatus = NULL;
@@ -47,6 +47,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_volunteerAliasCustomGroup = [];
   private $_volunteerIdsCustomGroup = [];
   private $_volunteerPanelCustomGroup = [];
+  private $_volunteerConsentCustomGroup = [];
 
   // properties for case types ids
   private $_participationCaseTypeId = NULL;
@@ -355,6 +356,21 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for volunteer consent custom group
+   *
+   * @param null $key
+   * @return array|mixed
+   */
+  public function getVolunteerConsentCustomGroup($key = NULL) {
+    if ($key && isset($this->_volunteerConsentCustomGroup[$key])) {
+      return $this->_volunteerConsentCustomGroup[$key];
+    }
+    else {
+      return $this->_volunteerConsentCustomGroup;
+    }
+  }
+
+  /**
    * Getter for volunteer status custom group
    *
    * @param null $key
@@ -453,6 +469,27 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function getVolunteerPanelCustomField($customFieldName, $key = NULL) {
     foreach ($this->_volunteerPanelCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Getter for volunteer consent custom field
+   *
+   * @param $customFieldName
+   * @param $key
+   * @return mixed
+   */
+  public function getVolunteerConsentCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_volunteerConsentCustomGroup['custom_fields'] as $customField) {
       if ($customField['name'] == $customFieldName) {
         if ($key && isset($customField[$key])) {
           return $customField[$key];
@@ -996,6 +1033,7 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_volunteer_alias',
       'nihr_volunteer_ids',
       'nihr_volunteer_panel',
+      'nihr_volunteer_consent',
       ];
     try {
       $customGroups = civicrm_api3('CustomGroup', 'get', [

@@ -225,6 +225,26 @@ class CRM_Nihrbackbone_NihrProject {
   }
 
   /**
+   * Method to get the name of the project with the id
+   *
+   * @param $projectId
+   * @return bool|string
+   */
+  public static function getProjectNameWithId($projectId) {
+    if (!empty($projectId)) {
+      try {
+        return (string) civicrm_api3('Campaign', 'getvalue', [
+          'return' => 'title',
+          'id' => $projectId,
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Method to get the project selection criteria
    *
    * @param $projectId
@@ -258,6 +278,26 @@ class CRM_Nihrbackbone_NihrProject {
       }
     }
     return $criteria;
+  }
+
+  /**
+   * Method to retrieve all active cases with eligibility does not meet criteria and
+   * check if this still applies (mainly to check if volunteer involved meets age criteria)
+   */
+  public static function checkMeetsAge() {
+    $criteriaStatusId = CRM_Nihrbackbone_BackboneConfig::singleton()->getCriteriaNotMetEligibleStatusId();
+    $projectIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
+    $meetStatus = CRM_Nihrbackbone_BackboneConfig::singleton()->getCriteriaNotMetEligibleStatusId();
+    $cases = CRM_Nihrbackbone_NbrVolunteerCase::getAllActiveParticipations();
+    // for each of those, check if I need to add or remove the status
+    foreach ($cases as $caseData) {
+      if (!CRM_Nihrbackbone_NihrVolunteer::meetsProjectSelectionCriteria($caseData['contact_id'], $caseData[$projectIdColumn])) {
+        CRM_Nihrbackbone_NbrVolunteerCase::removeEligibilityStatus($caseData['case_id'], $caseData[$projectIdColumn], $criteriaStatusId);
+      }
+      else {
+        CRM_Nihrbackbone_NbrVolunteerCase::setEligibilityStatus($meetStatus, $caseData['case_id']);
+      }
+    }
   }
 
 }

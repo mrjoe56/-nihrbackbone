@@ -26,6 +26,12 @@
     <div class="clear"></div>
   </div>
 
+  <div class="crm-section recall_group_section">
+    <div class="label">{$form.recall_group.label}</div>
+    <div class="content">{$form.recall_group.html}</div>
+    <div class="clear"></div>
+  </div>
+
   {* FOOTER *}
   <div class="crm-submit-buttons">
     {include file="CRM/common/formButtons.tpl" location="bottom"}
