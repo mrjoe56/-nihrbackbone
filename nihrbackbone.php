@@ -11,7 +11,7 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
   }
   # if creating (opening) a case (activity type 13) :
   #  get PID and postcode, site ID and postcode, and set distance to centre for this case
-  if ($op == 'create' && $objectName == 'Activity' && $objectRef->activity_type_id == 13) {
+  if ($op == 'create' && $objectName == 'Activityx' && $objectRef->activity_type_id == 13) {
     $query = "select cc.contact_id, adr.postal_code as cont_pc, projdat.npd_site, site_adr.postal_code as site_pc
              from civicrm_case_contact cc, civicrm_contact c, civicrm_address adr, civicrm_address site_adr,
              civicrm_value_nihr_participation_data partdat, civicrm_value_nihr_project_data projdat
@@ -44,7 +44,7 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 /** Implements hook_civicrm_summary JB 27/01/20 */
 function nihrbackbone_civicrm_summary($contactID, &$content, &$contentPlacement) {
   CRM_Nihrbackbone_NihrContactSummary::nihrbackbone_civicrm_summary($contactID);
-  Civi::log()->debug('civicrm_summary hookkk - $contactID : ' . $contactID);
+  #Civi::log()->debug('civicrm_summary hook - $contactID : ' . $contactID);
 }
 
 /** Implements hook_civicrm_tabset JB 27/01/20 */
