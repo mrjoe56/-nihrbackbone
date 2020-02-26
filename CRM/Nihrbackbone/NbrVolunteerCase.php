@@ -442,22 +442,17 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    *
    * @param $caseId
    * @param $contactId
-   * @param $projectId
+   * @param $studyId
    * @return bool
    */
-  public static function addInviteActivity($caseId, $contactId, $projectId) {
+  public static function addInviteActivity($caseId, $contactId, $studyId) {
     if (empty($caseId) || empty($contactId)) {
       Civi::log()->warning(E::ts('Trying to add an invite activity with empty case id or contact id in ') . __METHOD__);
       return FALSE;
     }
-    try {
-      $projectTitle = (string) civicrm_api3('Campaign', 'getvalue', [
-        'return' => 'title',
-        'id' => $projectId,
-      ]);
-    }
-    catch (CiviCRM_API3_Exception $ex) {
-      $projectTitle = $projectId;
+    $studyNumber = CRM_Nihrbackbone_NbrStudy::getStudyNumberWithId($studyId);
+    if (empty($studyNumber)) {
+      $studyNumber = $studyId;
     }
     $activityTypeId = CRM_Nihrbackbone_BackboneConfig::singleton()->getInviteProjectActivityTypeId();
     $activityParams = [
@@ -465,7 +460,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       'target_id' => $contactId,
       'case_id' => $caseId,
       'activity_type_id' => $activityTypeId,
-      'subject' => E::ts("Invited to project ") . $projectTitle,
+      'subject' => E::ts("Invited to study ") . $studyNumber,
       'status_id' => 'Completed',
     ];
     try {

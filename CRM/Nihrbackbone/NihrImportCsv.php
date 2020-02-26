@@ -232,6 +232,7 @@ class CRM_Nihrbackbone_NihrImportCsv
    */
   private function importParticipation($recallGroup = NULL)
   {
+    //todo do NOT import if volunteer deceased, withdrawn or redundant IF is NOT a data only or sample only study
     $studyNumber = CRM_Nihrbackbone_NbrStudy::getStudyNameWithId($this->_studyId);
     $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
     while (!feof($this->_csv)) {
