@@ -192,7 +192,20 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         if (!empty($data['ibd_id'])) {
           $this->addAlias($contactId, 'alias_type_ibd_id', $data['ibd_id'], 0);
         }
+
+        // *** add source specific identifiers and data *********************************************************
         switch ($this->_dataSource) {
+          case "ibd":
+            if (!empty($data['diagnosis'])) {
+              $this->addDisease($contactId, 'family_member_self', $data['diagnosis']);
+            }
+            if (!empty($data['site'])) {
+              $this->addPanel($contactId, $this->_dataSource, $data['cohort'], $data['site']);
+            }
+            else {
+              $this->_logger->logMessage('ERROR: panel missing for ' . $contactId, 'error');
+            }
+            break;
           case "ucl":
             $this->addAlias($contactId, 'alias_type_ucl_br_local', $data['local_id'], 0);
             if (!empty($data['national_id'])) {
@@ -598,4 +611,88 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       }
     }
   }
+
+  private function addDisease($contactID, $familyMember, $disease)
+  {
+    // *** add disease/conditions
+
+    if (isset($familyMember))
+      // todo and check if aliasType exists
+    {
+      if (isset($disease)) {
+        // todo check if disease exists
+
+        // todo $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerDisease('table_name');
+        $table = 'civicrm_value_nihr_volunteer_disease';
+        // --- check if disease already exists ---------------------------------------------------------------------
+
+        // todo: add more fields; only one brother, sister etc possible per disease!!!!
+        $query = "SELECT count(*) 
+                    from $table
+                    where entity_id = %1
+                    and nvdi_family_member = %2
+                    and nvdi_disease = %3";
+        $queryParams = [
+          1 => [$contactID, "Integer"],
+          2 => [$familyMember, "String"],
+          3 => [$disease, "String"],
+        ];
+        $cnt = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+
+        if ($cnt == 0) {
+          // --- insert --------------------------------------------------------------------------------------------
+
+          $query = "insert into $table (entity_id, nvdi_family_member, nvdi_disease)
+                            values (%1,%2,%3)";
+          $queryParams = [
+            1 => [$contactID, "Integer"],
+            2 => [$familyMember, "String"],
+            3 => [$disease, "String"],
+          ];
+          CRM_Core_DAO::executeQuery($query, $queryParams);
+        }
+      }
+    }
+  }
+
+
+  private function addPanel($contactID, $dataSource, $cohort, $site)
+  {
+    // TODO for the time being, the IBD code is in 'nickname' this is going to change
+
+    if (isset($site))
+      // todo and check if aliasType exists
+    {
+        // todo $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanel('table_name');
+        $table = 'civicrm_value_nihr_volunteer_panel';
+        // --- check if panel already exists ---------------------------------------------------------------------
+
+       /* $query = "SELECT count(*)
+                    from $table
+                    where entity_id = %1
+                    and nvdi_family_member = %2
+                    and nvdi_disease = %3";
+        $queryParams = [
+          1 => [$contactID, "Integer"],
+          2 => [$familyMember, "String"],
+          3 => [$disease, "String"],
+        ];
+        $cnt = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+
+        if ($cnt == 0) {
+          // --- insert --------------------------------------------------------------------------------------------
+
+          $query = "insert into $table (entity_id, nvdi_family_member, nvdi_disease)
+                            values (%1,%2,%3)";
+          $queryParams = [
+            1 => [$contactID, "Integer"],
+            2 => [$familyMember, "String"],
+            3 => [$disease, "String"],
+          ];
+          CRM_Core_DAO::executeQuery($query, $queryParams);
+        }
+      } */
+    }
+  }
 }
+
