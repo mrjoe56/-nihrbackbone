@@ -466,12 +466,41 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     ];
     try {
       civicrm_api3('Activity', 'create', $activityParams);
+      // now update the study invite date
+      $inviteDate = new DateTime('now');
+      self::updateStudyInviteDate($caseId, $inviteDate);
       return TRUE;
     }
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->error(E::Ts('Could not create invite activity for case ID ') . $caseId . E::ts(' and contact ID ')
         . $contactId . E::ts(', error from API Activity create: ') . $ex->getMessage());
       return FALSE;
+    }
+  }
+
+  /**
+   * Method to update the study invited date on a case
+   * 
+   * @param $caseId
+   * @param null $inviteDate
+   * @throws Exception
+   */
+  public static function updateStudyInviteDate($caseId, $inviteDate = NULL) {
+    if (!$inviteDate) {
+      $inviteDate = new DateTime('now');
+    }
+    if (!$inviteDate instanceof DateTime) {
+      $inviteDate = new DateTime($inviteDate);
+    }
+    $inviteCustomFieldId = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_date_invited', 'id');
+    try {
+      $result = civicrm_api3('Case', 'create', [
+        'id' => (int) $caseId,
+        $inviteCustomFieldId => $inviteDate->format('d-m-Y'),
+        ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->warning("Could not update study invite date on case ID " . $caseId . ", error message from API Case create: " . $ex->getMessage());
     }
   }
 
