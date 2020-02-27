@@ -80,10 +80,6 @@ class CRM_Nihrbackbone_Page_NbrImportLog extends CRM_Core_Page {
    * @throws CRM_Core_Exception
    */
   private function setPageConfiguration() {
-    // remove this page from user context if it is there
-    if (CRM_Core_Session::singleton()->readUserContext() == CRM_Utils_System::url("civicrm/nihrbackbone/page/nihrstudy", "reset=1", TRUE)) {
-      CRM_Core_Session::singleton()->popUserContext();
-    }
     // read parameters from request
     $type = CRM_Utils_Request::retrieveValue("type", "String");
     if ($type) {

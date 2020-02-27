@@ -17,14 +17,14 @@ class CRM_Nihrbackbone_NihrAddress {
     $postcode = $objectRef->postal_code;
 
     # if contact is a valid panel - set distance to centre value for all cases linked to the panel
-    $query = "select count(*) from civicrm_value_nihr_project_data where npd_site = %1";
+    $query = "select count(*) from civicrm_value_nbr_study_data where nsd_site = %1";
     $panel_count = CRM_Core_DAO::singleValueQuery($query, [1 => [$contact_id, 'Integer']]);
     if (intval($panel_count >= 1)) {
       $query = "select pd.entity_id as case_id, cc.contact_id as case_contact_id, addr.postal_code as postcode
-                from civicrm_value_nihr_project_data prd, civicrm_value_nihr_participation_data pd, civicrm_case c,
+                from civicrm_value_nbr_study_data prd, civicrm_value_nbr_participation_data pd, civicrm_case c,
                 civicrm_case_contact cc, civicrm_contact contact, civicrm_address addr
-                where prd.entity_id = pd.nvpd_project_id and pd.entity_id = c.id and c.id = cc.case_id
-                and contact.id = cc.contact_id and contact.id = addr.contact_id and c.is_deleted = 0 and prd.npd_site = %1";
+                where prd.entity_id = pd.nvpd_study_id and pd.entity_id = c.id and c.id = cc.case_id
+                and contact.id = cc.contact_id and contact.id = addr.contact_id and c.is_deleted = 0 and prd.nsd_site = %1";
       $cur = CRM_Core_DAO::executeQuery($query, [1 => [$contact_id, 'Integer']]);
       while ($cur->fetch()) {
         self::setCaseDistance($cur->case_id, $cur->postcode, $contact_id,  $postcode);
@@ -35,17 +35,17 @@ class CRM_Nihrbackbone_NihrAddress {
     else {
       $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
       if ($volunteer->isValidVolunteer($contact_id)) {
-        $query = "select case_id from civicrm_case c, civicrm_case_contact cc 
+        $query = "select case_id from civicrm_case c, civicrm_case_contact cc
                   where c.id = cc.case_id and c.is_deleted = 0 and cc.contact_id = %1";
         $cur = CRM_Core_DAO::executeQuery($query, [1 => [$contact_id, 'Integer']]);
         while ($cur->fetch()) {
-          $query2 = "select pa.nvpd_project_id, pr.npd_site, addr.postal_code
-                    from civicrm_value_nihr_project_data pr, civicrm_value_nihr_participation_data pa, civicrm_contact c, civicrm_address addr
-                    where pr.entity_id = pa.nvpd_project_id and pr.npd_site = c.id and c.id = addr.contact_id
+          $query2 = "select pa.nvpd_study_id, pr.nsd_site, addr.postal_code
+                    from civicrm_value_nbr_study_data pr, civicrm_value_nbr_participation_data pa, civicrm_contact c, civicrm_address addr
+                    where pr.entity_id = pa.nvpd_study_id and pr.nsd_site = c.id and c.id = addr.contact_id
                     and pa.entity_id = %1";
           $dao = CRM_Core_DAO::executeQuery($query2, [1 => [$cur->case_id, 'Integer']]);
           if ($dao->fetch()) {
-            self::setCaseDistance($cur->case_id, $postcode, $dao->npd_site, $dao->postal_code );
+            self::setCaseDistance($cur->case_id, $postcode, $dao->nsd_site, $dao->postal_code );
           }
         }
       }
@@ -60,7 +60,7 @@ class CRM_Nihrbackbone_NihrAddress {
       'postcode_from' => $contact_postcode,
       'postcode_to' => $centre_postcode,
     ]);
-    $query = "update civicrm_value_nihr_participation_data set nvpd_distance_volunteer_to_study_centre = %1 where entity_id = %2";
+    $query = "update civicrm_value_nbr_participation_data set nvpd_distance_volunteer_to_study_centre = %1 where entity_id = %2";
     $queryParams = [1 => [$distance, 'Integer'], 2 => [$case_id, 'Integer']];
     CRM_Core_DAO::executeQuery($query, $queryParams);
 

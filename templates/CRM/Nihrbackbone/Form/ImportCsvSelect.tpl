@@ -6,7 +6,7 @@
   <div class="crm-submit-buttons">
     {include file="CRM/common/formButtons.tpl" location="top"}
   </div>
-  <input type="hidden" name="project_id" id="study_id" value="{$project_id}" />
+  <input type="hidden" name="study_id" id="study_id" value="{$study_id}" />
 
   <div class="crm-section csv_file_section">
     <div class="label">{$form.csv_file.label}</div>

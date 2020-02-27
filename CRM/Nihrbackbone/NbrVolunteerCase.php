@@ -141,25 +141,25 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @return array
    */
   public function createParticipationVolunteerCase($contactId) {
-    if (empty($this->_apiParams['project_id'])) {
-      throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty projectId in ') . __METHOD__, 3002);
+    if (empty($this->_apiParams['study_id'])) {
+      throw new API_Exception(E::ts('Trying to add a volunteer to a study with an empty studyId in ') . __METHOD__, 3002);
     }
     if (empty($contactId)) {
-      throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty contactId in ') . __METHOD__, 3003);
+      throw new API_Exception(E::ts('Trying to add a volunteer to a study with an empty contactId in ') . __METHOD__, 3003);
     }
-    $nihrProject = new CRM_Nihrbackbone_NihrProject();
-    if ($nihrProject->projectExists($this->_apiParams['project_id'])) {
-      // check if contact exists and has contact sub type Volunteer and does not have a case for this project yet
+    $nbrStudy = new CRM_Nihrbackbone_NbrStudy();
+    if ($nbrStudy->studyExists($this->_apiParams['study_id'])) {
+      // check if contact exists and has contact sub type Volunteer and does not have a case for this study yet
       $nihrVolunteer = new CRM_Nihrbackbone_NihrVolunteer();
-      if ($nihrVolunteer->isValidVolunteer($contactId) && !$this->isAlreadyOnProject($contactId)) {
-        // create new case linked to project
+      if ($nihrVolunteer->isValidVolunteer($contactId) && !CRM_Nihrbackbone_NbrVolunteerCase::isAlreadyOnStudy($contactId, $this->_apiParams['study_id'])) {
+        // create new case linked to study
         try {
           $case = civicrm_api3('Case', 'create', $this->setCaseCreateData($contactId));
           return ['case_id' => $case['id']];
         }
         catch (CiviCRM_API3_Exception $ex) {
           throw new API_Exception(E::ts('Could not create a Participation case for contact ID ') . $contactId
-            . E::ts(' and project ID ') . $this->_projectId . E::ts(' in ') . __METHOD__ . E::ts(', error code from API Case create:' ) . $ex->getMessage(), 3004);
+            . E::ts(' and study ') . CRM_Nihrbackbone_NbrStudy::getStudyNumberWithId($this->_apiParams['study_id']) . E::ts(' in ') . __METHOD__ . E::ts(', error code from API Case create:' ) . $ex->getMessage(), 3004);
         }
       }
     }
@@ -199,23 +199,23 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @return array
    */
   private function setCaseCreateData($contactId) {
-    $projectIdCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'id');
-    $pvStatusCustomFieldId = 'custom_'. CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_participation_status', 'id');
+    $studyIdCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'id');
+    $pvStatusCustomFieldId = 'custom_'. CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
     $recallGroupCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'id');
-    $projectName = CRM_Nihrbackbone_NihrProject::getProjectNameWithId($this->_apiParams['project_id']);
-    if ($projectName) {
-      $subject = E::ts("Selected for project ") . $projectName;
+    $studyNumber = CRM_Nihrbackbone_NbrStudy::getStudyNumberWithId($this->_apiParams['study_id']);
+    if ($studyNumber) {
+      $subject = E::ts("Selected for study ") . $studyNumber;
     }
     else {
-      $subject = E::ts("Selected for project ") . $this->_apiParams['project_id'];
+      $subject = E::ts("Selected for study ") . $this->_apiParams['study_id'];
     }
     $caseCreateData =  [
       'contact_id' => $contactId,
       'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(),
       'subject' => $subject,
       'status_id' => "Open",
-      $projectIdCustomFieldId => $this->_apiParams['project_id'],
-      $pvStatusCustomFieldId => 'project_participation_status_selected',
+      $studyIdCustomFieldId => $this->_apiParams['study_id'],
+      $pvStatusCustomFieldId => 'study_participation_status_selected',
       ];
     if ($this->_apiParams['recall_group']) {
       $caseCreateData[$recallGroupCustomFieldId] = $this->_apiParams['recall_group'];
@@ -238,21 +238,21 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   }
 
   /**
-   * Method to find out if a contact is already on a project
+   * Method to find out if a contact is already on a study
    *
    * @param $contactId
    * @return bool
    */
-  public function isAlreadyOnProject($contactId) {
+  public static function isAlreadyOnStudy($contactId, $studyId) {
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-    $projectIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
+    $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
     $query = "SELECT COUNT(*)
       FROM civicrm_case_contact AS a JOIN civicrm_case AS b ON a.case_id = b.id
       LEFT JOIN " . $tableName ." AS c ON a.case_id = c.entity_id
-      WHERE a.contact_id = %1 AND " . $projectIdColumn . " = %2 AND b.is_deleted = %3";
+      WHERE a.contact_id = %1 AND " . $studyIdColumn . " = %2 AND b.is_deleted = %3";
     $count = CRM_Core_DAO::singleValueQuery($query, [
       1 => [$contactId, 'Integer'],
-      2 => [$this->_apiParams['project_id'], 'Integer'],
+      2 => [$studyId, 'Integer'],
       3 => [0, 'Integer'],
     ]);
     if ($count == 0) {
@@ -443,22 +443,17 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    *
    * @param $caseId
    * @param $contactId
-   * @param $projectId
+   * @param $studyId
    * @return bool
    */
-  public static function addInviteActivity($caseId, $contactId, $projectId) {
+  public static function addInviteActivity($caseId, $contactId, $studyId) {
     if (empty($caseId) || empty($contactId)) {
       Civi::log()->warning(E::ts('Trying to add an invite activity with empty case id or contact id in ') . __METHOD__);
       return FALSE;
     }
-    try {
-      $projectTitle = (string) civicrm_api3('Campaign', 'getvalue', [
-        'return' => 'title',
-        'id' => $projectId,
-      ]);
-    }
-    catch (CiviCRM_API3_Exception $ex) {
-      $projectTitle = $projectId;
+    $studyNumber = CRM_Nihrbackbone_NbrStudy::getStudyNumberWithId($studyId);
+    if (empty($studyNumber)) {
+      $studyNumber = $studyId;
     }
     $activityTypeId = CRM_Nihrbackbone_BackboneConfig::singleton()->getInviteProjectActivityTypeId();
     $activityParams = [
@@ -466,7 +461,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       'target_id' => $contactId,
       'case_id' => $caseId,
       'activity_type_id' => $activityTypeId,
-      'subject' => E::ts("Invited to project ") . $projectTitle,
+      'subject' => E::ts("Invited to study ") . $studyNumber,
       'status_id' => 'Completed',
     ];
     try {
@@ -492,13 +487,13 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       return FALSE;
     }
     $query = "SELECT COUNT(*)
-      FROM civicrm_value_nihr_project_data AS a
-      LEFT JOIN civicrm_value_nihr_participation_data AS b ON a.entity_id = b.nvpd_project_id
+      FROM civicrm_value_nbr_study_data AS a
+      LEFT JOIN civicrm_value_nbr_participation_data AS b ON a.entity_id = b.nvpd_study_id
       LEFT JOIN civicrm_case_activity AS c ON b.entity_id = c.case_id
       LEFT JOIN civicrm_case_contact AS d ON c.case_id = d.case_id
       LEFT JOIN civicrm_case AS e ON c.case_id = e.id
       LEFT JOIN civicrm_activity AS f ON c.activity_id = f.id
-      WHERE a.npd_study_id = %1 AND d.contact_id = %2 AND e.is_deleted = %3
+      WHERE a.nsd_study_number = %1 AND d.contact_id = %2 AND e.is_deleted = %3
         AND f.is_current_revision = %4 AND f.is_deleted = %3 AND f.activity_type_id = %5";
     $count = (int) CRM_Core_DAO::singleValueQuery($query, [
       1 => [(int) $studyId, "Integer"],

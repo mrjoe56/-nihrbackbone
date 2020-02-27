@@ -11,15 +11,15 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
   }
   # if creating (opening) a case (activity type 13) :
   #  get PID and postcode, site ID and postcode, and set distance to centre for this case
-  if ($op == 'create' && $objectName == 'Activityx' && $objectRef->activity_type_id == 13) {
-    $query = "select cc.contact_id, adr.postal_code as cont_pc, projdat.npd_site, site_adr.postal_code as site_pc
+  if ($op == 'create' && $objectName == 'Activity' && $objectRef->activity_type_id == 13) {
+    $query = "select cc.contact_id, adr.postal_code as cont_pc, stddat.nsd_site, site_adr.postal_code as site_pc
              from civicrm_case_contact cc, civicrm_contact c, civicrm_address adr, civicrm_address site_adr,
-             civicrm_value_nihr_participation_data partdat, civicrm_value_nihr_project_data projdat
+             civicrm_value_nbr_participation_data partdat, civicrm_value_nbr_study_data stddat
              where cc.contact_id = c.id and c.id = adr.contact_id and cc.case_id = partdat.entity_id
-             and partdat.nvpd_project_id = projdat.entity_id and projdat.npd_site = site_adr.contact_id and case_id = %1";
+             and partdat.nvpd_study_id = stddat.entity_id and stddat.nsd_site = site_adr.contact_id and case_id = %1";
     $dao = CRM_Core_DAO::executeQuery($query, [1 => [$objectRef->case_id, 'Integer']]);
     if ($dao->fetch()) {
-      CRM_Nihrbackbone_NihrAddress::setCaseDistance($objectRef->case_id, $dao->cont_pc, $dao->npd_site,  $dao->site_pc);
+      CRM_Nihrbackbone_NihrAddress::setCaseDistance($objectRef->case_id, $dao->cont_pc, $dao->nsd_site,  $dao->site_pc);
     }
   }
   # if editing a primary Address activity for a participant - update distance to Addenbrookes value
@@ -126,54 +126,31 @@ function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form,
 }
 
 /**
- * Implements hook_civicrm_links().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_links/
- */
-function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$values) {
-  if ($op == 'campaign.dashboard.row' && $objectName == "Campaign") {
-    $project = new CRM_Nihrbackbone_NihrProject();
-    if ($project->isNihrProject($objectId)) {
-      // only if the campaign is a project
-      $links[] = [
-        'name' => ts('Import'),
-        'url' => 'civicrm/nihrbackbone/form/importcsvselect',
-        'title' => 'Import',
-        'class' => 'no-popup',
-        'qs' => 'reset=1&pid=%%id%%',
-        ];
-      $csId = CRM_Nihrbackbone_Utils::getVolunteerCsId();
-      if ($csId) {
-        $links[] = [
-          'name' => ts('Volunteers'),
-          'url' => 'civicrm/contact/search/custom',
-          'title' => 'Volunteers',
-          'class' => 'no-popup',
-          'qs' => 'reset=1&csid=' . $csId,
-      ];
-      }
-    }
-  }
-}
-
-/**
  * Implements hook_civicrm_navigationMenu().
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_navigationMenu/
  */
 function nihrbackbone_civicrm_navigationMenu(&$menu) {
-  _nihrbackbone_civix_insert_navigation_menu($menu, 'Campaigns', array(
-    'label' => E::ts('NIHR BioResource Studies'),
-    'name' => 'nihrstudies',
-    'url' => 'civicrm/nihrbackbone/page/nihrstudy',
+  _nihrbackbone_civix_insert_navigation_menu($menu, '', [
+    'label' => E::ts('Studies'),
+    'name' => 'nbrstudies',
+    'url' => '',
     'permission' => 'access CiviCRM',
     'operator' => 'OR',
     'separator' => 0,
-  ));
-  _nihrbackbone_civix_insert_navigation_menu($menu, '', [
-    'label' => E::ts('NIHR BioResource Studies'),
-    'name' => 'nbrstudies',
-    'url' => 'civicrm/nihrbackbone/page/nbrproject',
+  ]);
+  _nihrbackbone_civix_insert_navigation_menu($menu, 'nbrstudies', [
+    'label' => E::ts('Studies List'),
+    'name' => 'nbrstudieslist',
+    'url' => 'civicrm/nihrbackbone/page/nbrstudy',
+    'permission' => 'access CiviCRM',
+    'operator' => 'OR',
+    'separator' => 0,
+  ]);
+  _nihrbackbone_civix_insert_navigation_menu($menu, 'nbrstudies', [
+    'label' => E::ts('New Study'),
+    'name' => 'newnbrstudy',
+    'url' => 'civicrm/nihrbackbone/form/nbrstudy?reset=1&action=add',
     'permission' => 'access CiviCRM',
     'operator' => 'OR',
     'separator' => 0,

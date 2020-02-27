@@ -6,75 +6,7 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  */
 class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
 
-  /**
-   * Upgrade 1000 (add option values for studies)
-   *
-   * @return TRUE on success
-   * @throws Exception
-   */
-  public function upgrade_1000() {
-    $this->ctx->log->info(E::ts('Applying update 1000'));
-    $studies = civicrm_api3('NihrStudy', 'get', ['options' => ['limit' => 0]]);
-    foreach ($studies['values'] as $studyId => $study) {
-      civicrm_api3('OptionValue', 'create', [
-        'option_group_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getProjectCustomField('npd_study_id', 'option_group_id'),
-        'label' => $study['title'],
-        'name' => $study['title'],
-        'value' => $studyId,
-        'is_active' => 1,
-      ]);
-    }
-    return TRUE;
-  }
 
-  /**
-   * Upgrade 1010 (add column study_number
-   *
-   * @return TRUE on success
-   * @throws Exception
-   */
-  public function upgrade_1010() {
-    $this->ctx->log->info(E::ts('Applying update 1010 (add study number column)'));
-    if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'study_number')) {
-      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study ADD COLUMN study_number VARCHAR(24) DEFAULT NULL COMMENT 'Specific Study Number in NIHR BioResource' AFTER id");
-    }
-    return TRUE;
-  }
-
-  /**
-   * Upgrade 1020 (add option values for studies)
-   *
-   * @return TRUE on success
-   * @throws Exception
-   */
-  public function upgrade_1020()
-  {
-    $this->ctx->log->info(E::ts('Applying update 1020 - updating nihr_study table'));
-    // rename existing column title to short_name if required
-    if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'title')) {
-      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study CHANGE COLUMN title short_name VARCHAR(64)");
-    }
-    // add long_name column after short_name
-    if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'long_name')) {
-      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study ADD COLUMN long_name VARCHAR(256) AFTER short_name");
-    }
-    // add ethics_approved_date column after ethics_approved_id
-    if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'ethics_approved_date')) {
-      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study ADD COLUMN ethics_approved_date DATE after ethics_approved_id");
-    }
-    // change start_date and end_date columns to valid_start_date and valid_end_date
-    if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'start_date')) {
-      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study CHANGE COLUMN start_date valid_start_date DATE");
-    }
-    if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'end_date')) {
-      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study CHANGE COLUMN end_date valid_end_date DATE");
-    }
-    // make sure status_id is varchar
-    if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_nihr_study', 'status_id')) {
-      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_nihr_study MODIFY status_id VARCHAR(64)");
-    }
-    return TRUE;
-  }
 
   /**
    * Upgrade 1030 (add log table - see https://issues.civicoop.org/issues/4950)
@@ -93,6 +25,20 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
      `message` text    COMMENT 'Message',
      `logged_date` date    COMMENT 'The date the message was logged', PRIMARY KEY (`id`));";
       CRM_Core_DAO::executeQuery($query);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Upgrade 1040 (remove study table)
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1040() {
+    $this->ctx->log->info(E::ts('Applying update 1040 - delete table civicrm_nihr_study and rename campaign_type'));
+    if (CRM_Core_DAO::checkTableExists('civicrm_nihr_study')) {
+      CRM_Core_DAO::executeQuery("DROP TABLE civicrm_nihr_study");
     }
     return TRUE;
   }
