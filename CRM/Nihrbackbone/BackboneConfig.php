@@ -63,6 +63,9 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_mobilePhoneTypeId = NULL;
   private $_phonePhoneTypeId = NULL;
 
+  // properties for location types
+  private $_homeLocationTypeId = NULL;
+
   // properties for communication styles
   private $_defaultCommunicationStyleId = NULL;
   private $_defaultIndEmailGreetingId = NULL;
@@ -93,6 +96,7 @@ class CRM_Nihrbackbone_BackboneConfig {
     $this->setCaseStatus();
     $this->setCustomData();
     $this->setPhoneTypes();
+    $this->setLocationTypes();
     $this->setDefaultCommunicationStyles();
     try {
       $this->_defaultLocationTypeId = civicrm_api3('LocationType', 'getvalue', [
@@ -113,6 +117,14 @@ class CRM_Nihrbackbone_BackboneConfig {
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->warning(E::s('No instant messenger with name Skype found in ') . __METHOD__);
     }
+  }
+
+  /**
+   * Getter for home location type id
+   * @return null
+   */
+  public function getHomeLocationTypeId() {
+    return $this->_homeLocationTypeId;
   }
 
   /**
@@ -1098,6 +1110,20 @@ class CRM_Nihrbackbone_BackboneConfig {
             break;
         }
       }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+  }
+
+  /**
+   * Method to set the location type properties
+   */
+  private function setLocationTypes() {
+    try {
+      $this->_homeLocationTypeId = civicrm_api3('LocationType', 'getvalue', [
+        'return' => 'id',
+        'name' => 'Home',
+      ]);
     }
     catch (CiviCRM_API3_Exception $ex) {
     }
