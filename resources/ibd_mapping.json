@@ -1,5 +1,7 @@
 {
   "_ibd_name": "_civi_name",
+  "participant_id": "participant_id",
+  "bioresource_id": "bioresource_id",
   "pat_bio_no": "pack_id",
   "ibd_id": "ibd_id",
   "demographic_title": "title",
@@ -32,7 +34,7 @@
   "cohort": "cohort",
   "diagnosis": "diagnosis",
   "other_diagnosis": "other_diagnosis",
-  "site": "ibd_subpanel",
+  "site": "site",
   "withdraw": "xx",
   "withdraw_date_request": "xx"
 }

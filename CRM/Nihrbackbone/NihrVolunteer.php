@@ -129,6 +129,24 @@ class CRM_Nihrbackbone_NihrVolunteer {
 
       $sql = "
         SELECT count(*) as cnt, entity_id
+        FROM civicrm_value_contact_id_history
+        where identifier_type = %1
+        and identifier = %2";
+
+      $queryParams = [
+        1 => [$alias_type, 'String'],
+        2 => [$identifier, 'String'],
+      ];
+
+      $data = CRM_Core_DAO::executeQuery($sql, $queryParams);
+      if ($data->fetch()) {
+        $count = $data->cnt;
+        $id = $data->entity_id;
+      }
+
+/*
+      $sql = "
+        SELECT count(*) as cnt, entity_id
         FROM civicrm_value_nihr_volunteer_alias
         where nva_alias_type = %1
         and nva_external_id = %2";
@@ -142,7 +160,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
       if ($data->fetch()) {
         $count = $data->cnt;
         $id = $data->entity_id;
-      }
+      } */
     }
     catch (CiviCRM_API3_Exception $ex) {
       // todo
