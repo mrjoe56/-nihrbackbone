@@ -184,4 +184,30 @@ class CRM_Nihrbackbone_NbrStudy {
     return FALSE;
   }
 
+  /**
+   * Method to get all distinct recall groups (within a study)
+   *
+   * @param $studyId
+   * @return array
+   */
+  public static function getRecallGroupList($studyId = NULL) {
+    $result = [];
+    $partTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+    $studyColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+    $recallColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'column_name');
+    if ($studyId) {
+      $query = "SELECT DISTINCT(" . $recallColumn . ") as recall FROM " . $partTable
+        . " WHERE " . $studyColumn . " = %1";
+      $dao = CRM_Core_DAO::executeQuery($query, [1 => [(int) $studyId, 'Integer']]);
+    }
+    else {
+      $query = "SELECT DISTINCT(" . $recallColumn . ") as recall FROM " . $partTable;
+      $dao = CRM_Core_DAO::executeQuery($query);
+    }
+    while ($dao->fetch()) {
+      $result[$dao->recall] = $dao->recall;
+    }
+    return $result;
+  }
+
 }

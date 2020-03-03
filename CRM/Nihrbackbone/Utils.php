@@ -161,4 +161,17 @@ class CRM_Nihrbackbone_Utils {
     return FALSE;
   }
 
+  /**
+   * Method to get a list of possible ages between 0 and 125
+   *
+   * @return array
+   */
+  public static function getAgeList() {
+    $ages = [];
+    for ($x = 0; $x <= 125; $x++) {
+    $ages[$x] = $x;
+    }
+    return $ages;
+  }
+
 }
