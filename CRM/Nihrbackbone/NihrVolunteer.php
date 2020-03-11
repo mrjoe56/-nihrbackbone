@@ -127,10 +127,26 @@ class CRM_Nihrbackbone_NihrVolunteer {
 
       $id = '';
 
-      // todo possible to select count(*) and entity_id in one query?
-      // &&&& todo database name hardcoded
       $sql = "
-        SELECT count(*)
+        SELECT count(*) as cnt, entity_id
+        FROM civicrm_value_contact_id_history
+        where identifier_type = %1
+        and identifier = %2";
+
+      $queryParams = [
+        1 => [$alias_type, 'String'],
+        2 => [$identifier, 'String'],
+      ];
+
+      $data = CRM_Core_DAO::executeQuery($sql, $queryParams);
+      if ($data->fetch()) {
+        $count = $data->cnt;
+        $id = $data->entity_id;
+      }
+
+/*
+      $sql = "
+        SELECT count(*) as cnt, entity_id
         FROM civicrm_value_nihr_volunteer_alias
         where nva_alias_type = %1
         and nva_external_id = %2";
@@ -140,38 +156,25 @@ class CRM_Nihrbackbone_NihrVolunteer {
         2 => [$identifier, 'String'],
       ];
 
-      try {
-        $count = CRM_Core_DAO::singleValueQuery($sql, $queryParams);
-      } catch (CiviCRM_API3_Exception $ex) {
-      }
-
-      // TODO &&& cnt > 1 -> error, don't store data
-      // TODO cnt = 0 -> check further (e.g. name and dob, nhs?)
-      // cnt = 1 -> get ID and use this ID
-      if ($count == 1) {
-        $sql = "
-            SELECT entity_id
-            FROM civicrm_value_nihr_volunteer_alias
-            where nva_alias_type = %1
-            and nva_external_id = %2";
-
-        $queryParams = [
-          1 => [$alias_type, 'String'],
-          2 => [$identifier, 'String'],
-        ];
-
-        try {
-          $id = CRM_Core_DAO::singleValueQuery($sql, $queryParams);
-        } catch (CiviCRM_API3_Exception $ex) {
-        }
-
-        return $id;
-      }
+      $data = CRM_Core_DAO::executeQuery($sql, $queryParams);
+      if ($data->fetch()) {
+        $count = $data->cnt;
+        $id = $data->entity_id;
+      } */
     }
     catch (CiviCRM_API3_Exception $ex) {
-      // TODO
+      // todo
     }
+
+    // TODO &&& cnt > 1 -> error, don't store data
+    // TODO cnt = 0 -> check further (e.g. name and dob, nhs?)
+    // cnt = 1 -> use this ID
+    if ($count <> 1) {
+      $id = '';
+    }
+    return $id;
   }
+
 
   /**
    * Method to calculate BMI

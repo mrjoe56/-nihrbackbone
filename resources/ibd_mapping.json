@@ -1,5 +1,7 @@
 {
   "_ibd_name": "_civi_name",
+  "participant_id": "participant_id",
+  "bioresource_id": "bioresource_id",
   "pat_bio_no": "pack_id",
   "ibd_id": "ibd_id",
   "demographic_title": "title",
@@ -20,8 +22,8 @@
   "demographic_postcode": "postcode",
   "homecountry": "county_id",
   "homecountry_other": "country_id",
-  "demographic_pref_phone": "phone_pref",
-  "alternative_phone": "phone_alternative",
+  "phone_home": "phone_home",
+  "phone_mobile": "phone_mobile",
   "preferred_mode_of_contact": "preferred_communication_method",
   "consent": "consent",
   "consent_date": "consent_date",
@@ -32,7 +34,7 @@
   "cohort": "cohort",
   "diagnosis": "diagnosis",
   "other_diagnosis": "other_diagnosis",
-  "site": "ibd_subpanel",
+  "site": "site",
   "withdraw": "xx",
   "withdraw_date_request": "xx"
 }

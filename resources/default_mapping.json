@@ -1,6 +1,8 @@
 {
   "_default_mapping": "_ideally_should_used_by_all_panels",
   "pat_bio_no": "pack_id",
+  "local_id" : "local_id",
+  "national_id": "national_id",
   "demographic_title": "title",
   "demographic_firstname": "first_name",
   "demographic_preferredname": "xx",

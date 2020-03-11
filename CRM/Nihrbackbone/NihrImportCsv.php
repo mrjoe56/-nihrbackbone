@@ -345,7 +345,8 @@ class CRM_Nihrbackbone_NihrImportCsv
         }
 
         // add consent to recruitment case
-        CRM_Nihrbackbone_NbrConsent::addConsent($contactId, $caseID, 'consent_form_status_not_valid', $data);
+        $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
+        $nbrConsent->addConsent($contactId, $caseID, 'consent_form_status_not_valid', $data);
       }
     }
   }

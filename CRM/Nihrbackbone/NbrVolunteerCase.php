@@ -128,7 +128,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       return $result;
   }
     elseif ($this->_apiParams['case_type'] == 'participation') {
-      $this->createParticipationVolunteerCase($contactId);
+      return $this->createParticipationVolunteerCase($contactId);
     }
   }
 

@@ -15,13 +15,11 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   private $_importId = NULL;
   private $_separator = NULL;
   private $_csv = NULL;
-  private $_projectId = NULL;
   private $_columnHeaders = [];
   private $_dataSource = NULL;
   private $_imported = NULL;
   private $_failed = NULL;
   private $_read = NULL;
-  private $_context = NULL;
   private $_originalFileName = NULL;
 
   /**
@@ -108,7 +106,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     $this->getMapping();
 
     // check if mapping contains mandatory columns according to source given
-    if (($this->_dataSource == 'ucl' && !isset($this->_mapping['local_ucl_id'])) ||
+    if (($this->_dataSource == 'ucl' && !isset($this->_mapping['local_id'])) ||
       ($this->_dataSource == 'ibd' && !isset($this->_mapping['pack_id']) && !isset($this->_mapping['ibd_id']))) {
       // todo : log error
     }
@@ -165,7 +163,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   private function importDemographics()
   {
     $this->_logger->logMessage('file: ' .$this->_csvFile . '; dataSource: ' . $this->_dataSource . '; separator: ' . $this->_separator);
-    $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
+
     while (!feof($this->_csv)) {
       $data = fgetcsv($this->_csv, 0, $this->_separator);
 
@@ -184,13 +182,40 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $this->addPhone($contactId, $data, 'phone_mobile', 'Main', 'Mobile');
 
         if (!empty($data['nhs_number'])) {
-          $this->addAlias($contactId, 'alias_type_nhs_number', $data['nhs_number'], 0);
+          // &&& $this->addAlias($contactId, 'alias_type_nhs_number', $data['nhs_number'], 0);
+          $this->addAlias($contactId, 'cih_type_nhs_number', $data['nhs_number'], 0);
+
         }
         if (!empty($data['pack_id'])) {
-          $this->addAlias($contactId, 'alias_type_packid', $data['pack_id'], 0);
+          $this->addAlias($contactId, 'cih_type_pack_id_din', $data['pack_id'], 0);
+          // &&&&           $this->addAlias($contactId, 'alias_type_packid', $data['pack_id'], 0);
         }
         if (!empty($data['ibd_id'])) {
-          $this->addAlias($contactId, 'alias_type_ibd_id', $data['ibd_id'], 0);
+          $this->addAlias($contactId, 'cih_type_ibd_id', $data['ibd_id'], 0);
+          // &&&          $this->addAlias($contactId, 'alias_type_ibd_id', $data['ibd_id'], 0);
+        }
+
+        // *** add source specific identifiers and data *********************************************************
+        switch ($this->_dataSource) {
+          case "ibd":
+            if (!empty($data['diagnosis'])) {
+              $this->addDisease($contactId, 'family_member_self', $data['diagnosis']);
+            }
+            if (!empty($data['site'])) {
+              $this->addPanel($contactId, $this->_dataSource, $data['cohort'], $data['site']);
+            }
+            else {
+              $this->_logger->logMessage('ERROR: panel missing for ' . $contactId, 'error');
+            }
+            break;
+          case "ucl":
+            $this->addAlias($contactId, 'cih_type_ucl_br_local', $data['local_id'], 0);
+            // &&& $this->addAlias($contactId, 'alias_type_ucl_br_local', $data['local_id'], 0);
+            if (!empty($data['national_id'])) {
+              $this->addAlias($contactId, 'cih_type_ucl_br', $data['national_id'], 0);
+              // &&&              $this->addAlias($contactId, 'alias_type_ucl_br', $data['national_id'], 0);
+            }
+            break;
         }
         /*
         if (!empty($data['ucl_id'])) {
@@ -199,14 +224,15 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         // todo add all other aliases
         */
 
-        // *** add recruitment case, if volunteer record newly created
+        // *** add recruitment case, if volunteer record newly created *************************
         $caseID = '';
         if ($new_volunteer) {
           try {
-            $caseID = civicrm_api3('NbrVolunteerCase', 'create', [
+            $result = civicrm_api3('NbrVolunteerCase', 'create', [
               'contact_id' => $contactId,
               'case_type' => 'recruitment'
             ]);
+            $caseID = $result['case_id'];
             $message = E::ts('Recruitment case for volunteer ' . $contactId . '  added');
             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
           } catch (CiviCRM_API3_Exception $ex) {
@@ -229,10 +255,13 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
               CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
             }
           }
-        }
 
-        // add consent to recruitment case
-        CRM_Nihrbackbone_NbrConsent::addConsent($contactId, $caseID, 'consent_form_status_not_valid', $data);
+          // TODO &&& CONSENT ONLY ADDED FOR NEW VOLUNTEERS; FOR EXISTING VOLUNTEERS: CHECK IF THIS SPECIFIC
+          // TODO     CONSENT ALREADY EXISTS AND IF NOT ADD (TO NEW CASE? TO ACTIVITIES?)
+          // add consent to recruitment case
+          $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
+          $nbrConsent->addConsent($contactId, $caseID, 'consent_form_status_not_valid', $data, $this->_logger);
+        }
       }
     }
   }
@@ -280,8 +309,13 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       // todo don't use hardcoded
       if ($newKey == 'pack_id') {
         // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_ucl_br_local', 'id');
-        $mappedData['nva_alias_type'] = 'alias_type_packid';
-        $mappedData['nva_external_id'] = $value;
+        // &&& $mappedData['nva_alias_type'] = 'alias_type_packid';
+        // &&& $mappedData['nva_external_id'] = $value;
+
+
+        $mappedData['identifier_type'] = 'cih_type_packid';
+        $mappedData['identifier'] = $value;
+
 
         /*  $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('alias_type_ibd_id', 'id');
           $mappedData[$newKey] = $value;
@@ -332,35 +366,63 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     $data['contact_type'] = 'Individual';
     $data['contact_sub_type'] = 'nihr_volunteer';
 
+    // NOTE: these two settings are only used for migration and only have any effect if the numbergenerator
+    // is disabled when the data is loaded!
+    if(isset($data['participant_id'])) {
+      $participant_custom_id = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomField('nva_participant_id')['id'];
+      $data[$participant_custom_id] = $data['participant_id'];
+    }
+    if(isset($data['bioresource_id'])) {
+      $bioresource_custom_id = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomField('nva_bioresource_id')['id'];
+      $data[$bioresource_custom_id] = $data['bioresource_id'];
+    }
+
     $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
     $contactId = '';
 
     switch ($this->_dataSource) {
       case "ucl":
-        $contactId = $volunteer->findVolunteerByAlias($data['local_ucl_id'], '$identifierType');
+        // todo check if ID is empty, if so, do not load record
+        $contactId = $volunteer->findVolunteerByAlias($data['local_id'], 'cih_type_ucl_br_local');
         break;
       case "ibd":
         if(!empty($data['pack_id'])) {
-          $contactId = $volunteer->findVolunteerByAlias($data['pack_id'], 'alias_type_packid');
+          $contactId = $volunteer->findVolunteerByAlias($data['pack_id'], 'cih_type_packid');
         }
         // older entries have IBD IDs attached instead
         if (!$contactId && !empty($data['ibd_id'])) {
-          $contactId = $volunteer->findVolunteerByAlias($data['ibd_id'], 'alias_type_ibd_id');
+          $contactId = $volunteer->findVolunteerByAlias($data['ibd_id'], 'cih_type_ibd_id');
         }
         break;
       default:
         $this->_logger->logMessage('ERROR: no default mapping for ' . $this->_dataSource, 'error');
     }
 
+    if (!$contactId) {
+      // check if volunteer is already on Civi under a different panel/without the given ID
+      // TODO &&&
+    }
 
     if ($contactId) {
       // volunteer already exists
       $data['id'] = $contactId;
       $new_volunteer = 0;
     }
+
+    else { // new record
+      // for records with missing names (e.g. loading from sample receipts) a fake first name and surname needs to be added
+      if (!isset($data['first_name'] )|| $data['first_name'] == '') {
+        $data['first_name'] = 'x';
+      }
+      if (!isset($data['last_name'] )|| $data['last_name'] == '') {
+        $data['last_name'] = 'x';
+      }
+    }
+
     try {
+      // create/update volunteer record
       $result = civicrm_api3("Contact", "create", $data);
-      $this->_logger->logMessage('Volunteer succesfully loaded/updated');
+      $this->_logger->logMessage('Volunteer '.(int)$result['id'].' succesfully loaded/updated. New volunteer: '. $new_volunteer);
       return array((int)$result['id'], $new_volunteer);
     } catch (CiviCRM_API3_Exception $ex) {
       $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . " " . $ex->getMessage() . 'error');
@@ -529,36 +591,59 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   {
     // *** add alias
 
+    // todo for different alias types allow multiples/updates etc...
+
     if (isset($aliasType))
       // todo and check if aliasType exists
     {
       if (isset($externalID)) {
-        $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomGroup('table_name');
+        // &&&& $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomGroup('table_name');
+        $table = 'civicrm_value_contact_id_history';
 
         // --- check if alias already exists ---------------------------------------------------------------------
 
         // todo compare on strings removing blanks and special chars
-        $query = "SELECT nva_external_id
+        /* $query = "SELECT nva_external_id
                     from $table
                     where entity_id = %1
                     and nva_alias_type = %2";
         $queryParams = [
           1 => [$contactID, "Integer"],
           2 => [$aliasType, "String"],
+        ]; */
+
+        $query = "SELECT identifier
+                    FROM $table
+                    where entity_id = %1
+                    and identifier_type = %2";
+        $queryParams = [
+          1 => [$contactID, "Integer"],
+          2 => [$aliasType, "String"],
         ];
+
+
         $dbExternalID = CRM_Core_DAO::singleValueQuery($query, $queryParams);
 
         if (!isset($dbExternalID)) {
           // --- insert --------------------------------------------------------------------------------------------
 
-          if ($aliasType == 'alias_type_nhs_number') {
+          if ($aliasType == 'cih_type_nhs_number') {
             // todo check if nhs number format is correct (subroutine to be written by JB)
             // reformat NHS number
             $externalID = substr($externalID, 0, 3) . ' ' . substr($externalID, 3, 3) . ' ' . substr($externalID, 6, 4);
           }
 
 
-          $query = "insert into $table (entity_id,nva_alias_type, nva_external_id)
+          /* $query = "insert into $table (entity_id,nva_alias_type, nva_external_id)
+                            values (%1,%2,%3)";
+          $queryParams = [
+            1 => [$contactID, "Integer"],
+            2 => [$aliasType, "String"],
+            3 => [$externalID, "String"],
+          ];
+          CRM_Core_DAO::executeQuery($query, $queryParams); */
+
+          $query = "insert into $table (entity_id, identifier_type, identifier)
                             values (%1,%2,%3)";
           $queryParams = [
             1 => [$contactID, "Integer"],
@@ -578,4 +663,133 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       }
     }
   }
+
+
+  private function addDisease($contactID, $familyMember, $disease)
+  {
+    // *** add disease/conditions
+
+    if (isset($familyMember))
+    {
+      if (isset($disease)) {
+        // todo check if disease exists
+
+        // todo $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerDisease('table_name');
+        $table = 'civicrm_value_nihr_volunteer_disease';
+        // --- check if disease already exists ---------------------------------------------------------------------
+
+        // todo: add more fields; only one brother, sister etc possible per disease!!!!
+        $query = "SELECT count(*)
+                    from $table
+                    where entity_id = %1
+                    and nvdi_family_member = %2
+                    and nvdi_disease = %3";
+        $queryParams = [
+          1 => [$contactID, "Integer"],
+          2 => [$familyMember, "String"],
+          3 => [$disease, "String"],
+        ];
+        $cnt = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+
+        if ($cnt == 0) {
+          // --- insert --------------------------------------------------------------------------------------------
+
+          $query = "insert into $table (entity_id, nvdi_family_member, nvdi_disease) values (%1,%2,%3)";
+          $queryParams = [
+            1 => [$contactID, "Integer"],
+            2 => [$familyMember, "String"],
+            3 => [$disease, "String"],
+          ];
+          CRM_Core_DAO::executeQuery($query, $queryParams);
+        }
+      }
+    }
+  }
+
+
+  private function addPanel($contactID, $dataSource, $cohort, $site)
+  {
+    // TODO &&& for the time being, the IBD site code is in 'nickname' this is going to change
+
+    if (isset($site)) {
+
+      // todo $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanel('table_name');
+      $table = 'civicrm_value_nihr_volunteer_panel';
+
+
+      $panel = $dataSource;
+      if ($cohort <> '') {
+        // IBD only
+        $panel .=  ' ' . $cohort;
+      }
+
+      // *** check if panel exists and if so, select ID
+      try {
+        $result = civicrm_api3('Contact', 'get', [
+          'contact_sub_type' => "nbr_panel",
+          'organization_name' => $panel,
+        ]);
+      } catch (CiviCRM_API3_Exception $ex) {
+        $this->_logger->logMessage('Error selecting panel ' . $panel . ': '. $ex->getMessage(), 'error');
+      }
+
+      if ($result['count'] <> 1) {
+        // error, panel does not exist, exit
+        $this->_logger->logMessage('Panel does not exist on database: ' . $panel, 'error');
+      }
+      else {
+
+        $panelID = $result['id'];
+
+        // *** check if site exists and if so, select ID
+        try {
+          $result = civicrm_api3('Contact', 'get', [
+            'contact_sub_type' => "nbr_site",
+            'nick_name' => $site,
+          ]);
+        } catch (CiviCRM_API3_Exception $ex) {
+          $this->_logger->logMessage('Error selecting site ' . $site . ': '. $ex->getMessage(), 'error');
+        }
+
+        if ($result['count'] <> 1) {
+          // error, site does not exist, exit
+          $this->_logger->logMessage('Site does not exist on database: ' . $site, 'error');
+        }
+        else {
+
+          $siteID = $result['id'];
+
+          // --- check if panel is already linked to volunteer ------------------------------------
+          $query = "SELECT count(*)
+                    FROM cividev_drupal.civicrm_value_nihr_volunteer_panel p, cividev_drupal.civicrm_contact cp, cividev_drupal.civicrm_contact cs
+                    where p.entity_id = %1
+                    and p.nvp_panel = cp.id
+                    and p.nvp_site = cs.id
+                    and cp.organization_name = %2
+                    and cs.nick_name = %3";
+
+          $queryParams = [
+            1 => [$contactID, "Integer"],
+            2 => [$panel, "String"],
+            3 => [$site, "String"],
+          ];
+          $cnt = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+
+          if ($cnt == 0) {
+            // --- panel not yet linked to volunteer, insert -----------------------------------
+            // todo &&& multiple IBD panels with different sites can be added; is this wanted????
+
+            $query = "insert into $table (entity_id, nvp_panel, nvp_site) values (%1,%2,%3)";
+            $queryParams = [
+              1 => [$contactID, "Integer"],
+              2 => [$panelID, "String"],
+              3 => [$siteID, "String"],
+            ];
+            CRM_Core_DAO::executeQuery($query, $queryParams);
+          }
+        }
+      }
+    }
+  }
 }
+
