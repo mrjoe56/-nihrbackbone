@@ -172,7 +172,7 @@ class CRM_Nihrbackbone_NbrStudy {
    * @return array|bool
    */
   public static function getCentreOfOrigin($studyId) {
-    $centreField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_centre_of_origin', 'id');
+    $centreField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_centre_origin', 'id');
     try {
       return civicrm_api3('Campaign', 'getvalue', [
         'id' => $studyId,
