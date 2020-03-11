@@ -126,40 +126,6 @@ function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form,
 }
 
 /**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_navigationMenu/
- */
-function nihrbackbone_civicrm_navigationMenu(&$menu) {
-  _nihrbackbone_civix_insert_navigation_menu($menu, '', [
-    'label' => E::ts('Studies'),
-    'name' => 'nbrstudies',
-    'url' => '',
-    'permission' => 'access CiviCRM',
-    'operator' => 'OR',
-    'separator' => 0,
-  ]);
-  _nihrbackbone_civix_insert_navigation_menu($menu, 'nbrstudies', [
-    'label' => E::ts('Studies List'),
-    'name' => 'nbrstudieslist',
-    'url' => 'civicrm/nihrbackbone/page/nbrstudy',
-    'permission' => 'access CiviCRM',
-    'operator' => 'OR',
-    'separator' => 0,
-  ]);
-  _nihrbackbone_civix_insert_navigation_menu($menu, 'nbrstudies', [
-    'label' => E::ts('New Study'),
-    'name' => 'newnbrstudy',
-    'url' => 'civicrm/nihrbackbone/form/nbrstudy?reset=1&action=add',
-    'permission' => 'access CiviCRM',
-    'operator' => 'OR',
-    'separator' => 0,
-  ]);
-
-  _nihrbackbone_civix_navigationMenu($menu);
-}
-
-/**
  * Implements hook_civicrm_config().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
