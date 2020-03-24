@@ -13,7 +13,6 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
   private $_studyId = NULL;
   private $_studyData = [];
   private $_customFieldIdsAndColumns = [];
-  private $_ethicsApprovedList = [];
   private $_genderList = [];
   private $_campaignStatusList = [];
   /**
@@ -74,14 +73,11 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     ], FALSE);
     $this->add('text', 'nsd_study_long_name', E::ts("Long Name"), ['size' => 100], FALSE);
     $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [], FALSE);
-    $this->add('select', 'nsd_ethics_approved_id', E::ts('Ethics Approved'), $this->_ethicsApprovedList,FALSE, [
-      'class' => 'crm-select2',
-      'placeholder' => '- select approved status -']);
-    $this->add('datepicker', 'nsd_ethics_approved_date', E::ts('Ethics Approved Date'), [],FALSE, ['time' => FALSE]);
+    $this->add('advcheckbox', 'nsc_ethics_approved', E::ts('Ethics approved?'), [], FALSE);
     $this->add('textarea', 'nsd_study_notes', E::ts('Notes'), ['rows' => 4, 'cols' => 100], FALSE);
-    $this->add('advcheckbox', 'nsd_sample_only', E::ts('Sample only?'), [], FALSE);
-    $this->add('advcheckbox', 'nsd_data_only', E::ts('Data only?'), [], FALSE);
-    $this->add('advcheckbox', 'nsd_online_study', E::ts('Online study?'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_sample_only', E::ts('Sample?'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_data_only', E::ts('Data?'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_online_study', E::ts('Online?'), [], FALSE);
     $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Multiple visits?'), [], FALSE);
     $this->addEntityRef('nsd_primary_nurse', E::ts('Primary nurse'), [
       'api' => ['params' => ['group' => 'nbr_bioresourcers']],
@@ -137,22 +133,17 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [
       'disabled' => 'disabled',
     ], FALSE);
-    $this->add('select', 'nsd_ethics_approved_id', E::ts('Ethics Approved'), $this->_ethicsApprovedList,TRUE, [
-      'class' => 'crm-select2',
-      'placeholder' => '- select approved status -',
+    $this->add('advcheckbox', 'nsc_ethics_approved', E::ts('Ethics approved?'), [
       'disabled' => 'disabled',
-      ]);
-    $this->add('datepicker', 'nsd_ethics_approved_date', E::ts('Ethics Approved Date'), [
-      'disabled' => 'disabled',
-    ],FALSE, ['time' => FALSE]);
+    ], FALSE);
     $this->add('textarea', 'nsd_study_notes', E::ts('Notes'), [
       'rows' => 4,
       'cols' => 100,
       'disabled' => 'disabled',
       ], FALSE);
-    $this->add('advcheckbox', 'nsd_sample_only', E::ts('Sample only?'), ['disabled' => 'disabled'], FALSE);
-    $this->add('advcheckbox', 'nsd_data_only', E::ts('Data only?'), ['disabled' => 'disabled'], FALSE);
-    $this->add('advcheckbox', 'nsd_online_study', E::ts('Online study?'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsd_sample_only', E::ts('Sample?'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsd_data_only', E::ts('Data?'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsd_online_study', E::ts('Online?'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Multiple visits?'), ['disabled' => 'disabled'], FALSE);
     $this->addEntityRef('nsd_primary_nurse', E::ts('Primary nurse'), [
       'api' => ['params' => ['group' => 'nbr_bioresourcers']],
@@ -310,7 +301,6 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
         $title = "Study";
         break;
     }
-    $this->_ethicsApprovedList = CRM_Nihrbackbone_Utils::getOptionValueList('nihr_ethics_approved');
     $this->_campaignStatusList = CRM_Nihrbackbone_Utils::getOptionValueList('campaign_status');
     $this->_genderList = CRM_Nihrbackbone_Utils::getOptionValueList('gender');
     CRM_Utils_System::setTitle($title);

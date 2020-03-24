@@ -61,7 +61,6 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
     $multiVisit = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_multiple_visits', 'id');
     $sampleOnly = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_sample_only', 'id');
     $online = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_online_project', 'id');
-    $nurse = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_primary_nurse', 'id');
     $blood = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_blood_required', 'id');
     $travel = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_travel_required', 'id');
     $elements = [
@@ -74,7 +73,6 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
       $multiVisit => 'multi_visit',
       $sampleOnly => 'sample_only',
       $online => 'online',
-      $nurse => 'primary_nurse',
       $blood => 'blood_required',
       $travel => 'travel_required',
     ];

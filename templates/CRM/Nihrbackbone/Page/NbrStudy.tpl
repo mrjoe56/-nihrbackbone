@@ -13,11 +13,10 @@
         <th id="sortable">{ts}Study Name{/ts}</th>
         <th id="sortable">{ts}Status{/ts}</th>
         <th id="sortable">{ts}Site{/ts}</th>
-        <th id="sortable">{ts}Sample only?{/ts}</th>
-        <th id="nosort">{ts}Data only?{/ts}</th>
+        <th id="sortable">{ts}Sample?{/ts}</th>
+        <th id="nosort">{ts}Data?{/ts}</th>
         <th id="nosort">{ts}Multi visit?{/ts}</th>
         <th id="nosort">{ts}Online?{/ts}</th>
-        <th id="sortable">{ts}Primary Nurse{/ts}</th>
         <th id="sortable">{ts}Blood?{/ts}</th>
         <th id="sortable">{ts}Travel?{/ts}</th>
         <th id="sortable">{ts}Start Date{/ts}</th>
@@ -36,7 +35,6 @@
           <td>{$study.data_only}</td>
           <td>{$study.multi_visit}</td>
           <td>{$study.online}</td>
-          <td>{$study.primary_nurse}</td>
           <td>{$study.blood_required}</td>
           <td>{$study.travel_required}</td>
           <td>{$study.start_date|truncate:10:''|crmDate}</td>
