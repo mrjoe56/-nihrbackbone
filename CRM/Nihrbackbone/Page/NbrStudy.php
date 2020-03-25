@@ -59,6 +59,7 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
     $site = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_site', 'id');
     $dataOnly = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_data_only', 'id');
     $multiVisit = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_multiple_visits', 'id');
+    $recall = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_recall', 'id');
     $sampleOnly = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_sample_only', 'id');
     $online = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_online_project', 'id');
     $blood = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_blood_required', 'id');
@@ -71,6 +72,7 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
       $site => 'site',
       $dataOnly => 'data_only',
       $multiVisit => 'multi_visit',
+      $recall => 'recall',
       $sampleOnly => 'sample_only',
       $online => 'online',
       $blood => 'blood_required',
@@ -81,7 +83,7 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
         $study[$out] = $apiStudy[$in];
       }
     }
-    $yesNos = ['sample_only', 'data_only', 'multi_visit', 'online', 'blood_required', 'travel_required'];
+    $yesNos = ['recall', 'sample_only', 'data_only', 'multi_visit', 'online', 'blood_required', 'travel_required'];
     foreach ($yesNos as $yesNo) {
       if (isset($study[$yesNo]) && $study[$yesNo] == "1") {
         $study[$yesNo] = "Yes";
