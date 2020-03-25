@@ -75,6 +75,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [], FALSE);
     $this->add('advcheckbox', 'nsc_ethics_approved', E::ts('Ethics approved?'), [], FALSE);
     $this->add('textarea', 'nsd_study_notes', E::ts('Notes'), ['rows' => 4, 'cols' => 100], FALSE);
+    $this->add('advcheckbox', 'nsd_recall', E::ts('Recall?'), [], FALSE);
     $this->add('advcheckbox', 'nsd_sample_only', E::ts('Sample?'), [], FALSE);
     $this->add('advcheckbox', 'nsd_data_only', E::ts('Data?'), [], FALSE);
     $this->add('advcheckbox', 'nsd_online_study', E::ts('Online?'), [], FALSE);
@@ -141,6 +142,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'cols' => 100,
       'disabled' => 'disabled',
       ], FALSE);
+    $this->add('advcheckbox', 'nsd_recall', E::ts('Recall?'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsd_sample_only', E::ts('Sample?'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsd_data_only', E::ts('Data?'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsd_online_study', E::ts('Online?'), ['disabled' => 'disabled'], FALSE);

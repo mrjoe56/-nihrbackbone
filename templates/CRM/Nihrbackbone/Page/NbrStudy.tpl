@@ -13,6 +13,7 @@
         <th id="sortable">{ts}Study Name{/ts}</th>
         <th id="sortable">{ts}Status{/ts}</th>
         <th id="sortable">{ts}Site{/ts}</th>
+        <th id="sortable">{ts}Recall?{/ts}</th>
         <th id="sortable">{ts}Sample?{/ts}</th>
         <th id="nosort">{ts}Data?{/ts}</th>
         <th id="nosort">{ts}Multi visit?{/ts}</th>
@@ -31,6 +32,7 @@
           <td>{$study.name}</td>
           <td>{$study.status}</td>
           <td>{$study.site}</td>
+          <td>{$study.recall}</td>
           <td>{$study.sample_only}</td>
           <td>{$study.data_only}</td>
           <td>{$study.multi_visit}</td>
