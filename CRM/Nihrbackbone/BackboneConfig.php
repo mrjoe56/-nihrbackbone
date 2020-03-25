@@ -55,6 +55,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   // propterties for activity type ids
   private $_changeStudyStatusActivityTypeId = NULL;
   private $_inviteProjectActivityTypeId = NULL;
+  private $_exportExternalActivityTypeId = NULL;
 
   // properties for case status ids
   private $_closedCaseStatusId = NULL;
@@ -840,6 +841,14 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for export to external researcher activity type id
+   * @return null
+   */
+  public function getExportExternalActivityTypeId() {
+    return $this->_exportExternalActivityTypeId;
+  }
+
+  /**
    * Method to set the relevant option groups
    */
   private function setOptionGroups() {
@@ -981,7 +990,7 @@ class CRM_Nihrbackbone_BackboneConfig {
    * Method to set the relevant activity type ids
    */
   private function setActivityTypes() {
-    $validTypes = ['nbr_change_project_status', 'nbr_change_study_status', 'nbr_project_invite'];
+    $validTypes = ['nbr_change_project_status', 'nbr_change_study_status', 'nbr_project_invite', 'nbr_export_external'];
     try {
       $apiTypes = civicrm_api3('OptionValue', 'get', [
         'options' => ['limit' => 0],
@@ -999,6 +1008,9 @@ class CRM_Nihrbackbone_BackboneConfig {
             break;
           case 'nbr_project_invite':
             $this->_inviteProjectActivityTypeId = $apiType['value'];
+            break;
+          case 'nbr_export_external':
+            $this->_exportExternalActivityTypeId = $apiType['value'];
             break;
         }
       }

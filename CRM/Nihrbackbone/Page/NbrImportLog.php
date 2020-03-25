@@ -38,7 +38,7 @@ class CRM_Nihrbackbone_Page_NbrImportLog extends CRM_Core_Page {
       if ($this->_failed) {
         $this->assign('failed_count', $this->_failed);
       }
-      $this->assign('done_url', CRM_Utils_System::url('civicrm/campaign', 'reset=1', TRUE));
+      $this->assign('done_url', CRM_Utils_System::url('civicrm/nihrbackbone/page/nbrstudy', 'reset=1', TRUE));
       parent::run();
     }
     else {

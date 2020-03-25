@@ -439,30 +439,27 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   }
 
   /**
-   * Method to add the invite activity to the participation case
+   * Method to add a activity to the participation case
    *
    * @param $caseId
    * @param $contactId
-   * @param $studyId
+   * @param $activityTypeId
+   * @param $statusId
+   * @param $subject
    * @return bool
    */
-  public static function addInviteActivity($caseId, $contactId, $studyId) {
-    if (empty($caseId) || empty($contactId)) {
-      Civi::log()->warning(E::ts('Trying to add an invite activity with empty case id or contact id in ') . __METHOD__);
+  public static function addCaseActivity($caseId, $contactId, $activityTypeId, $statusId = 'Completed', $subject = '') {
+    if (empty($caseId) || empty($contactId) || empty($activityTypeId)) {
+      Civi::log()->warning(E::ts('Trying to add an invite activity with empty case id, contact id or activity type id in ') . __METHOD__);
       return FALSE;
     }
-    $studyNumber = CRM_Nihrbackbone_NbrStudy::getStudyNumberWithId($studyId);
-    if (empty($studyNumber)) {
-      $studyNumber = $studyId;
-    }
-    $activityTypeId = CRM_Nihrbackbone_BackboneConfig::singleton()->getInviteProjectActivityTypeId();
     $activityParams = [
       'source_contact_id' => 'user_contact_id',
       'target_id' => $contactId,
       'case_id' => $caseId,
-      'activity_type_id' => $activityTypeId,
-      'subject' => E::ts("Invited to study ") . $studyNumber,
-      'status_id' => 'Completed',
+      'activity_type_id' => (int) $activityTypeId,
+      'subject' => $subject,
+      'status_id' => $statusId,
     ];
     try {
       civicrm_api3('Activity', 'create', $activityParams);
@@ -480,7 +477,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
 
   /**
    * Method to update the study invited date on a case
-   * 
+   *
    * @param $caseId
    * @param null $inviteDate
    * @throws Exception
@@ -617,6 +614,37 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($dao);
     }
     return $result;
+  }
+
+  /**
+   * Method to get the latest export date
+   *
+   * @param $caseId
+   * @return bool|false|string
+   */
+  public static function getLatestExportDate($caseId) {
+    if (empty($caseId)) {
+      return FALSE;
+    }
+    $query = "SELECT ca.activity_date_time
+        FROM civicrm_case_activity AS cca
+            JOIN civicrm_case AS cc ON cca.case_id = cc.id
+            JOIN civicrm_activity AS ca ON cca.activity_id = ca.id
+        WHERE cc.is_deleted = %1 AND ca.is_current_revision = %2 AND ca.is_test = %1 AND ca.is_deleted = %1
+          AND cca.case_id = %3 AND cc.case_type_id = %4 AND ca.activity_type_id = %5
+        ORDER BY ca.activity_date_time DESC LIMIT 1";
+    $queryParams = [
+      1 => [0, "Integer"],
+      2 => [1, "Integer"],
+      3 => [(int) $caseId, "Integer"],
+      4 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+      5 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getExportExternalActivityTypeId(), "Integer"],
+    ];
+    $exportDate = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($exportDate) {
+      return date('d-m-Y', strtotime($exportDate));
+    }
+    return FALSE;
   }
 
 }
