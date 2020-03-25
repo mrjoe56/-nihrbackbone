@@ -64,6 +64,8 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
     $online = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_online_project', 'id');
     $blood = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_blood_required', 'id');
     $travel = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_travel_required', 'id');
+    $pi = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_principal_investigator', 'id');
+    $researcher = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_researcher', 'id');
     $elements = [
       'title' => 'name',
       'status_id' => 'status_id',
@@ -94,6 +96,18 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
     }
     if (isset($study['status_id']) && !empty($study['status_id'])) {
       $study['status'] = CRM_Nihrbackbone_Utils::getOptionValueLabel($study['status_id'], 'campaign_status');
+    }
+    // add pi/researcher names in one field
+    $study['pi_researcher'] = "";
+    if (isset($apiStudy[$pi])) {
+      $study['pi_researcher'] = $apiStudy[$pi] . "/";
+    }
+    if (isset($apiStudy[$researcher])) {
+      if (empty($study['pi_researcher'])) {
+        $study['pi_researcher'] = "/" . $apiStudy[$researcher];
+      } else {
+        $study['pi_researcher'] .= $apiStudy[$researcher];
+      }
     }
     $study['actions'] = $this->setRowActions($apiStudy);
     return $study;

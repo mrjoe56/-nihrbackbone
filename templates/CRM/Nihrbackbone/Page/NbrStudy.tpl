@@ -20,6 +20,7 @@
         <th id="nosort">{ts}Online?{/ts}</th>
         <th id="sortable">{ts}Blood?{/ts}</th>
         <th id="sortable">{ts}Travel?{/ts}</th>
+        <th id ="sortable">{ts}PI/Researcher{/ts}</th>
         <th id="sortable">{ts}Start Date{/ts}</th>
         <th id="nosort" rowspan="1" colspan="1"></th>
       </tr>
@@ -39,6 +40,7 @@
           <td>{$study.online}</td>
           <td>{$study.blood_required}</td>
           <td>{$study.travel_required}</td>
+          <td>{$study.pi_researcher}</td>
           <td>{$study.start_date|truncate:10:''|crmDate}</td>
           <td>
               <span>
