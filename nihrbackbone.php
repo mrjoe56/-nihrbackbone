@@ -116,9 +116,10 @@ function nihrbackbone_civicrm_buildForm($formName, &$form) {
  */
 
 function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
-  //Civi::log()->debug('backbone.validateForm') ;
-  //foreach ($fields as $value)
-    //Civi::log()->debug(strval($value)) ;
+  # validate form data
+  if ($formName == 'CRM_Contact_Form_CustomData') {
+    CRM_Nihrbackbone_NihrValidation::validateAlias($formName, $fields, $files, $form, $errors);
+  }
 
   if ($form instanceof CRM_Nihrbackbone_Form_ImportCsvMap) {
     CRM_Nihrbackbone_Form_ImportCsvMap::validateForm($fields, $form, $errors);
