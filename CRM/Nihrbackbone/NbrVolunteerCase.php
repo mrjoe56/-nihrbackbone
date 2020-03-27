@@ -444,28 +444,23 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @param $caseId
    * @param $contactId
    * @param $activityTypeId
-   * @param $statusId
-   * @param $subject
+   * @param $activityParams
    * @return bool
    */
-  public static function addCaseActivity($caseId, $contactId, $activityTypeId, $statusId = 'Completed', $subject = '') {
+  public static function addCaseActivity($caseId, $contactId, $activityTypeId, $activityParams) {
     if (empty($caseId) || empty($contactId) || empty($activityTypeId)) {
-      Civi::log()->warning(E::ts('Trying to add an invite activity with empty case id, contact id or activity type id in ') . __METHOD__);
+      Civi::log()->warning(E::ts('Trying to add a case activity with empty case id, contact id or activity type id in ') . __METHOD__);
       return FALSE;
     }
-    $activityParams = [
-      'source_contact_id' => 'user_contact_id',
-      'target_id' => $contactId,
-      'case_id' => $caseId,
-      'activity_type_id' => (int) $activityTypeId,
-      'subject' => $subject,
-      'status_id' => $statusId,
-    ];
+    // check and complete activity params
+    $activityParams['activity_type_id'] = (int) $activityTypeId;
+    $activityParams['target_id'] = (int) $contactId;
+    $activityParams['case_id'] = (int) $caseId;
+    if (!isset($activityParams['source_contact_id']) || empty($activityParams['source_contact_id'])) {
+      $activityParams['source_contact_id'] = 'user_contact_id';
+    }
     try {
       civicrm_api3('Activity', 'create', $activityParams);
-      // now update the study invite date
-      $inviteDate = new DateTime('now');
-      self::updateStudyInviteDate($caseId, $inviteDate);
       return TRUE;
     }
     catch (CiviCRM_API3_Exception $ex) {
@@ -645,6 +640,29 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       return date('d-m-Y', strtotime($exportDate));
     }
     return FALSE;
+  }
+
+  /**
+   * Method to update the study status for a case/contact
+   *
+   * @param $caseId
+   * @param $contactId
+   * @param $status
+   * @throws API_Exception
+   */
+  public static function updateStudyStatus($caseId, $contactId, $status) {
+    $statusCustomField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
+    try {
+      civicrm_api3('Case', 'create', [
+        'contact_id' => $contactId,
+        'id' => $caseId,
+        $statusCustomField => $status,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      throw new API_Exception(E::ts('Could not update status in study for contact ID ') . $contactId
+        . E::ts(' and case ID ') . $caseId . E::ts(' in ') . __METHOD__ . E::ts(', error from API Case create: '). $ex->getMessage());
+    }
   }
 
 }

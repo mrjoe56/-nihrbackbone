@@ -4,6 +4,12 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /** Implements hook_civicrm_post JB 18/12/19 */
 function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
+  // if new invite activity, set status to invited and invite date to now
+  if ($objectName == "Activity") {
+    if (isset($objectRef->activity_type_id) && $objectRef->activity_type_id == CRM_Nihrbackbone_BackboneConfig::singleton()->getInviteProjectActivityTypeId()) {
+      CRM_Nihrbackbone_NbrInvitation::postInviteHook($op, $objectID, $objectRef);
+    }
+  }
 
   # if editing a primary Address activity for a participant or site - update distance to centre values for linked cases
   if ($op == 'edit' && $objectName == 'Address' && $objectRef->is_primary == 1) {
@@ -64,6 +70,17 @@ function nihrbackbone_civicrm_tabset($tabsetName, &$tabs, $context) {
  *
  */
 function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
+  // if group = participation data and study status is invited, customInviteHook
+  if ($groupID == CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('id')) {
+    foreach ($params as $paramKey => $paramValues) {
+      if (isset($paramValues['custom_field_id']) && $paramValues['custom_field_id'] == CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id')) {
+        if ($paramValues['value'] == 'study_participation_status_invited') {
+          CRM_Nihrbackbone_NbrInvitation::customInviteStatusHook($op, $entityID, $paramValues);
+        }
+      }
+    }
+  }
+
   /** if this custom post is to add or edit General observations, and parameters are present, update the bmi from ht and wt */
   if ($op == 'create' || $op == 'edit') {
 
