@@ -2,6 +2,7 @@
 require_once 'nihrbackbone.civix.php';
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
+
 /** Implements hook_civicrm_post JB 18/12/19 */
 function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
   // if new invite activity, set status to invited and invite date to now
@@ -133,6 +134,10 @@ function nihrbackbone_civicrm_buildForm($formName, &$form) {
  */
 
 function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  // validate Case Form
+  if ($form instanceof CRM_Case_Form_Case) {
+    CRM_Nihrbackbone_NbrVolunteerCase::validateForm($fields, $form, $errors);
+  }
   # validate form data
   if ($formName == 'CRM_Contact_Form_CustomData') {
     CRM_Nihrbackbone_NihrValidation::validateAlias($formName, $fields, $files, $form, $errors);

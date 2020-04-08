@@ -665,4 +665,24 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     }
   }
 
+  /**
+   * Method to validate the volunteer case forms
+   *
+   * @param $fields
+   * @param $form
+   * @param $errors
+   */
+  public static function validateForm($fields, $form, &$errors) {
+    if ($form instanceof CRM_Case_Form_Case) {
+      $action = $form->getVar('_action');
+      $submitValues = $form->getVar('_submitValues');
+      if ($action == CRM_Core_Action::ADD) {
+        if (isset($submitValues['case_type_id']) && $submitValues['case_type_id'] ==
+          CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId()) {
+          $errors['case_type_id'] = E::ts("You can not add a participation case manually, import a file with participant ID's instead");
+        }
+      }
+    }
+  }
+
 }
