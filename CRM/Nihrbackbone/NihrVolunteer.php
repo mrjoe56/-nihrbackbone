@@ -192,16 +192,31 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
-   * @param $contactId
+   * @param int $volunteerId
+   * @param int $studyId
    * @return bool
    * @throws
    */
-  public static function hasMaxStudyInvitationsNow($contactId) {
-    if (!empty($contactId)) {
+  public static function hasMaxStudyInvitationsNow($volunteerId, $studyId) {
+    if (!empty($volunteerId)) {
       $maxNumber = (int) Civi::settings()->get('nbr_max_invitations');
       $checkDate = self::calculateCheckDateMaxInvitations();
-      $studyCount = self::countDistinctStudiesWithInvitations($contactId, $checkDate);
-      // get distinct count of studies for contact
+      $participationTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+      $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+      $query = "SELECT COUNT(*)
+        FROM civicrm_value_nbr_participation_data AS cvnpd
+        JOIN civicrm_case AS cc ON cvnpd.entity_id = cc.id
+        JOIN civicrm_case_contact AS ccc ON cc.id = ccc.case_id
+        JOIN civicrm_campaign AS camp ON cvnpd.nvpd_study_id = camp.id
+        WHERE cvnpd. nvpd_study_id <> %1 AND cc.is_deleted = %2 AND ccc.contact_id = %3
+        AND camp.start_date >= %4";
+      $queryParams = [
+        1 => [(int) $studyId, "Integer"],
+        2 => [0, "Integer"],
+        3 => [(int) $volunteerId, "Integer"],
+        4 => [$checkDate->format('Y-m-d'), "String"],
+      ];
+      $studyCount = CRM_Core_DAO::singleValueQuery($query, $queryParams);
       if ($studyCount > $maxNumber) {
         return TRUE;
       }
@@ -497,42 +512,38 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
-   * Method to check if the volunteer has been invited on any other project (the project participation status on any case than the param one)
-   *
-   * @param $contactId
-   * @param $caseId
+   * Method to check if the volunteer has been invited on any other study
+   * @param int $volunteerId
+   * @param int $studyId
    * @return bool
    */
-  public static function isInvitedOnOtherProjects($contactId, $caseId) {
-    if (empty($contactId) || emty($caseId)) {
+  public static function isInvitedOnOtherStudy($volunteerId, $studyId) {
+    if (empty($volunteerId) || empty($studyId)) {
       return FALSE;
     }
     $participationTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-    $projectIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
-    $statusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_participation_status', 'column_name');
+    $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+    $statusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
     $query = "SELECT COUNT(*)
         FROM ". $participationTable . " AS cvnpd
         JOIN civicrm_case AS cc ON cvnpd.entity_id = cc.id
-        JOIN civicrm_case_contact AS cont ON cc.id = cont.case_id
-        LEFT JOIN civicrm_campaign AS proj ON cvnpd. " . $projectIdColumn . " = proj.id AND proj.status_id = %1
-        WHERE cvnpd.entity_id != %2 AND cc.is_deleted = %3 AND cont.contact_id = %4";
-    $recruitingStatus = CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus();
-    if (!$recruitingStatus || empty($recruitingStatus)) {
-      Civi::log()->warning('Could not find a recruiting study status (Civi term: campaign status) in ' . __METHOD__);
-      return FALSE;
-    }
+        JOIN civicrm_case_contact AS ccc ON cc.id = ccc.case_id
+        JOIN civicrm_campaign AS camp ON cvnpd.". $studyIdColumn . " = camp.id
+        WHERE cvnpd. " . $studyIdColumn . " <> %1 AND cc.is_deleted = %2 AND ccc.contact_id = %3
+          AND camp.status_id = %4";
     $queryParams = [
-      1 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), 'Integer'],
-      2 => [(int) $caseId, 'Integer'],
-      3 => [0, 'Integer'],
-      4 => [(int) $contactId, 'Integer']
+      1 => [(int) $studyId, 'Integer'],
+      2 => [0, 'Integer'],
+      3 => [(int) $volunteerId, 'Integer'],
+      4 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), 'Integer'],
     ];
     $i = 4;
     $invited = [];
-    foreach (self::getInvitedProjectStatus() as $invitedProjectStatus) {
+    $invitedStatuses = explode(",", Civi::settings()->get('nbr_invited_study_status'));
+    foreach ($invitedStatuses as $invitedStatus) {
       $i++;
       $invited[] = "%" . $i;
-      $queryParams[$i] = [$invitedProjectStatus, 'String'];
+      $queryParams[$i] = [$invitedStatus, 'String'];
     }
     if (!empty($invited)) {
       $query .= " AND cvnpd." . $statusColumn . " IN (" . implode(", ", $invited) . ")";
@@ -565,32 +576,60 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
-   * Method to check if the cases with max invitations still need it
+   * Method to determine if volunteer is temporarily non recallable
+   *
+   * @param $volunteerId
+   * @return bool
    */
-  public static function checkMaxInvitations() {
-    $eligibleColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
-    $maxStatusId = CRM_Nihrbackbone_BackboneConfig::singleton()->getMaxReachedEligibleStatusId();
-    // first step: retrieve all active cases with eligible status max invitations reached
-    $cases = CRM_Nihrbackbone_NbrVolunteerCase::getEligibilityCases($maxStatusId);
-    // for each of those, check if still applicable and if not, remove status
-    foreach ($cases as $caseData) {
-      if (!self::hasMaxStudyInvitationsNow($caseData['contact_id'])) {
-        CRM_Nihrbackbone_NbrVolunteerCase::removeEligibilityStatus($caseData['case_id'], $caseData[$eligibleColumn], $maxStatusId);
+  public static function isTemporarilyNonRecallable($volunteerId) {
+    if (empty($volunteerId)) {
+      return FALSE;
+    }
+    try {
+      $result = civicrm_api3('EntityTag', 'get', [
+        'sequential' => 1,
+        'return' => ["tag_id"],
+        'entity_table' => "civicrm_contact",
+        'entity_id' => $volunteerId,
+      ]);
+      foreach ($result['values'] as $contactTag) {
+        if ($contactTag['tag_id'] == Civi::service('nbrBackbone')->getTempNonRecallTagId()) {
+          return TRUE;
+        }
       }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      return FALSE;
     }
   }
 
   /**
-   * Method to get the project participation statuses to be considered as invited
+   * Method to determine if volunteer is active
    *
-   * @return array
+   * @param $volunteerId
+   * @return bool
    */
-  private static function getInvitedProjectStatus() {
-    return [
-      'project_participation_status_accepted',
-      'project_participation_status_invitation_pending',
-      'project_participation_status_invited',
-    ];
+  public static function isActive($volunteerId) {
+    if (empty($volunteerId)) {
+      return FALSE;
+    }
+    $customFieldId = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerStatusCustomField('nvs_volunteer_status', 'id');
+    try {
+      $result = (string) civicrm_api3('Contact', 'getvalue', [
+        'id' => $volunteerId,
+        'return' => $customFieldId,
+      ]);
+      if ($result == Civi::service('nbrBackbone')->getActiveVolunteerStatus()) {
+        return TRUE;
+      }
+      else {
+        return FALSE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->warning(E::ts('Could not retrieve volunteer status for contactID ') . $volunteerId . E::ts(' in ') . __METHOD__);
+      return FALSE;
+    }
   }
 
 }

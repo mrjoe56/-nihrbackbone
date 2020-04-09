@@ -21,6 +21,9 @@
     <ver>5.9.1</ver>
     <ver>5.13</ver>
   </compatibility>
+  <classloader>
+    <psr4 prefix="Civi\" path="Civi" />
+  </classloader>
   <comments>Extension is being tested</comments>
   <civix>
     <namespace>CRM/Nihrbackbone</namespace>

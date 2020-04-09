@@ -497,39 +497,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   }
 
   /**
-   * Method to check if the volunteer has been invited in the relevant study
-   *
-   * @param $contactId
-   * @param $studyId
-   * @return bool
-   */
-  public static function hasBeenInvited($contactId, $studyId) {
-    if (empty($contactId) || empty($studyId)) {
-      return FALSE;
-    }
-    $query = "SELECT COUNT(*)
-      FROM civicrm_value_nbr_study_data AS a
-      LEFT JOIN civicrm_value_nbr_participation_data AS b ON a.entity_id = b.nvpd_study_id
-      LEFT JOIN civicrm_case_activity AS c ON b.entity_id = c.case_id
-      LEFT JOIN civicrm_case_contact AS d ON c.case_id = d.case_id
-      LEFT JOIN civicrm_case AS e ON c.case_id = e.id
-      LEFT JOIN civicrm_activity AS f ON c.activity_id = f.id
-      WHERE a.nsd_study_number = %1 AND d.contact_id = %2 AND e.is_deleted = %3
-        AND f.is_current_revision = %4 AND f.is_deleted = %3 AND f.activity_type_id = %5";
-    $count = (int) CRM_Core_DAO::singleValueQuery($query, [
-      1 => [(int) $studyId, "Integer"],
-      2 => [(int) $contactId, "Integer"],
-      3 => [0, "Integer"],
-      4 => [1, "Integer"],
-      5 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getInviteProjectActivityTypeId(), "Integer"],
-    ]);
-    if ($count > 0) {
-      return TRUE;
-    }
-    return FALSE;
-  }
-
-  /**
    * Get all active participation cases that have a certain eligibility status
    *
    * @return array
@@ -552,7 +519,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     ];
     $index = 3;
     $clauses = [];
-    $valids = Civi::settings()->get('nbr_inv_case_status');
+    //$valids = Civi::settings()->get('nbr_inv_case_status');
     if (!empty($valids)) {
       $statuses = explode(",", $valids);
       foreach ($statuses as $status) {
@@ -583,7 +550,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $eligibleColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
     $projectIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-    $valids = Civi::settings()->get('nbr_inv_case_status');
+    //$valids = Civi::settings()->get('nbr_inv_case_status');
     // first step: retrieve all active participation cases
     $query = "SELECT a.id AS case_id, c.contact_id, b." . $projectIdColumn . ", b."
       . $eligibleColumn . " FROM civicrm_case AS a

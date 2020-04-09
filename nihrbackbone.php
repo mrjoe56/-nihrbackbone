@@ -1,7 +1,17 @@
 <?php
 require_once 'nihrbackbone.civix.php';
 use CRM_Nihrbackbone_ExtensionUtil as E;
+use \Symfony\Component\DependencyInjection\ContainerBuilder;
+use \Symfony\Component\DependencyInjection\Definition;
 
+/**
+ * Implements hook_civicrm_container()
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_container/
+ */
+function nihrbackbone_civicrm_container(ContainerBuilder $container) {
+  $container->addCompilerPass(new Civi\Nihrbackbone\NbrBackboneContainer());
+}
 
 /** Implements hook_civicrm_post JB 18/12/19 */
 function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {

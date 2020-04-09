@@ -16,6 +16,8 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
    * @access public
    */
   function run() {
+    CRM_Core_Error::debug('max', CRM_Nihrbackbone_NihrVolunteer::hasMaxStudyInvitationsNow(20, 34));
+
     $this->setPageConfiguration();
     $this->assign('nbr_studies', $this->getStudies());
     parent::run();
