@@ -443,7 +443,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @param $ethnicityIds
    * @return bool
    */
-  public static function hasEthnicity($contactId, $ethnicityIds) {
+  public static function hasRequiredEthnicity($contactId, $ethnicityIds) {
     if (!empty($contactId && !empty($ethnicityIds))) {
       if (!is_array($ethnicityIds)) {
         $ethnicityIds = [$ethnicityIds];

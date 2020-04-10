@@ -110,42 +110,6 @@ class CRM_Nihrbackbone_NbrStudy {
   }
 
   /**
-   * Method to get the study selection criteria
-   *
-   * @param $studyId
-   * @return array
-   */
-  public static function getSelectionCriteria($studyId) {
-    $criteria = [];
-    if (!empty($studyId)) {
-      $returns = [];
-      $customFields = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('custom_fields');
-      foreach ($customFields as $customField) {
-        $returns[] = "custom_" . $customField['id'];
-      }
-      try {
-        $customValues = civicrm_api3('Campaign', 'getsingle', [
-          'id' => $studyId,
-          'return' => $returns,
-        ]);
-        foreach ($customFields as $customFieldId => $customField) {
-          $elementName = "custom_" . $customFieldId;
-          $columnName = $customField['column_name'];
-          if (isset($customValues[$elementName])) {
-            $criteria[$columnName] = $customValues[$elementName];
-          }
-          else {
-            $criteria[$columnName] = NULL;
-          }
-        }
-      }
-      catch (CiviCRM_API3_Exception $ex) {
-      }
-    }
-    return $criteria;
-  }
-
-  /**
    * Method to retrieve all active cases with eligibility does not meet criteria and
    * check if this still applies (mainly to check if volunteer involved meets age criteria)
    */
@@ -208,6 +172,144 @@ class CRM_Nihrbackbone_NbrStudy {
       $result[$dao->recall] = $dao->recall;
     }
     return $result;
+  }
+
+  /**
+   * Method to check if the study requires blood
+   *
+   * @param $studyId
+   * @return bool
+   */
+  public static function requiresBlood($studyId) {
+    if (empty($studyId)) {
+      return FALSE;
+    }
+    $bloodColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_blood_required', 'column_name');
+    $criteriaTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('table_name');
+    $query = "SELECT " . $bloodColumn . " FROM " . $criteriaTable . " WHERE entity_id = %1";
+    $required = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $studyId, "Integer"]]);
+    if ($required == 1) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Method to check if the study requires travel
+   *
+   * @param $studyId
+   * @return bool
+   */
+  public static function requiresTravel($studyId) {
+    if (empty($studyId)) {
+      return FALSE;
+    }
+    $travelColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_travel_required', 'column_name');
+    $criteriaTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('table_name');
+    $query = "SELECT " . $travelColumn . " FROM " . $criteriaTable . " WHERE entity_id = %1";
+    $required = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $studyId, "Integer"]]);
+    if ($required == 1) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Method to get the age range for the study
+   *
+   * @param $studyId
+   * @return array
+   */
+  public static function requiresAgeRange($studyId) {
+    $range = [];
+    if (!empty($studyId)) {
+      $fromColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_age_from', 'column_name');
+      $toColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_age_to', 'column_name');
+      $criteriaTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('table_name');
+      $query = "SELECT " . $fromColumn . ", " . $toColumn . " FROM " . $criteriaTable . " WHERE entity_id = %1";
+      $dao = CRM_Core_DAO::executeQuery($query, [1 => [(int) $studyId, "Integer"]]);
+      if ($dao->fetch()) {
+        if ($dao->$fromColumn) {
+          $range['age_from'] = $dao->$fromColumn;
+        }
+        if ($dao->$toColumn) {
+          $range['age_to'] = $dao->$toColumn;
+        }
+      }
+    }
+    return $range;
+  }
+
+  /**
+   * Method to get the required ethnicities for the study
+   *
+   * @param $studyId
+   * @return array
+   */
+  public static function requiresEthnicities($studyId) {
+    $ethnicities = [];
+    if (!empty($studyId)) {
+      $ethnicityColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_ethnicity_id', 'column_name');
+      $criteriaTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('table_name');
+      $query = "SELECT " . $ethnicityColumn . " FROM " . $criteriaTable . " WHERE entity_id = %1";
+      $required = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $studyId, "Integer"]]);
+      if ($required) {
+        $values = explode(CRM_Core_DAO::VALUE_SEPARATOR, $required);
+        foreach ($values as $value) {
+          if (!empty($value)) {
+            $ethnicities[] = $value;
+          }
+        }
+      }
+    }
+    return $ethnicities;
+  }
+
+  /**
+   * Method to get the required bmi range for the study
+   *
+   * @param $studyId
+   * @return array
+   */
+  public static function requiresBmiRange($studyId) {
+    $range = [];
+    if (!empty($studyId)) {
+      $fromColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_bmi_from', 'column_name');
+      $toColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_bmi_to', 'column_name');
+      $criteriaTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('table_name');
+      $query = "SELECT " . $fromColumn . ", " . $toColumn . " FROM " . $criteriaTable . " WHERE entity_id = %1";
+      $dao = CRM_Core_DAO::executeQuery($query, [1 => [(int) $studyId, "Integer"]]);
+      if ($dao->fetch()) {
+        if ($dao->$fromColumn) {
+          $range['bmi_from'] = $dao->$fromColumn;
+        }
+        if ($dao->$toColumn) {
+          $range['bmi_to'] = $dao->$toColumn;
+        }
+      }
+    }
+    return $range;
+  }
+
+  /**
+   * Method to get the gender required for the study
+   *
+   * @param $studyId
+   * @return string|null
+   */
+  public static function requiresGender($studyId) {
+    $required = NULL;
+    if (!empty($studyId)) {
+      $genderColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_gender_id', 'column_name');
+      $criteriaTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('table_name');
+      $query = "SELECT " . $genderColumn . " FROM " . $criteriaTable . " WHERE entity_id = %1";
+      $required = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $studyId, "Integer"]]);
+    }
+    return $required;
   }
 
 }
