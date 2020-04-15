@@ -354,7 +354,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
         'id' => $contactId,
         'return' => 'gender_id',
       ]);
-      if ($contactGenderId && $contactGenderId == $genderId) {
+      if (empty($contactGenderId) || $contactGenderId == $genderId) {
         return TRUE;
       }
     }
