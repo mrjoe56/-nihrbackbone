@@ -217,7 +217,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
         4 => [$checkDate->format('Y-m-d'), "String"],
       ];
       $studyCount = CRM_Core_DAO::singleValueQuery($query, $queryParams);
-      if ($studyCount > $maxNumber) {
+      if ($studyCount >= $maxNumber) {
         return TRUE;
       }
     }
@@ -406,16 +406,16 @@ class CRM_Nihrbackbone_NihrVolunteer {
   /**
    * Method to calculate if contact is in bmi range
    *
-   * @param $contactId
-   * @param $fromBmi
-   * @param $toBmi
+   * @param int $contactId
+   * @param float $fromBmi
+   * @param float $toBmi
    * @return bool
    */
   public static function inBmiRange($contactId, $fromBmi, $toBmi) {
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerGeneralObservationsCustomGroup('table_name');
     $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_bmi', 'column_name');
     $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
-    $contactBmi = CRM_Core_DAO::singleValueQuery($query, [ 1 => [$contactId, "Integer"]]);
+    $contactBmi = (float) CRM_Core_DAO::singleValueQuery($query, [ 1 => [$contactId, "Integer"]]);
     if ($contactBmi) {
       if (!empty($fromBmi) && !empty($toBmi)) {
         if ($contactBmi >= $fromBmi && $contactBmi <= $toBmi) {

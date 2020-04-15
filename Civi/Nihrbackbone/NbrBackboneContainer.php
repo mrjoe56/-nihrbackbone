@@ -20,10 +20,59 @@ class NbrBackboneContainer implements CompilerPassInterface {
   public function process(ContainerBuilder $container) {
     $definition = new Definition('CRM_Nihrbackbone_NbrConfig');
     $definition->setFactory(['CRM_Nihrbackbone_NbrConfig', 'getInstance']);
-    $this->setVolunteerStatus($definition);
+    $this->setEligibilityStatus($definition);
     $this->setTags($definition);
-    //$this->setEligibleStatus($definition);
+    $this->setVolunteerStatus($definition);
     $container->setDefinition('nbrBackbone', $definition);
+  }
+  private function setEligibilityStatus(&$definition) {
+    $query = "SELECT cov.value, cov.name
+        FROM civicrm_option_value AS cov JOIN civicrm_option_group AS cog ON cov.option_group_id = cog.id
+        WHERE cog.name = %1";
+    $dao = \CRM_Core_DAO::executeQuery($query, [1 => ["nihr_eligible_status", "String"]]);
+    while ($dao->fetch()) {
+      switch ($dao->name) {
+        case "nihr_eligible":
+          $definition->addMethodCall('setEligibleEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_excluded_age":
+          $definition->addMethodCall('setAgeEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_excluded_blood":
+          $definition->addMethodCall('setBloodEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_excluded_bmi":
+          $definition->addMethodCall('setBmiEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_excluded_commercial":
+          $definition->addMethodCall('setCommercialEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_excluded_ethnicity":
+          $definition->addMethodCall('setEthnicityEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_excluded_gender":
+          $definition->addMethodCall('setGenderEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_excluded_panel":
+          $definition->addMethodCall('setPanelEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_excluded_travel":
+          $definition->addMethodCall('setTravelEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_invited_other":
+          $definition->addMethodCall('setOtherEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_maximum_reached":
+          $definition->addMethodCall('setMaxEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_not_active":
+          $definition->addMethodCall('setActiveEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_not_recallable":
+          $definition->addMethodCall('setRecallableEligibilityStatusValue', [$dao->value]);
+          break;
+      }
+    }
   }
 
   /**

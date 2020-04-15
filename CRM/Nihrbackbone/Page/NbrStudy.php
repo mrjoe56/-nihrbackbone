@@ -16,9 +16,6 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
    * @access public
    */
   function run() {
-
-    CRM_Core_Error::debug('study bmi', CRM_Nihrbackbone_NbrStudy::requiresBmiRange(34));
-
     $this->setPageConfiguration();
     $this->assign('nbr_studies', $this->getStudies());
     parent::run();

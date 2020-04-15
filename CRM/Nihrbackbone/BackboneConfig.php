@@ -76,20 +76,12 @@ class CRM_Nihrbackbone_BackboneConfig {
   // other properties
   private $_defaultLocationTypeId = NULL;
   private $_skypeProviderId = NULL;
-  private $_eligibleEligibleStatusId  = NULL;
-  private $_maxReachedEligibleStatusId = NULL;
-  private $_notActiveEligibleStatusId = NULL;
-  private $_notRecallableEligibleStatusId = NULL;
-  private $_criteriaNotMetEligibleStatusId = NULL;
-  private $_invitedEligibleStatusId = NULL;
 
   /**
    * CRM_Nihrbackbone_BackboneConfig constructor.
    */
   public function __construct() {
     $this->setOptionGroups();
-    // set eligible status should happen once option groups are done!
-    $this->setEligibleStatus();
     $this->setCampaignTypes();
     $this->setCampaignStatus();
     $this->setCaseTypes();
@@ -126,55 +118,6 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function getHomeLocationTypeId() {
     return $this->_homeLocationTypeId;
-  }
-
-  /**
-   * Getter for eligible status
-   * @return null
-   */
-  public function getEligibleEligibleStatus() {
-    return $this->_eligibleEligibleStatusId;
-  }
-
-  /**
-   * Getter for maximum reached eligible status
-   * @return null
-   */
-  public function getMaxReachedEligibleStatusId() {
-    return $this->_maxReachedEligibleStatusId;
-  }
-
-  /**
-   * Getter for not active eligible status id
-   * @return null
-   */
-  public function getNotActiveEligibleStatusId() {
-    return $this->_notActiveEligibleStatusId;
-  }
-
-  /**
-   * Getter for not recallable eligible status id
-   * @return null
-   */
-  public function getNotRecallableEligibleStatusId() {
-    return $this->_notRecallableEligibleStatusId;
-  }
-
-  /**
-   * Getter for criteria not met eligible status id
-   * @return null
-   */
-  public function getCriteriaNotMetEligibleStatusId() {
-    return $this->_criteriaNotMetEligibleStatusId;
-  }
-
-  /**
-   * Getter for invited to other project status id
-   *
-   * @return null
-   */
-  public function getInvitedEligibleStatusId() {
-    return $this->_invitedEligibleStatusId;
   }
 
   /**
@@ -875,51 +818,6 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->error(E::ts('Could not find a unique option group with name gender in ') . __METHOD__);
-    }
-  }
-
-  /**
-   * Method to set the eligible statuses
-   */
-  private function setEligibleStatus() {
-    $valids = [
-      'nihr_eligible',
-      'nihr_maximum_reached',
-      'nihr_not_active',
-      'nihr_not_recallable',
-      'nihr_criteria_not_met',
-      'nihr_invited_other',
-    ];
-    try {
-      $eligibleStatuses = civicrm_api3('OptionValue', 'get', [
-        'option_group_id' => $this->_eligibleStatusOptionGroupId,
-        'name' => ['IN' => $valids],
-      ]);
-      foreach ($eligibleStatuses['values'] as $eligibleStatus) {
-        switch ($eligibleStatus['name']) {
-          case 'nihr_eligible':
-            $this->_eligibleEligibleStatusId = $eligibleStatus['value'];
-            break;
-          case 'nihr_maximum_reached':
-            $this->_maxReachedEligibleStatusId = $eligibleStatus['value'];
-            break;
-          case 'nihr_not_active':
-            $this->_notActiveEligibleStatusId = $eligibleStatus['value'];
-            break;
-          case 'nihr_not_recallable':
-            $this->_notRecallableEligibleStatusId = $eligibleStatus['value'];
-            break;
-          case 'nihr_criteria_not_met':
-            $this->_criteriaNotMetEligibleStatusId = $eligibleStatus['value'];
-            break;
-          case 'nihr_invited_other':
-            $this->_invitedEligibleStatusId = $eligibleStatus['value'];
-            break;
-        }
-      }
-    }
-    catch (CiviCRM_API3_Exception $ex) {
-      Civi::log()->warning(E::ts('Could not find eligile status in ') . __METHOD__ . E::ts(', error message from API OptionValue getvalue: ') . $ex->getMessage());
     }
   }
 

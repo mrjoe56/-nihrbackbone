@@ -217,7 +217,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       $studyIdCustomFieldId => $this->_apiParams['study_id'],
       $pvStatusCustomFieldId => 'study_participation_status_selected',
       ];
-    if ($this->_apiParams['recall_group']) {
+    if (isset($this->_apiParams['recall_group'])) {
       $caseCreateData[$recallGroupCustomFieldId] = $this->_apiParams['recall_group'];
     }
     return $caseCreateData;
@@ -322,7 +322,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @param $volunteerId
    */
   public static function unsetMaxStatus($volunteerId) {
-    $maxReachedStatusId = CRM_Nihrbackbone_BackboneConfig::singleton()->getMaxReachedEligibleStatusId();
+    $maxReachedStatusId = Civi::service('nbrBackbone')->getMaxEligibilityStatusValue();
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
     $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
     // retrieve current eligible status from each volunteer participation cases
