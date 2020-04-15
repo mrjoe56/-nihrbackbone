@@ -377,6 +377,9 @@ class CRM_Nihrbackbone_NihrVolunteer {
         'id' => $contactId,
         'return' => 'birth_date',
       ]);
+      if (empty($birthDate)) {
+        return TRUE;
+      }
       if ($birthDate) {
         $age = CRM_Utils_Date::calculateAge($birthDate);
         if (isset($age['years'])) {
@@ -416,6 +419,9 @@ class CRM_Nihrbackbone_NihrVolunteer {
     $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_bmi', 'column_name');
     $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
     $contactBmi = (float) CRM_Core_DAO::singleValueQuery($query, [ 1 => [$contactId, "Integer"]]);
+    if (empty($contactBmi)) {
+      return TRUE;
+    }
     if ($contactBmi) {
       if (!empty($fromBmi) && !empty($toBmi)) {
         if ($contactBmi >= $fromBmi && $contactBmi <= $toBmi) {
