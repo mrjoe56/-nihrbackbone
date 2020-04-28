@@ -347,14 +347,13 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * Method to remove an eligible status from the list
    *
    * @param int $caseId
-   * @param string $currentEligibleStatus
    * @param string $removeStatusId
    */
-  public static function removeEligibilityStatus($caseId, $currentEligibleStatus, $removeStatusId) {
-    if (!empty($caseId) && !empty($removeStatusId) && !empty($currentEligibleStatus)) {
+  public static function removeEligibilityStatus($caseId, $removeStatusId) {
+    if (!empty($caseId) && !empty($removeStatusId)) {
       $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+      $newValues = CRM_Nihrbackbone_NbrVolunteerCase::getCurrentEligibleStatus($caseId);
       $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
-      $newValues = explode(CRM_Core_DAO::VALUE_SEPARATOR, $currentEligibleStatus);
       foreach ($newValues as $currentValueId => $currentValue) {
         $currentValue = (string) $currentValue;
         if ($currentValue == $removeStatusId || empty($currentValue)) {
@@ -376,6 +375,26 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       }
       CRM_Core_DAO::executeQuery($query, $queryParams);
     }
+  }
+
+  /**
+   * Method to get the current eligibility for a case
+   *
+   * @param $caseId
+   * @return array
+   */
+  public static function getCurrentEligibleStatus($caseId) {
+    $result = [];
+    $eligibleCustomFieldId = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'id');
+    try {
+      $result = civicrm_api3('Case', 'getvalue', [
+        'return' => $eligibleCustomFieldId,
+        'id' => $caseId,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return $result;
   }
 
 

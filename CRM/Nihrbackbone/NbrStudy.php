@@ -312,4 +312,38 @@ class CRM_Nihrbackbone_NbrStudy {
     return $required;
   }
 
+  /**
+   * Method to determine if the study requires a specific panel
+   *
+   * @param $studyId
+   * @return string|null
+   */
+  public static function requiresPanel($studyId) {
+    $panel = NULL;
+    if (!empty($studyId)) {
+      $panelColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_panel', 'column_name');
+      $criteriaTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('table_name');
+      $query = "SELECT " . $panelColumn . " FROM " . $criteriaTable . " WHERE entity_id = %1";
+      $panel = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $studyId, "Integer"]]);
+    }
+    return $panel;
+  }
+
+  /**
+   * Method to determine if commercial study
+   *
+   * @param $studyId
+   * @return string|null
+   */
+  public static function isCommercial($studyId) {
+    $commercial = NULL;
+    if (!empty($studyId)) {
+      $commercialColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_commercial', 'column_name');
+      $studyTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyDataCustomGroup('table_name');
+      $query = "SELECT " . $commercialColumn . " FROM " . $studyTable . " WHERE entity_id = %1";
+      $commercial = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $studyId, "Integer"]]);
+    }
+    return $commercial;
+  }
+
 }

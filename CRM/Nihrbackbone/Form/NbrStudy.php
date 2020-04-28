@@ -73,8 +73,9 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     ], FALSE);
     $this->add('text', 'nsd_study_long_name', E::ts("Long Name"), ['size' => 100], FALSE);
     $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [], FALSE);
-    $this->add('advcheckbox', 'nsc_ethics_approved', E::ts('Ethics approved?'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_ethics_approved', E::ts('Ethics approved?'), [], FALSE);
     $this->add('textarea', 'nsd_study_notes', E::ts('Notes'), ['rows' => 4, 'cols' => 100], FALSE);
+    $this->add('advcheckbox', 'nsd_commercial', E::ts('Commercial?'), [], FALSE);
     $this->add('advcheckbox', 'nsd_recall', E::ts('Recall?'), [], FALSE);
     $this->add('advcheckbox', 'nsd_sample_only', E::ts('Sample?'), [], FALSE);
     $this->add('advcheckbox', 'nsd_data_only', E::ts('Data?'), [], FALSE);
@@ -82,7 +83,11 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Multiple visits?'), [], FALSE);
     $this->addEntityRef('nsd_primary_nurse', E::ts('Primary nurse'), [
       'api' => ['params' => ['group' => 'nbr_bioresourcers']],
-      'placeholder' => '- select a nurse -',
+      'placeholder' => '- select nurse -',
+    ], FALSE);
+    $this->addEntityRef('nsc_panel', E::ts('Panel'), [
+      'api' => ['params' => ['contact_sub_type' => 'nbr_panel']],
+      'placeholder' => '- select panel -',
     ], FALSE);
     $this->add('select', 'nsc_gender_id', E::ts('Gender'), $this->_genderList,FALSE, [
       'class' => 'crm-select2',
@@ -142,6 +147,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'cols' => 100,
       'disabled' => 'disabled',
       ], FALSE);
+    $this->add('advcheckbox', 'nsd_commercial', E::ts('Commercial?'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsd_recall', E::ts('Recall?'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsd_sample_only', E::ts('Sample?'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsd_data_only', E::ts('Data?'), ['disabled' => 'disabled'], FALSE);
@@ -149,7 +155,12 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Multiple visits?'), ['disabled' => 'disabled'], FALSE);
     $this->addEntityRef('nsd_primary_nurse', E::ts('Primary nurse'), [
       'api' => ['params' => ['group' => 'nbr_bioresourcers']],
-      'placeholder' => '- select a nurse -',
+      'placeholder' => '- select nurse -',
+      'disabled' => 'disabled',
+    ], FALSE);
+    $this->addEntityRef('nsc_panel', E::ts('Panel'), [
+      'api' => ['params' => ['contact_sub_type' => 'nbr_panel']],
+      'placeholder' => '- select panel -',
       'disabled' => 'disabled',
     ], FALSE);
     $this->add('select', 'nsc_gender_id', E::ts('Gender'), $this->_genderList,FALSE, [
@@ -412,7 +423,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     // auto-rendered in the loop -- such as "qfKey" and "buttons".  These
     // items don't have labels.  We'll identify renderable by filtering on
     // the 'label'.
-    $elementNames = array();
+    $elementNames = [];
     foreach ($this->_elements as $element) {
       /** @var HTML_QuickForm_Element $element */
       $label = $element->getLabel();
