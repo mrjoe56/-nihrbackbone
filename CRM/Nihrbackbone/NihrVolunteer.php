@@ -325,6 +325,23 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Method to find out if volunteer is available for commercial studies
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function availableForCommercial($volunteerId) {
+    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_no_commercial_studies', 'column_name');
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
+    $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
+    $excludeFromCommercial = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
+    if (!$excludeFromCommercial) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
    * Method to find out if volunteer is able to travel
    *
    * @param $volunteerId
@@ -462,6 +479,26 @@ class CRM_Nihrbackbone_NihrVolunteer {
         if (in_array($contactEthnicityId, $ethnicityIds)) {
           return TRUE;
         }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to determine if contact has required panel
+   *
+   * @param $contactId
+   * @param $panelId
+   * @return bool
+   */
+  public static function hasRequiredPanel($contactId, $panelId) {
+    if (!empty($contactId && !empty($panelId))) {
+      $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomGroup('table_name');
+      $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_panel', 'column_name');
+      $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
+      $contactPanelId = CRM_Core_DAO::singleValueQuery($query, [ 1 => [$contactId, "Integer"]]);
+      if ($contactPanelId && $contactPanelId == $panelId) {
+        return TRUE;
       }
     }
     return FALSE;
