@@ -9,6 +9,7 @@ use \Symfony\Component\DependencyInjection\Definition;
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_container/
  */
+
 function nihrbackbone_civicrm_container(ContainerBuilder $container) {
   $container->addCompilerPass(new Civi\Nihrbackbone\NbrBackboneContainer());
 }
@@ -133,10 +134,17 @@ function writeBmi($entityID, $bmi) {
 }
 
 function nihrbackbone_civicrm_buildForm($formName, &$form) {
+
   if ($formName == 'CRM_Contact_Form_CustomData') {
-    CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'resources/nbrcustom.js', 10, 'page-body');
+    // validate custom data form
+    CRM_Nihrbackbone_NihrValidation::customFormConfig($formName, $form);
   }
+
+  // call js utils
+  CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'templates/CRM/Nihrbackbone/nbr_utils.js');
+
 }
+
 
 /**
  * Implements hook_civicrm_custom.

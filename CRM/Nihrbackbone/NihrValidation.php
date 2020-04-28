@@ -78,5 +78,50 @@ class CRM_Nihrbackbone_NihrValidation {
     }
 
   } # /validateAlias
-} # /class
+
+  public static function customFormConfig($formName, &$form) {
+
+    $contactId = CRM_Utils_Request::retrieve('cid', 'Positive');
+
+    # get general observations custom group ID
+    $query = "select id from civicrm_custom_group where name = 'nihr_volunteer_general_observations'";  # custom_14
+    $dao  = CRM_Core_DAO::executeQuery($query);
+    if ($dao->fetch()) {$gen_obvs_group_id = $dao->id;};
+
+    # For gen observations form - allow input of ht/wt as feet/inches/lbs
+    if ($formName == 'CRM_Contact_Form_CustomData' && $form->getVar('_groupID') == $gen_obvs_group_id) {
+
+      # get height/weight and calculate imperial values
+      $query = "select nvgo_weight_kg, nvgo_height_m from civicrm_value_nihr_volunteer_general_observations where entity_id = " . $contactId;
+      $dao = CRM_Core_DAO::executeQuery($query);
+      if ($dao->fetch()) {
+        $wt_kg = intval($dao->nvgo_weight_kg);
+        $wt_totlbs = intval($wt_kg / 0.453592);
+        $wt_stone = intval($wt_totlbs / 14);
+        $wt_lbs = ($wt_totlbs / 14 - $wt_stone) * 14;
+        $ht_m = floatval($dao->nvgo_height_m);
+        $ht_fd = $ht_m * 3.28084;
+        $ht_ft = intval($ht_fd);
+        $ht_in = round(12 * ($ht_fd - $ht_ft));
+      };
+
+      // Add the field elements to the form
+      $form->add('text', 'nvgo_val_wt', ts(''));
+      $defaults['nvgo_val_wt'] = $wt_totlbs;
+      $form->add('text', 'nvgo_val_wt_stones', ts(''));
+      $defaults['nvgo_val_wt_stones'] = $wt_stone;
+      $form->add('text', 'nvgo_val_wt_lbs', ts(''));
+      $defaults['nvgo_val_wt_lbs'] = $wt_lbs;
+      $form->add('text', 'nvgo_val_ht_ft', ts(''));
+      $defaults['nvgo_val_ht_ft'] = $ht_ft;
+      $form->add('text', 'nvgo_val_ht_in', ts(''));
+      $defaults['nvgo_val_ht_in'] = $ht_in;
+      $form->setDefaults($defaults);
+
+      // add template to form
+      CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_general_observations.tpl',]);
+    }
+  }
+}
+
 ?>
