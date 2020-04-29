@@ -671,4 +671,53 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     }
   }
 
+  /**
+   * Method to determine if volunteer on case is eligible
+   *
+   * @param $caseId
+   * @return bool
+   */
+  public static function isEligible($caseId) {
+    if (empty($caseId)) {
+      return FALSE;
+    }
+    $customFieldId = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'id');
+    try {
+      $result = civicrm_api3('Case', 'getvalue', [
+        'id' => $caseId,
+        'return' => $customFieldId,
+      ]);
+      $eligible = Civi::service('nbrBackbone')->getEligibleEligibilityStatusValue();
+      if (!is_array($result) && $result == $eligible) {
+        return TRUE;
+      }
+      else {
+        return FALSE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->warning(E::ts('Could not retrieve eligible status for caseId ') . $caseId . E::ts(' in ') . __METHOD__);
+      return FALSE;
+    }
+  }
+
+  /**
+   * Process build form hook for CRM_Case_Form_CaseView
+   *
+   * @param $form
+   */
+  public static function buildFormCaseView(&$form) {
+    $caseId = $form->getVar('_caseID');
+    // if volunteer on case is not eligible, do not allow the invite activity
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::isEligible($caseId)) {
+      $activityElement = $form->getElement('add_activity_type_id');
+      $activityTypeOptions = &$activityElement->_options;
+      foreach ($activityTypeOptions as $optionId => $option) {
+        if (isset($option['text']) && $option["text"] == "Invited") {
+          unset($activityTypeOptions[$optionId]);
+        }
+      }
+    }
+  }
+
 }
