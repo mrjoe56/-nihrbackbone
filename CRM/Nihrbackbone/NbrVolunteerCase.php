@@ -719,6 +719,12 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       }
     }
   }
+
+  /**
+   * Process build form hook for CRM_Case_Form_CustomData
+   *
+   * @param $form
+   */
   public static function buildFormCustomData(&$form) {
     $groupId = $form->getVar("_groupID");
     // if it is participation data
