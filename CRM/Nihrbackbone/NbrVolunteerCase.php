@@ -719,5 +719,29 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       }
     }
   }
+  public static function buildFormCustomData(&$form) {
+    $groupId = $form->getVar("_groupID");
+    // if it is participation data
+    if ($groupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('id')) {
+      // if volunteer is not eligible, remove the invited study statuses from options
+      $caseId = (int) $form->getVar("_entityID");
+      if (!CRM_Nihrbackbone_NbrVolunteerCase::isEligible($caseId)) {
+        $elementPartName = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
+        $index = $form->getVar("_elementIndex");
+        foreach ($index as $elementName => $elementId) {
+          if (strpos($elementName, $elementPartName) !== FALSE) {
+            $element = $form->getElement($elementName);
+            $options = &$element->_options;
+            $invited = explode(",", Civi::settings()->get('nbr_invited_study_status'));
+            foreach ($options as $optionId => $option) {
+              if (isset($option['attr']['value']) && in_array($option['attr']['value'], $invited)) {
+                unset($options[$optionId]);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
 }

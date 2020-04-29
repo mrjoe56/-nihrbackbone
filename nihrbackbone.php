@@ -134,6 +134,9 @@ function writeBmi($entityID, $bmi) {
 }
 
 function nihrbackbone_civicrm_buildForm($formName, &$form) {
+  if ($form instanceof CRM_Case_Form_CustomData) {
+    CRM_Nihrbackbone_NbrVolunteerCase::buildFormCustomData($form);
+  }
   if ($form instanceof CRM_Case_Form_CaseView) {
     CRM_Nihrbackbone_NbrVolunteerCase::buildFormCaseView($form);
   }
