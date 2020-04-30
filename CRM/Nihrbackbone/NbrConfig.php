@@ -36,6 +36,8 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_travelEligibilityStatusValue = NULL;
   // tags
   private $_tempNonRecallTagId = NULL;
+  // others
+  private $_selectedParticipationStatusValue = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -334,6 +336,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getTravelEligibilityStatusValue() {
     return $this->_travelEligibilityStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setSelectedParticipationStatusValue($value) {
+    $this->_selectedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getSelectedParticipationStatusValue() {
+    return $this->_selectedParticipationStatusValue;
   }
 
 }

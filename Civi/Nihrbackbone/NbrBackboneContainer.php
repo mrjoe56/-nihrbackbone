@@ -21,10 +21,36 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition = new Definition('CRM_Nihrbackbone_NbrConfig');
     $definition->setFactory(['CRM_Nihrbackbone_NbrConfig', 'getInstance']);
     $this->setEligibilityStatus($definition);
+    $this->setParticipationStatus($definition);
     $this->setTags($definition);
     $this->setVolunteerStatus($definition);
     $container->setDefinition('nbrBackbone', $definition);
   }
+
+  /**
+   * Method to set the participation status(es)
+   *
+   * @param $definition
+   */
+  private function setParticipationStatus(&$definition) {
+    $query = "SELECT cov.value
+      FROM civicrm_option_value AS cov
+          JOIN civicrm_option_group AS cog ON cov.option_group_id = cog.id
+      WHERE cog.name = %1 AND cov.name = %2";
+    $selectedValue = \CRM_Core_DAO::singleValueQuery($query, [
+      1 => ["nbr_study_participation_status", "String"],
+      2 => ["study_participation_status_selected", "String"],
+    ]);
+    if ($selectedValue) {
+      $definition->addMethodCall('setSelectedParticipationStatusValue', [$selectedValue]);
+    }
+  }
+
+  /**
+   * Method to set the eligibility status
+   *
+   * @param $definition
+   */
   private function setEligibilityStatus(&$definition) {
     $query = "SELECT cov.value, cov.name
         FROM civicrm_option_value AS cov JOIN civicrm_option_group AS cog ON cov.option_group_id = cog.id
