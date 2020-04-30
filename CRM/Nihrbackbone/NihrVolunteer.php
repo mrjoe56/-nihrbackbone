@@ -496,9 +496,11 @@ class CRM_Nihrbackbone_NihrVolunteer {
       $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomGroup('table_name');
       $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_panel', 'column_name');
       $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
-      $contactPanelId = CRM_Core_DAO::singleValueQuery($query, [ 1 => [$contactId, "Integer"]]);
-      if ($contactPanelId && $contactPanelId == $panelId) {
-        return TRUE;
+      $dao = CRM_Core_DAO::executeQuery($query, [ 1 => [$contactId, "Integer"]]);
+      while ($dao->fetch()) {
+        if ($dao->$columnName == $panelId) {
+          return TRUE;
+        }
       }
     }
     return FALSE;

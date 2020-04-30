@@ -750,4 +750,142 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     }
   }
 
+  /**
+   * Method to calculate eligibility of volunteer on study
+   *
+   * @param $studyId
+   * @param $volunteerId
+   */
+  public static function calculateEligibility($studyId, $volunteerId) {
+    $eligibilities = [];
+    // is volunteer inactive?
+    if (!CRM_Nihrbackbone_NihrVolunteer::isActive($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getActiveEligibilityStatusValue();
+    }
+    // is volunteer temporarily non-recallable?
+    if (CRM_Nihrbackbone_NihrVolunteer::isTemporarilyNonRecallable($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getRecallableEligibilityStatusValue();
+    }
+    // is volunteer invited on other studies?
+    if (CRM_Nihrbackbone_NihrVolunteer::isInvitedOnOtherStudy($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getOtherEligibilityStatusValue();
+    }
+    // does volunteer have max invitations in period?
+    if (CRM_Nihrbackbone_NihrVolunteer::hasMaxStudyInvitationsNow($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getMaxEligibilityStatusValue();
+    }
+    // does study require age range and is volunteer outside?
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::isInAgeRange($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getAgeEligibilityStatusValue();
+    }
+    // does study require bmi range and is volunteer outside?
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::isInBmiRange($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getBmiEligibilityStatusValue();
+    }
+    // is commercial study and does volunteer not allow commercial?
+    if (CRM_Nihrbackbone_NbrStudy::isCommercial($studyId) && !CRM_Nihrbackbone_NihrVolunteer::availableForCommercial($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getCommercialEligibilityStatusValue();
+    }
+    // does study require blood and does volunteer not give blood?
+    if (CRM_Nihrbackbone_NbrStudy::requiresBlood($studyId) && !CRM_Nihrbackbone_NihrVolunteer::availableForBlood($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getBloodEligibilityStatusValue();
+    }
+    // does volunteer have required ethnicity?
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::hasEthnicity($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getEthnicityEligibilityStatusValue();
+    }
+    // does volunteer have required panel?
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::hasPanel($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getPanelEligibilityStatusValue();
+    }
+    // does volunteer have required gender?
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::hasGender($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getGenderEligibilityStatusValue();
+    }
+    // does study require travel and does volunteer not travel?
+    if (CRM_Nihrbackbone_NbrStudy::requiresTravel($studyId) && !CRM_Nihrbackbone_NihrVolunteer::ableToTravel($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getTravelEligibilityStatusValue();
+    }
+    // if no eligibility found yet, volunteer is eligible
+    if (empty($eligibilities)) {
+      $eligibilities = [Civi::service('nbrBackbone')->getEligibleEligibilityStatusValue()];
+    }
+    return $eligibilities;
+  }
+
+  /**
+   * Method to determine if volunteer is in study age range
+   *
+   * @param $contactId
+   * @param $studyId
+   * @return bool
+   */
+  public static function isInAgeRange($contactId, $studyId) {
+    $ageRange = CRM_Nihrbackbone_NbrStudy::requiresAgeRange($studyId);
+    if (!empty($ageRange)) {
+      return CRM_Nihrbackbone_NihrVolunteer::inAgeRange($contactId, $ageRange['age_from'], $ageRange['age_to']);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to determine if volunteer is in study bmi range
+   *
+   * @param $contactId
+   * @param $studyId
+   * @return bool
+   */
+  public static function isInBmiRange($contactId, $studyId) {
+    $bmiRange = CRM_Nihrbackbone_NbrStudy::requiresBmiRange($studyId);
+    if (!empty($bmiRange)) {
+      return CRM_Nihrbackbone_NihrVolunteer::inBmiRange($contactId, (float) $bmiRange['bmi_from'], (float) $bmiRange['bmi_to']);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to determine if volunteer has required ethnicities
+   * @param $contactId
+   * @param $studyId
+   * @return bool
+   */
+  public static function hasEthnicity($contactId, $studyId) {
+    $ethnicities = CRM_Nihrbackbone_NbrStudy::requiresEthnicities($studyId);
+    if (!empty($ethnicities)) {
+      return CRM_Nihrbackbone_NihrVolunteer::hasRequiredEthnicity($contactId, $ethnicities);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to determine if volunteer has required gender
+   *
+   * @param $contactId
+   * @param $studyId
+   * @return bool
+   */
+  public static function hasGender($contactId, $studyId) {
+    $genderId = CRM_Nihrbackbone_NbrStudy::requiresGender($studyId);
+    if ($genderId) {
+      return CRM_Nihrbackbone_NihrVolunteer::hasGender($contactId, $genderId);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to determine if volunteer has required panel
+   *
+   * @param $contactId
+   * @param $studyId
+   * @return bool
+   */
+  public static function hasPanel($contactId, $studyId) {
+    $panelId = CRM_Nihrbackbone_NbrStudy::requiresPanel($studyId);
+    if ($panelId) {
+      return CRM_Nihrbackbone_NihrVolunteer::hasRequiredPanel($contactId, $panelId);
+    }
+    return TRUE;
+  }
+
+
 }
