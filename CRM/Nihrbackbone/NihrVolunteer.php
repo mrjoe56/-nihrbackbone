@@ -192,12 +192,15 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Method to determine if the volunteer has max study invitations / this is the max
+   *
+   * @param string $type final/initial
    * @param int $volunteerId
    * @param int $studyId
    * @return bool
    * @throws
    */
-  public static function hasMaxStudyInvitationsNow($volunteerId, $studyId) {
+  public static function hasMaxStudyInvitationsNow($type, $volunteerId, $studyId) {
     if (!empty($volunteerId)) {
       $maxNumber = (int) Civi::settings()->get('nbr_max_invitations');
       $checkDate = self::calculateCheckDateMaxInvitations();
@@ -217,8 +220,16 @@ class CRM_Nihrbackbone_NihrVolunteer {
         4 => [$checkDate->format('Y-m-d'), "String"],
       ];
       $studyCount = CRM_Core_DAO::singleValueQuery($query, $queryParams);
-      if ($studyCount >= $maxNumber) {
-        return TRUE;
+      if ($type == "final") {
+        $studyCount++;
+        if ($studyCount == $maxNumber) {
+          return TRUE;
+        }
+      }
+      else {
+        if ($studyCount >= $maxNumber) {
+          return TRUE;
+        }
       }
     }
     return FALSE;
@@ -595,26 +606,6 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     $count = (int) CRM_Core_DAO::singleValueQuery($query, $queryParams);
     if ($count > 0) {
-      return TRUE;
-    }
-    return FALSE;
-  }
-
-  /**
-   * Method to determine if this invitation will be the one that brings the volunteer to the max
-   *
-   * @param $contactId
-   * @return bool
-   * @throws
-   */
-  public static function isFinalInvitationInPeriod($contactId) {
-    // get settings
-    $maxInvitations = (int) Civi::settings()->get('nbr_max_invitations');
-    // subtract 1 from max as it will not count the current invitation in the database yet
-    $maxInvitations--;
-    $checkDate = self::calculateCheckDateMaxInvitations();
-    $studyCount = (int) self::countDistinctStudiesWithInvitations($contactId, $checkDate);
-    if ($studyCount == $maxInvitations) {
       return TRUE;
     }
     return FALSE;
