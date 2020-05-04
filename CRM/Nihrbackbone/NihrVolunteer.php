@@ -206,21 +206,24 @@ class CRM_Nihrbackbone_NihrVolunteer {
       $checkDate = self::calculateCheckDateMaxInvitations();
       $participationTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
       $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+      $statusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
       $query = "SELECT COUNT(*)
         FROM civicrm_value_nbr_participation_data AS cvnpd
         JOIN civicrm_case AS cc ON cvnpd.entity_id = cc.id
         JOIN civicrm_case_contact AS ccc ON cc.id = ccc.case_id
         JOIN civicrm_campaign AS camp ON cvnpd.nvpd_study_id = camp.id
         WHERE cvnpd. nvpd_study_id <> %1 AND cc.is_deleted = %2 AND ccc.contact_id = %3
-        AND camp.start_date >= %4";
+        AND camp.start_date >= %4 AND cvnpd." . $statusColumn . " = %5";
       $queryParams = [
         1 => [(int) $studyId, "Integer"],
         2 => [0, "Integer"],
         3 => [(int) $volunteerId, "Integer"],
         4 => [$checkDate->format('Y-m-d'), "String"],
+        5 => [Civi::service('nbrBackbone')->getInvitedParticipationStatusValue(), "String"],
       ];
       $studyCount = CRM_Core_DAO::singleValueQuery($query, $queryParams);
       if ($type == "final") {
+        // for this comparison the current study should count (but was excluded in query)
         $studyCount++;
         if ($studyCount == $maxNumber) {
           return TRUE;

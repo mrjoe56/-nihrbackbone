@@ -33,16 +33,21 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setParticipationStatus(&$definition) {
-    $query = "SELECT cov.value
+    $query = "SELECT cov.value, cov.name
       FROM civicrm_option_value AS cov
           JOIN civicrm_option_group AS cog ON cov.option_group_id = cog.id
-      WHERE cog.name = %1 AND cov.name = %2";
-    $selectedValue = \CRM_Core_DAO::singleValueQuery($query, [
-      1 => ["nbr_study_participation_status", "String"],
-      2 => ["study_participation_status_selected", "String"],
-    ]);
-    if ($selectedValue) {
-      $definition->addMethodCall('setSelectedParticipationStatusValue', [$selectedValue]);
+      WHERE cog.name = %1";
+    $dao = \CRM_Core_DAO::executeQuery($query, [1 => ["nbr_study_participation_status", "String"]]);
+    while ($dao->fetch()) {
+      switch ($dao->name) {
+        case "study_participation_status_invited":
+          $definition->addMethodCall('setInvitedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_selected":
+          $definition->addMethodCall('setSelectedParticipationStatusValue', [$dao->value]);
+          break;
+      }
     }
   }
 

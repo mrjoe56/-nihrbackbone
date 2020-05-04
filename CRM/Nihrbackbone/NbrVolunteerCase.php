@@ -408,13 +408,13 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $result = [];
     if (!empty($volunteerId)) {
       $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-      $participationStatus = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
+      $participationStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
       // get all active participations for contact where he/she is selected
       $query = "SELECT a.case_id, c.* FROM civicrm_case_contact AS a
         JOIN civicrm_case AS b ON a.case_id = b.id
         LEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id
         WHERE contact_id = %1 AND b.is_deleted = %2 AND b.case_type_id = %3 AND b.status_id != %4
-         AND c." . $participationStatus . " = %5";
+         AND c." . $participationStatusColumn . " = %5";
       $queryParams = [
         1 => [$volunteerId, "Integer"],
         2 => [0, "Integer"],
@@ -422,9 +422,9 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), "Integer"],
         5 => [Civi::service('nbrBackbone')->getSelectedParticipationStatusValue(), "String"],
       ];
-      $study = CRM_Core_DAO::executeQuery($query, $queryParams);
-      while ($study->fetch()) {
-        $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($study);
+      $case = CRM_Core_DAO::executeQuery($query, $queryParams);
+      while ($case->fetch()) {
+        $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($case);
       }
     }
     return $result;
@@ -433,28 +433,31 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   /**
    * Method to get all active participations on a project
    *
-   * @param $projectId
+   * @param $studyId
    * @return array
    */
-  public static function getProjectParticipations($projectId) {
+  public static function getStudySelections($studyId) {
     $result = [];
-    if (!empty($projectId)) {
+    if (!empty($studyId)) {
       $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-      $projectColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
-      // get all active participations for project
+      $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+      $participationStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
+      // get all active participations for project where participation status is selected
       $query = "SELECT a.case_id, a.contact_id, c.* FROM civicrm_case_contact AS a
         JOIN civicrm_case AS b ON a.case_id = b.id
-        lEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id
-        WHERE c." . $projectColumn . " = %1 AND b.is_deleted = %2 AND b.case_type_id = %3 AND b.status_id != %4";
+        LEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id
+        WHERE c." . $studyIdColumn . " = %1 AND b.is_deleted = %2 AND b.case_type_id = %3 AND b.status_id != %4
+          AND " . $participationStatusColumn . " = %5";
       $queryParams = [
-        1 => [$projectId, "Integer"],
+        1 => [$studyId, "Integer"],
         2 => [0, "Integer"],
         3 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
         4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), "Integer"],
+        5 => [Civi::service('nbrBackbone')->getSelectedParticipationStatusValue(), "String"],
       ];
-      $projects = CRM_Core_DAO::executeQuery($query, $queryParams);
-      while ($projects->fetch()) {
-        $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($projects);
+      $case = CRM_Core_DAO::executeQuery($query, $queryParams);
+      while ($case->fetch()) {
+        $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($case);
       }
     }
     return $result;
@@ -890,5 +893,24 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     return TRUE;
   }
 
+  /**
+   * Method to get study id with case id
+   *
+   * @param $caseId
+   * @return int|string|null
+   */
+  public static function getStudyId($caseId) {
+    $studyId = NULL;
+    if (!empty($caseId)) {
+      $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+      $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+      $query = "SELECT " . $studyIdColumn . " FROM " . $tableName . " WHERE entity_id = %1";
+      $studyId = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $caseId, "Integer"]]);
+      if ($studyId) {
+        return (int) $studyId;
+      }
+    }
+    return $studyId;
+  }
 
 }
