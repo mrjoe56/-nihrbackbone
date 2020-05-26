@@ -211,7 +211,6 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
    */
   public function addRules() {
     $this->addFormRule(array('CRM_Nihrbackbone_Form_NbrStudy', 'validateStartEndDate'));
-    $this->addFormRule(array('CRM_Nihrbackbone_Form_NbrStudy', 'validateBloodTravel'));
     $this->addFormRule(array('CRM_Nihrbackbone_Form_NbrStudy', 'validateFromTo'));
   }
 
@@ -231,40 +230,6 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
         if (!empty($fields[$fromName]) && $fields[$toName] < $fields[$fromName]) {
           $errors[$toName] = E::ts('To can not be smaller than from.');
         }
-      }
-    }
-    if (!empty($errors)) {
-      return $errors;
-    }
-    else {
-      return TRUE;
-    }
-  }
-
-  /**
-   * Method to validate:
-   * - when blood is required it can not be a data only
-   * - when travel is required it can not be data only or sample only
-   *
-   * @param $fields
-   * @return bool|array
-   */
-  public static function validateBloodTravel($fields) {
-    $errors = [];
-    if (isset($fields['nsc_blood_required']) && $fields['nsc_blood_required'] == TRUE) {
-      if (isset($fields['nsd_data_only']) && $fields['nsd_data_only'] == TRUE) {
-        $errors['nsd_data_only'] = E::ts('Study can not be data only when blood is required.');
-        $errors['nsc_blood_required'] = E::ts('Blood can not be required for a data only study.');
-      }
-    }
-    if (isset($fields['nsc_travel_required']) && $fields['nsc_travel_required'] == TRUE) {
-      if (isset($fields['nsd_data_only']) && $fields['nsd_data_only'] == TRUE) {
-        $errors['nsd_data_only'] = E::ts('Study can not be data only when travel is required.');
-        $errors['nsc_travel_required'] = E::ts('Travel can not be required for a data only study.');
-      }
-      if (isset($fields['nsd_sample_only']) && $fields['nsd_sample_only'] == TRUE) {
-        $errors['nsd_sample_only'] = E::ts('Study can not be sample only when travel is required.');
-        $errors['nsc_travel_required'] = E::ts('Travel can not be required for a sample only study.');
       }
     }
     if (!empty($errors)) {
