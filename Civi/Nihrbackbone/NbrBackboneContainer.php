@@ -24,7 +24,26 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $this->setParticipationStatus($definition);
     $this->setTags($definition);
     $this->setVolunteerStatus($definition);
+    $this->setConsentStatus($definition);
     $container->setDefinition('nbrBackbone', $definition);
+  }
+
+  /**
+   * Method to set consent status
+   *
+   * @param $definition
+   */
+  private function setConsentStatus(&$definition) {
+    $query = "SELECT cov.value FROM civicrm_option_group AS cog
+        JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
+        WHERE cog.name = %1 AND cov.name = %2";
+    $status = \CRM_Core_DAO::singleValueQuery($query, [
+      1 => ["nbr_consent_status", "String"],
+      2 => ["consent_form_status_correct", "String"],
+    ]);
+    if ($status) {
+      $definition->addMethodCall('setCorrectConsentStatusValue', [$status]);
+    }
   }
 
   /**

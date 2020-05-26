@@ -39,6 +39,7 @@ class CRM_Nihrbackbone_NbrConfig {
   // others
   private $_selectedParticipationStatusValue = NULL;
   private $_invitedParticipationStatusValue = NULL;
+  private $_correctConsentStatusValue = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -365,6 +366,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getInvitedParticipationStatusValue() {
     return $this->_invitedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setCorrectConsentStatusValue($value) {
+    $this->_correctConsentStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getCorrectConsentStatusValue() {
+    return $this->_correctConsentStatusValue;
   }
 
 }
