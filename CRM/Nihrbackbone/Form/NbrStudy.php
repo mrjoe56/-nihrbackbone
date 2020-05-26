@@ -299,7 +299,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
    * @throws
    */
   public function preProcess() {
-    CRM_Core_Session::singleton()->pushUserContext(CRM_Utils_System::url("studies-ct", "", TRUE));
+    CRM_Core_Session::singleton()->pushUserContext(CRM_Utils_System::url("studies-list", "", TRUE));
     $this->setCustomFieldIdsAndColumns();
     switch ($this->_action) {
       case CRM_Core_Action::ADD:
