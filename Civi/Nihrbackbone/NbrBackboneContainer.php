@@ -20,12 +20,25 @@ class NbrBackboneContainer implements CompilerPassInterface {
   public function process(ContainerBuilder $container) {
     $definition = new Definition('CRM_Nihrbackbone_NbrConfig');
     $definition->setFactory(['CRM_Nihrbackbone_NbrConfig', 'getInstance']);
+    $this->setActivityTypes($definition);
     $this->setEligibilityStatus($definition);
     $this->setParticipationStatus($definition);
     $this->setTags($definition);
     $this->setVolunteerStatus($definition);
     $this->setConsentStatus($definition);
     $container->setDefinition('nbrBackbone', $definition);
+  }
+  private function setActivityTypes(&$definition) {
+    $query = "SELECT cov.value FROM civicrm_option_group AS cog
+        JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
+        WHERE cog.name = %1 AND cov.name = %2";
+    $id = \CRM_Core_DAO::singleValueQuery($query, [
+      1 => ["activity_type", "String"],
+      2 => ["nihr_consent", "String"],
+    ]);
+    if ($id) {
+      $definition->addMethodCall('setConsentActivityTypeId', [(int) $id]);
+    }
   }
 
   /**

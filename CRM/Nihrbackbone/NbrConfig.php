@@ -40,6 +40,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_selectedParticipationStatusValue = NULL;
   private $_invitedParticipationStatusValue = NULL;
   private $_correctConsentStatusValue = NULL;
+  private $_consentActivityTypeId = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -380,6 +381,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getCorrectConsentStatusValue() {
     return $this->_correctConsentStatusValue;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setConsentActivityTypeId($id) {
+    $this->_consentActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getConsentActivityTypeId() {
+    return $this->_consentActivityTypeId;
   }
 
 }
