@@ -713,6 +713,8 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @param $form
    */
   public static function buildFormCaseView(&$form) {
+    // add template to remove merge case and reassign case links from form
+    CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_case_links.tpl',]);
     $caseId = $form->getVar('_caseID');
     // if volunteer on case is not eligible, do not allow the invite activity
     if (!CRM_Nihrbackbone_NbrVolunteerCase::isEligible($caseId)) {

@@ -4,12 +4,22 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
 use \Symfony\Component\DependencyInjection\ContainerBuilder;
 use \Symfony\Component\DependencyInjection\Definition;
 
+function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$values) {
+  if ($objectName == "Case") {
+    if ($op == "case.actions.primary" || $op == "case.selector.actions") {
+      foreach ($links as $key => $link) {
+        if ($link['name'] == "Assign to Another Client" && $link['ref'] == "reassign" && $link['url'] == "civicrm/contact/view/case/editClient") {
+          unset($links[$key]);
+        }
+      }
+    }
+  }
+}
 /**
  * Implements hook_civicrm_container()
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_container/
  */
-
 function nihrbackbone_civicrm_container(ContainerBuilder $container) {
   $container->addCompilerPass(new Civi\Nihrbackbone\NbrBackboneContainer());
 }
