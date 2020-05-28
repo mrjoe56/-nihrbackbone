@@ -915,4 +915,39 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     return $studyId;
   }
 
+  /**
+   * Method to get the latest visit from the case
+   *
+   * @param $caseId
+   * @return bool|string
+   * @throws Exception
+   */
+  public static function getLatestVisit($caseId) {
+    if (empty($caseId)) {
+      return FALSE;
+    }
+    $query = "SELECT ca.activity_date_time
+        FROM civicrm_case_activity AS cca
+            JOIN civicrm_case AS cc ON cca.case_id = cc.id
+            JOIN civicrm_activity AS ca ON cca.activity_id = ca.id
+        WHERE cc.is_deleted = %1 AND ca.is_deleted = %1 AND ca.is_test = %1 AND ca.is_current_revision = %2
+          AND cca.case_id = %3 AND ca.activity_type_id IN (%4, %5)
+        ORDER BY ca.activity_date_time DESC LIMIT 1";
+    $queryParams = [
+      1 => [0, "Integer"],
+      2 => [1, "Integer"],
+      3 => [(int) $caseId, "Integer"],
+      4 => [Civi::service('nbrBackbone')->getVisitStage2ActivityTypeId(), "Integer"],
+      5 => [Civi::service('nbrBackbone')->getVisit2Stage2Cbr146ActivityTypeId(), "Integer"],
+    ];
+    $latestVisit = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($latestVisit) {
+      if (!$latestVisit instanceof DateTime) {
+        $latestVisit = new DateTime($latestVisit);
+      }
+      return $latestVisit->format('d-m-Y H:i');
+    }
+    return "";
+  }
+
 }

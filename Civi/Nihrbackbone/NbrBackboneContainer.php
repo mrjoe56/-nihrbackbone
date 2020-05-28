@@ -28,16 +28,36 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $this->setConsentStatus($definition);
     $container->setDefinition('nbrBackbone', $definition);
   }
+
+  /**
+   * Method to set activity types
+   *
+   * @param $definition
+   */
   private function setActivityTypes(&$definition) {
-    $query = "SELECT cov.value FROM civicrm_option_group AS cog
+    $query = "SELECT cov.value, cov.name FROM civicrm_option_group AS cog
         JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
-        WHERE cog.name = %1 AND cov.name = %2";
-    $id = \CRM_Core_DAO::singleValueQuery($query, [
+        WHERE cog.name = %1 AND cov.name IN(%2, %3, %4)";
+    $dao = \CRM_Core_DAO::executeQuery($query, [
       1 => ["activity_type", "String"],
       2 => ["nihr_consent", "String"],
+      3 => ["nihr_visit_stage2", "String"],
+      4 => ["nihr_visit_stage2_cbr146_2", "String"],
     ]);
-    if ($id) {
-      $definition->addMethodCall('setConsentActivityTypeId', [(int) $id]);
+    while ($dao->fetch()) {
+      switch ($dao->name) {
+        case "nihr_consent":
+          $definition->addMethodCall('setConsentActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nihr_visit_stage2":
+          $definition->addMethodCall('setVisitStage2ActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nihr_visit_stage2_cbr146_2":
+          $definition->addMethodCall('setVisit2Stage2Cbr146ActivityTypeId', [(int) $dao->value]);
+          break;
+      }
     }
   }
 
