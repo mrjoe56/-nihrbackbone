@@ -930,15 +930,16 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         FROM civicrm_case_activity AS cca
             JOIN civicrm_case AS cc ON cca.case_id = cc.id
             JOIN civicrm_activity AS ca ON cca.activity_id = ca.id
-        WHERE cc.is_deleted = %1 AND ca.is_deleted = %1 AND ca.is_test = %1 AND ca.is_current_revision = %2
-          AND cca.case_id = %3 AND ca.activity_type_id IN (%4, %5)
+            JOIN civicrm_option_value AS ov ON ca.activity_type_id = ov.value AND ov.option_group_id = %1
+        WHERE cc.is_deleted = %2 AND ca.is_deleted = %2 AND ca.is_test = %2 AND ca.is_current_revision = %3
+          AND cca.case_id = %4 AND ov.name LIKE %5
         ORDER BY ca.activity_date_time DESC LIMIT 1";
     $queryParams = [
-      1 => [0, "Integer"],
-      2 => [1, "Integer"],
-      3 => [(int) $caseId, "Integer"],
-      4 => [Civi::service('nbrBackbone')->getVisitStage2ActivityTypeId(), "Integer"],
-      5 => [Civi::service('nbrBackbone')->getVisit2Stage2Cbr146ActivityTypeId(), "Integer"],
+      1 => [Civi::service('nbrBackbone')->getActivityTypeOptionGroupId(), "Integer"],
+      2 => [0, "Integer"],
+      3 => [1, "Integer"],
+      4 => [(int) $caseId, "Integer"],
+      5 => [Civi::service('nbrBackbone')->getVisitStage2Substring() . "%", "String"],
     ];
     $latestVisit = CRM_Core_DAO::singleValueQuery($query, $queryParams);
     if ($latestVisit) {
