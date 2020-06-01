@@ -37,13 +37,13 @@ class CRM_Nihrbackbone_NbrConfig {
   // tags
   private $_tempNonRecallTagId = NULL;
   // activity types
+  private $_activityTypeOptionGroupId = NULL;
   private $_consentActivityTypeId = NULL;
-  private $_visitStage2ActivityTypeId = NULL;
-  private $_visit2Stage2Cbr146ActivityTypeId = NULL;
   // others
   private $_selectedParticipationStatusValue = NULL;
   private $_invitedParticipationStatusValue = NULL;
   private $_correctConsentStatusValue = NULL;
+  private $_visitStage2Substring = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -401,31 +401,31 @@ class CRM_Nihrbackbone_NbrConfig {
   }
 
   /**
-   * @param int $id
+   * @param string
    */
-  public function setVisitStage2ActivityTypeId($id) {
-    $this->_visitStage2ActivityTypeId = $id;
+  public function setVisitStage2Substring($string) {
+    $this->_visitStage2Substring = $string;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVisitStage2Substring() {
+    return $this->_visitStage2Substring;
+  }
+
+  /**
+   * @param int
+   */
+  public function setActivityTypeOptionGroupId($id) {
+    $this->_activityTypeOptionGroupId = $id;
   }
 
   /**
    * @return int
    */
-  public function getVisitStage2ActivityTypeId() {
-    return $this->_visitStage2ActivityTypeId;
-  }
-
-  /**
-   * @param int $id
-   */
-  public function setVisit2Stage2Cbr146ActivityTypeId($id) {
-    $this->_visit2Stage2Cbr146ActivityTypeId = $id;
-  }
-
-  /**
-   * @return int
-   */
-  public function getVisit2Stage2Cbr146ActivityTypeId() {
-    return $this->_visit2Stage2Cbr146ActivityTypeId;
+  public function getActivityTypeOptionGroupId() {
+    return $this->_activityTypeOptionGroupId;
   }
 
 }

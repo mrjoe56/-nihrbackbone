@@ -21,12 +21,26 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition = new Definition('CRM_Nihrbackbone_NbrConfig');
     $definition->setFactory(['CRM_Nihrbackbone_NbrConfig', 'getInstance']);
     $this->setActivityTypes($definition);
+    $this->setConsentStatus($definition);
     $this->setEligibilityStatus($definition);
+    $this->setOptionGroups($definition);
     $this->setParticipationStatus($definition);
     $this->setTags($definition);
     $this->setVolunteerStatus($definition);
-    $this->setConsentStatus($definition);
+    $definition->addMethodCall('setVisitStage2Substring', ["nihr_visit_stage2"]);
     $container->setDefinition('nbrBackbone', $definition);
+  }
+  /**
+   * Method to set option group ids
+   *
+   * @param $definition
+   */
+  private function setOptionGroups(&$definition) {
+    $query = "SELECT id FROM civicrm_option_group WHERE name = %1";
+    $id = \CRM_Core_DAO::singleValueQuery($query, [1 => ["activity_type", "String"]]);
+    if ($id) {
+      $definition->addMethodCall('setActivityTypeOptionGroupId', [(int) $id]);
+    }
   }
 
   /**
@@ -35,29 +49,15 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setActivityTypes(&$definition) {
-    $query = "SELECT cov.value, cov.name FROM civicrm_option_group AS cog
+    $query = "SELECT cov.value FROM civicrm_option_group AS cog
         JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
-        WHERE cog.name = %1 AND cov.name IN(%2, %3, %4)";
-    $dao = \CRM_Core_DAO::executeQuery($query, [
+        WHERE cog.name = %1 AND cov.name = %2";
+    $id = \CRM_Core_DAO::singleValueQuery($query, [
       1 => ["activity_type", "String"],
       2 => ["nihr_consent", "String"],
-      3 => ["nihr_visit_stage2", "String"],
-      4 => ["nihr_visit_stage2_cbr146_2", "String"],
     ]);
-    while ($dao->fetch()) {
-      switch ($dao->name) {
-        case "nihr_consent":
-          $definition->addMethodCall('setConsentActivityTypeId', [(int) $dao->value]);
-          break;
-
-        case "nihr_visit_stage2":
-          $definition->addMethodCall('setVisitStage2ActivityTypeId', [(int) $dao->value]);
-          break;
-
-        case "nihr_visit_stage2_cbr146_2":
-          $definition->addMethodCall('setVisit2Stage2Cbr146ActivityTypeId', [(int) $dao->value]);
-          break;
-      }
+    if ($id) {
+      $definition->addMethodCall('setConsentActivityTypeId', [(int) $id]);
     }
   }
 
