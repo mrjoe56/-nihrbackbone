@@ -62,7 +62,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     $this->addEntityRef('nsd_centre_origin', E::ts('Centre of Origin'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_centre']],
       'placeholder' => '- select centre -',
-    ], FALSE);
+    ], TRUE);
     $this->addEntityRef('nsd_site', E::ts('Site'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_site']],
       'placeholder' => '- select site -',
