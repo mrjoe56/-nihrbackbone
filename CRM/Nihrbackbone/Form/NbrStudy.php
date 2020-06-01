@@ -71,6 +71,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
       'placeholder' => '- select investigator -',
     ], FALSE);
+    $this->add('textarea', 'nsd_scientific_info', E::ts('Scientific Information'), ['rows' => 4, 'cols' => 100], FALSE);
     $this->add('text', 'nsd_study_long_name', E::ts("Long Name"), ['size' => 100], FALSE);
     $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [], FALSE);
     $this->add('advcheckbox', 'nsd_ethics_approved', E::ts('Ethics approved?'), [], FALSE);
@@ -122,6 +123,11 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'placeholder' => '- select researcher -',
       'disabled' => 'disabled',
     ], FALSE);
+    $this->add('textarea', 'nsd_scientific_info', E::ts('Scientific Information'), [
+      'rows' => 4,
+      'cols' => 100,
+      'disabled' => 'disabled',
+      ], FALSE);
     $this->addEntityRef('nsd_centre_origin', E::ts('Centre of Origin'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_centre']],
       'placeholder' => '- select centre -',
