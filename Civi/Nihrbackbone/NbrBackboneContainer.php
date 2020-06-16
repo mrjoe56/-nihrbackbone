@@ -20,11 +20,94 @@ class NbrBackboneContainer implements CompilerPassInterface {
   public function process(ContainerBuilder $container) {
     $definition = new Definition('CRM_Nihrbackbone_NbrConfig');
     $definition->setFactory(['CRM_Nihrbackbone_NbrConfig', 'getInstance']);
+    $this->setActivityTypes($definition);
+    $this->setConsentStatus($definition);
     $this->setEligibilityStatus($definition);
+    $this->setOptionGroups($definition);
+    $this->setParticipationStatus($definition);
     $this->setTags($definition);
     $this->setVolunteerStatus($definition);
+    $definition->addMethodCall('setVisitStage2Substring', ["nihr_visit_stage2"]);
     $container->setDefinition('nbrBackbone', $definition);
   }
+  /**
+   * Method to set option group ids
+   *
+   * @param $definition
+   */
+  private function setOptionGroups(&$definition) {
+    $query = "SELECT id FROM civicrm_option_group WHERE name = %1";
+    $id = \CRM_Core_DAO::singleValueQuery($query, [1 => ["activity_type", "String"]]);
+    if ($id) {
+      $definition->addMethodCall('setActivityTypeOptionGroupId', [(int) $id]);
+    }
+  }
+
+  /**
+   * Method to set activity types
+   *
+   * @param $definition
+   */
+  private function setActivityTypes(&$definition) {
+    $query = "SELECT cov.value FROM civicrm_option_group AS cog
+        JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
+        WHERE cog.name = %1 AND cov.name = %2";
+    $id = \CRM_Core_DAO::singleValueQuery($query, [
+      1 => ["activity_type", "String"],
+      2 => ["nihr_consent", "String"],
+    ]);
+    if ($id) {
+      $definition->addMethodCall('setConsentActivityTypeId', [(int) $id]);
+    }
+  }
+
+  /**
+   * Method to set consent status
+   *
+   * @param $definition
+   */
+  private function setConsentStatus(&$definition) {
+    $query = "SELECT cov.value FROM civicrm_option_group AS cog
+        JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
+        WHERE cog.name = %1 AND cov.name = %2";
+    $status = \CRM_Core_DAO::singleValueQuery($query, [
+      1 => ["nbr_consent_status", "String"],
+      2 => ["consent_form_status_correct", "String"],
+    ]);
+    if ($status) {
+      $definition->addMethodCall('setCorrectConsentStatusValue', [$status]);
+    }
+  }
+
+  /**
+   * Method to set the participation status(es)
+   *
+   * @param $definition
+   */
+  private function setParticipationStatus(&$definition) {
+    $query = "SELECT cov.value, cov.name
+      FROM civicrm_option_value AS cov
+          JOIN civicrm_option_group AS cog ON cov.option_group_id = cog.id
+      WHERE cog.name = %1";
+    $dao = \CRM_Core_DAO::executeQuery($query, [1 => ["nbr_study_participation_status", "String"]]);
+    while ($dao->fetch()) {
+      switch ($dao->name) {
+        case "study_participation_status_invited":
+          $definition->addMethodCall('setInvitedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_selected":
+          $definition->addMethodCall('setSelectedParticipationStatusValue', [$dao->value]);
+          break;
+      }
+    }
+  }
+
+  /**
+   * Method to set the eligibility status
+   *
+   * @param $definition
+   */
   private function setEligibilityStatus(&$definition) {
     $query = "SELECT cov.value, cov.name
         FROM civicrm_option_value AS cov JOIN civicrm_option_group AS cog ON cov.option_group_id = cog.id

@@ -399,29 +399,32 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
 
 
   /**
-   * Method to get all participation case ids for volunteer
+   * Method to get all participation case ids where volunteer = selected
    *
    * @param $volunteerId
    * @return array
    */
-  public static function getVolunteerParticipations($volunteerId) {
+  public static function getVolunteerSelections($volunteerId) {
     $result = [];
     if (!empty($volunteerId)) {
       $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-      // get all active participations for contact
+      $participationStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
+      // get all active participations for contact where he/she is selected
       $query = "SELECT a.case_id, c.* FROM civicrm_case_contact AS a
         JOIN civicrm_case AS b ON a.case_id = b.id
-        lEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id
-        WHERE contact_id = %1 AND b.is_deleted = %2 AND b.case_type_id = %3 AND b.status_id != %4";
+        LEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id
+        WHERE contact_id = %1 AND b.is_deleted = %2 AND b.case_type_id = %3 AND b.status_id != %4
+         AND c." . $participationStatusColumn . " = %5";
       $queryParams = [
         1 => [$volunteerId, "Integer"],
         2 => [0, "Integer"],
         3 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
         4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), "Integer"],
+        5 => [Civi::service('nbrBackbone')->getSelectedParticipationStatusValue(), "String"],
       ];
-      $projects = CRM_Core_DAO::executeQuery($query, $queryParams);
-      while ($projects->fetch()) {
-        $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($projects);
+      $case = CRM_Core_DAO::executeQuery($query, $queryParams);
+      while ($case->fetch()) {
+        $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($case);
       }
     }
     return $result;
@@ -430,28 +433,31 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   /**
    * Method to get all active participations on a project
    *
-   * @param $projectId
+   * @param $studyId
    * @return array
    */
-  public static function getProjectParticipations($projectId) {
+  public static function getStudySelections($studyId) {
     $result = [];
-    if (!empty($projectId)) {
+    if (!empty($studyId)) {
       $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-      $projectColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_project_id', 'column_name');
-      // get all active participations for project
+      $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+      $participationStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
+      // get all active participations for project where participation status is selected
       $query = "SELECT a.case_id, a.contact_id, c.* FROM civicrm_case_contact AS a
         JOIN civicrm_case AS b ON a.case_id = b.id
-        lEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id
-        WHERE c." . $projectColumn . " = %1 AND b.is_deleted = %2 AND b.case_type_id = %3 AND b.status_id != %4";
+        LEFT JOIN " . $tableName . " AS c ON a.case_id = c.entity_id
+        WHERE c." . $studyIdColumn . " = %1 AND b.is_deleted = %2 AND b.case_type_id = %3 AND b.status_id != %4
+          AND " . $participationStatusColumn . " = %5";
       $queryParams = [
-        1 => [$projectId, "Integer"],
+        1 => [$studyId, "Integer"],
         2 => [0, "Integer"],
         3 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
         4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), "Integer"],
+        5 => [Civi::service('nbrBackbone')->getSelectedParticipationStatusValue(), "String"],
       ];
-      $projects = CRM_Core_DAO::executeQuery($query, $queryParams);
-      while ($projects->fetch()) {
-        $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($projects);
+      $case = CRM_Core_DAO::executeQuery($query, $queryParams);
+      while ($case->fetch()) {
+        $result[] = CRM_Nihrbackbone_Utils::moveDaoToArray($case);
       }
     }
     return $result;
@@ -669,6 +675,297 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         }
       }
     }
+  }
+
+  /**
+   * Method to determine if volunteer on case is eligible
+   *
+   * @param $caseId
+   * @return bool
+   */
+  public static function isEligible($caseId) {
+    if (empty($caseId)) {
+      return FALSE;
+    }
+    $customFieldId = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'id');
+    try {
+      $result = civicrm_api3('Case', 'getvalue', [
+        'id' => $caseId,
+        'return' => $customFieldId,
+      ]);
+      $eligible = Civi::service('nbrBackbone')->getEligibleEligibilityStatusValue();
+      if (!is_array($result) && $result == $eligible) {
+        return TRUE;
+      }
+      else {
+        return FALSE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->warning(E::ts('Could not retrieve eligible status for caseId ') . $caseId . E::ts(' in ') . __METHOD__);
+      return FALSE;
+    }
+  }
+
+  /**
+   * Process build form hook for CRM_Case_Form_CaseView
+   *
+   * @param $form
+   */
+  public static function buildFormCaseView(&$form) {
+    // add template to remove merge case and reassign case links from form
+    CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_case_links.tpl',]);
+    $caseId = $form->getVar('_caseID');
+    // if volunteer on case is not eligible, do not allow the invite activity
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::isEligible($caseId)) {
+      $activityElement = $form->getElement('add_activity_type_id');
+      $activityTypeOptions = &$activityElement->_options;
+      foreach ($activityTypeOptions as $optionId => $option) {
+        if (isset($option['text']) && $option["text"] == "Invited") {
+          unset($activityTypeOptions[$optionId]);
+        }
+      }
+    }
+  }
+
+  /**
+   * Process build form hook for CRM_Case_Form_CustomData
+   *
+   * @param $form
+   */
+  public static function buildFormCustomData(&$form) {
+    $groupId = $form->getVar("_groupID");
+    // if it is participation data
+    if ($groupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('id')) {
+      // if volunteer is not eligible, remove the invited study statuses from options
+      $caseId = (int) $form->getVar("_entityID");
+      if (!CRM_Nihrbackbone_NbrVolunteerCase::isEligible($caseId)) {
+        $elementPartName = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
+        $index = $form->getVar("_elementIndex");
+        foreach ($index as $elementName => $elementId) {
+          if (strpos($elementName, $elementPartName) !== FALSE) {
+            $element = $form->getElement($elementName);
+            $options = &$element->_options;
+            $invited = explode(",", Civi::settings()->get('nbr_invited_study_status'));
+            foreach ($options as $optionId => $option) {
+              if (isset($option['attr']['value']) && in_array($option['attr']['value'], $invited)) {
+                unset($options[$optionId]);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Method to calculate eligibility of volunteer on study
+   *
+   * @param $studyId
+   * @param $volunteerId
+   */
+  public static function calculateEligibility($studyId, $volunteerId) {
+    $eligibilities = [];
+    // is volunteer inactive?
+    if (!CRM_Nihrbackbone_NihrVolunteer::isActive($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getActiveEligibilityStatusValue();
+    }
+    // is volunteer temporarily non-recallable?
+    if (CRM_Nihrbackbone_NihrVolunteer::isTemporarilyNonRecallable($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getRecallableEligibilityStatusValue();
+    }
+    // is volunteer invited on other studies?
+    if (CRM_Nihrbackbone_NihrVolunteer::isInvitedOnOtherStudy($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getOtherEligibilityStatusValue();
+    }
+    // does volunteer have max invitations in period?
+    if (CRM_Nihrbackbone_NihrVolunteer::hasMaxStudyInvitationsNow("initial", $volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getMaxEligibilityStatusValue();
+    }
+    // does study require age range and is volunteer outside?
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::isInAgeRange($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getAgeEligibilityStatusValue();
+    }
+    // does study require bmi range and is volunteer outside?
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::isInBmiRange($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getBmiEligibilityStatusValue();
+    }
+    // is commercial study and does volunteer not allow commercial?
+    if (CRM_Nihrbackbone_NbrStudy::isCommercial($studyId) && !CRM_Nihrbackbone_NihrVolunteer::availableForCommercial($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getCommercialEligibilityStatusValue();
+    }
+    // does study require blood and does volunteer not give blood?
+    if (CRM_Nihrbackbone_NbrStudy::requiresBlood($studyId) && !CRM_Nihrbackbone_NihrVolunteer::availableForBlood($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getBloodEligibilityStatusValue();
+    }
+    // does volunteer have required ethnicity?
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::hasEthnicity($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getEthnicityEligibilityStatusValue();
+    }
+    // does volunteer have required panel?
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::hasPanel($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getPanelEligibilityStatusValue();
+    }
+    // does volunteer have required gender?
+    if (!CRM_Nihrbackbone_NbrVolunteerCase::hasGender($volunteerId, $studyId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getGenderEligibilityStatusValue();
+    }
+    // does study require travel and does volunteer not travel?
+    if (CRM_Nihrbackbone_NbrStudy::requiresTravel($studyId) && !CRM_Nihrbackbone_NihrVolunteer::ableToTravel($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getTravelEligibilityStatusValue();
+    }
+    // if no eligibility found yet, volunteer is eligible
+    if (empty($eligibilities)) {
+      $eligibilities = [Civi::service('nbrBackbone')->getEligibleEligibilityStatusValue()];
+    }
+    return $eligibilities;
+  }
+
+  /**
+   * Method to determine if volunteer is in study age range
+   *
+   * @param $contactId
+   * @param $studyId
+   * @return bool
+   */
+  public static function isInAgeRange($contactId, $studyId) {
+    $ageRange = CRM_Nihrbackbone_NbrStudy::requiresAgeRange($studyId);
+    if (!empty($ageRange)) {
+      return CRM_Nihrbackbone_NihrVolunteer::inAgeRange($contactId, $ageRange['age_from'], $ageRange['age_to']);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to determine if volunteer is in study bmi range
+   *
+   * @param $contactId
+   * @param $studyId
+   * @return bool
+   */
+  public static function isInBmiRange($contactId, $studyId) {
+    $bmiRange = CRM_Nihrbackbone_NbrStudy::requiresBmiRange($studyId);
+    if (!empty($bmiRange)) {
+      return CRM_Nihrbackbone_NihrVolunteer::inBmiRange($contactId, (float) $bmiRange['bmi_from'], (float) $bmiRange['bmi_to']);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to determine if volunteer has required ethnicities
+   * @param $contactId
+   * @param $studyId
+   * @return bool
+   */
+  public static function hasEthnicity($contactId, $studyId) {
+    $ethnicities = CRM_Nihrbackbone_NbrStudy::requiresEthnicities($studyId);
+    if (!empty($ethnicities)) {
+      return CRM_Nihrbackbone_NihrVolunteer::hasRequiredEthnicity($contactId, $ethnicities);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to determine if volunteer has required gender
+   *
+   * @param $contactId
+   * @param $studyId
+   * @return bool
+   */
+  public static function hasGender($contactId, $studyId) {
+    $genderId = CRM_Nihrbackbone_NbrStudy::requiresGender($studyId);
+    if ($genderId) {
+      return CRM_Nihrbackbone_NihrVolunteer::hasGender($contactId, $genderId);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to determine if volunteer has required panel
+   *
+   * @param $contactId
+   * @param $studyId
+   * @return bool
+   */
+  public static function hasPanel($contactId, $studyId) {
+    $panelId = CRM_Nihrbackbone_NbrStudy::requiresPanel($studyId);
+    if ($panelId) {
+      return CRM_Nihrbackbone_NihrVolunteer::hasRequiredPanel($contactId, $panelId);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to get study id with case id
+   *
+   * @param $caseId
+   * @return int|string|null
+   */
+  public static function getStudyId($caseId) {
+    $studyId = NULL;
+    if (!empty($caseId)) {
+      $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+      $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+      $query = "SELECT " . $studyIdColumn . " FROM " . $tableName . " WHERE entity_id = %1";
+      $studyId = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $caseId, "Integer"]]);
+      if ($studyId) {
+        return (int) $studyId;
+      }
+    }
+    return $studyId;
+  }
+
+  /**
+   * Method to get the latest visit from the case
+   *
+   * @param $caseId
+   * @return bool|string
+   * @throws Exception
+   */
+  public static function getNearestVisit($caseId) {
+    if (empty($caseId)) {
+      return FALSE;
+    }
+    // get nearest in the future if there is one
+    $query = "SELECT ca.activity_date_time
+        FROM civicrm_case_activity AS cca
+            JOIN civicrm_case AS cc ON cca.case_id = cc.id
+            JOIN civicrm_activity AS ca ON cca.activity_id = ca.id
+            JOIN civicrm_option_value AS ov ON ca.activity_type_id = ov.value AND ov.option_group_id = %1
+        WHERE cc.is_deleted = %2 AND ca.is_deleted = %2 AND ca.is_test = %2 AND ca.is_current_revision = %3
+          AND cca.case_id = %4 AND ov.name LIKE %5 AND ca.activity_date_time > NOW() LIMIT 1";
+    $queryParams = [
+      1 => [Civi::service('nbrBackbone')->getActivityTypeOptionGroupId(), "Integer"],
+      2 => [0, "Integer"],
+      3 => [1, "Integer"],
+      4 => [(int) $caseId, "Integer"],
+      5 => [Civi::service('nbrBackbone')->getVisitStage2Substring() . "%", "String"],
+    ];
+    $nearestVisit = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($nearestVisit) {
+      if (!$nearestVisit instanceof DateTime) {
+        $nearestVisit = new DateTime($nearestVisit);
+      }
+      return $nearestVisit->format('d-m-Y H:i');
+    }
+    else {
+      // get latest in the past if no in the future
+      $query = "SELECT ca.activity_date_time
+        FROM civicrm_case_activity AS cca
+            JOIN civicrm_case AS cc ON cca.case_id = cc.id
+            JOIN civicrm_activity AS ca ON cca.activity_id = ca.id
+            JOIN civicrm_option_value AS ov ON ca.activity_type_id = ov.value AND ov.option_group_id = %1
+        WHERE cc.is_deleted = %2 AND ca.is_deleted = %2 AND ca.is_test = %2 AND ca.is_current_revision = %3
+          AND cca.case_id = %4 AND ov.name LIKE %5 ORDER BY ca.activity_date_time DESC LIMIT 1";
+      $latestVisit = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+      if ($latestVisit) {
+        if (!$latestVisit instanceof DateTime) {
+          $latestVisit = new DateTime($latestVisit);
+        }
+        return $latestVisit->format('d-m-Y H:i');
+      }
+    }
+    return "";
   }
 
 }

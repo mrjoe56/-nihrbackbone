@@ -36,6 +36,14 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_travelEligibilityStatusValue = NULL;
   // tags
   private $_tempNonRecallTagId = NULL;
+  // activity types
+  private $_activityTypeOptionGroupId = NULL;
+  private $_consentActivityTypeId = NULL;
+  // others
+  private $_selectedParticipationStatusValue = NULL;
+  private $_invitedParticipationStatusValue = NULL;
+  private $_correctConsentStatusValue = NULL;
+  private $_visitStage2Substring = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -334,6 +342,90 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getTravelEligibilityStatusValue() {
     return $this->_travelEligibilityStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setSelectedParticipationStatusValue($value) {
+    $this->_selectedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getSelectedParticipationStatusValue() {
+    return $this->_selectedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setInvitedParticipationStatusValue($value) {
+    $this->_invitedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getInvitedParticipationStatusValue() {
+    return $this->_invitedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setCorrectConsentStatusValue($value) {
+    $this->_correctConsentStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getCorrectConsentStatusValue() {
+    return $this->_correctConsentStatusValue;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setConsentActivityTypeId($id) {
+    $this->_consentActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getConsentActivityTypeId() {
+    return $this->_consentActivityTypeId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVisitStage2Substring($string) {
+    $this->_visitStage2Substring = $string;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVisitStage2Substring() {
+    return $this->_visitStage2Substring;
+  }
+
+  /**
+   * @param int
+   */
+  public function setActivityTypeOptionGroupId($id) {
+    $this->_activityTypeOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getActivityTypeOptionGroupId() {
+    return $this->_activityTypeOptionGroupId;
   }
 
 }

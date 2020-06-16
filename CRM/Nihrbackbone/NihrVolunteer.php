@@ -196,33 +196,47 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Method to determine if the volunteer has max study invitations / this is the max
+   *
+   * @param string $type final/initial
    * @param int $volunteerId
    * @param int $studyId
    * @return bool
    * @throws
    */
-  public static function hasMaxStudyInvitationsNow($volunteerId, $studyId) {
+  public static function hasMaxStudyInvitationsNow($type, $volunteerId, $studyId) {
     if (!empty($volunteerId)) {
       $maxNumber = (int) Civi::settings()->get('nbr_max_invitations');
       $checkDate = self::calculateCheckDateMaxInvitations();
       $participationTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
       $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+      $statusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
       $query = "SELECT COUNT(*)
         FROM civicrm_value_nbr_participation_data AS cvnpd
         JOIN civicrm_case AS cc ON cvnpd.entity_id = cc.id
         JOIN civicrm_case_contact AS ccc ON cc.id = ccc.case_id
         JOIN civicrm_campaign AS camp ON cvnpd.nvpd_study_id = camp.id
         WHERE cvnpd. nvpd_study_id <> %1 AND cc.is_deleted = %2 AND ccc.contact_id = %3
-        AND camp.start_date >= %4";
+        AND camp.start_date >= %4 AND cvnpd." . $statusColumn . " = %5";
       $queryParams = [
         1 => [(int) $studyId, "Integer"],
         2 => [0, "Integer"],
         3 => [(int) $volunteerId, "Integer"],
         4 => [$checkDate->format('Y-m-d'), "String"],
+        5 => [Civi::service('nbrBackbone')->getInvitedParticipationStatusValue(), "String"],
       ];
       $studyCount = CRM_Core_DAO::singleValueQuery($query, $queryParams);
-      if ($studyCount >= $maxNumber) {
-        return TRUE;
+      if ($type == "final") {
+        // for this comparison the current study should count (but was excluded in query)
+        $studyCount++;
+        if ($studyCount == $maxNumber) {
+          return TRUE;
+        }
+      }
+      else {
+        if ($studyCount >= $maxNumber) {
+          return TRUE;
+        }
       }
     }
     return FALSE;
@@ -500,9 +514,11 @@ class CRM_Nihrbackbone_NihrVolunteer {
       $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomGroup('table_name');
       $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_panel', 'column_name');
       $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
-      $contactPanelId = CRM_Core_DAO::singleValueQuery($query, [ 1 => [$contactId, "Integer"]]);
-      if ($contactPanelId && $contactPanelId == $panelId) {
-        return TRUE;
+      $dao = CRM_Core_DAO::executeQuery($query, [ 1 => [$contactId, "Integer"]]);
+      while ($dao->fetch()) {
+        if ($dao->$columnName == $panelId) {
+          return TRUE;
+        }
       }
     }
     return FALSE;
@@ -597,26 +613,6 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     $count = (int) CRM_Core_DAO::singleValueQuery($query, $queryParams);
     if ($count > 0) {
-      return TRUE;
-    }
-    return FALSE;
-  }
-
-  /**
-   * Method to determine if this invitation will be the one that brings the volunteer to the max
-   *
-   * @param $contactId
-   * @return bool
-   * @throws
-   */
-  public static function isFinalInvitationInPeriod($contactId) {
-    // get settings
-    $maxInvitations = (int) Civi::settings()->get('nbr_max_invitations');
-    // subtract 1 from max as it will not count the current invitation in the database yet
-    $maxInvitations--;
-    $checkDate = self::calculateCheckDateMaxInvitations();
-    $studyCount = (int) self::countDistinctStudiesWithInvitations($contactId, $checkDate);
-    if ($studyCount == $maxInvitations) {
       return TRUE;
     }
     return FALSE;

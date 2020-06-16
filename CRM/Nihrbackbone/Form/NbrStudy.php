@@ -62,7 +62,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     $this->addEntityRef('nsd_centre_origin', E::ts('Centre of Origin'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_centre']],
       'placeholder' => '- select centre -',
-    ], FALSE);
+    ], TRUE);
     $this->addEntityRef('nsd_site', E::ts('Site'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_site']],
       'placeholder' => '- select site -',
@@ -71,6 +71,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
       'placeholder' => '- select investigator -',
     ], FALSE);
+    $this->add('textarea', 'nsd_scientific_info', E::ts('Scientific Information'), ['rows' => 4, 'cols' => 100], FALSE);
     $this->add('text', 'nsd_study_long_name', E::ts("Long Name"), ['size' => 100], FALSE);
     $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [], FALSE);
     $this->add('advcheckbox', 'nsd_ethics_approved', E::ts('Ethics approved?'), [], FALSE);
@@ -122,6 +123,11 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'placeholder' => '- select researcher -',
       'disabled' => 'disabled',
     ], FALSE);
+    $this->add('textarea', 'nsd_scientific_info', E::ts('Scientific Information'), [
+      'rows' => 4,
+      'cols' => 100,
+      'disabled' => 'disabled',
+      ], FALSE);
     $this->addEntityRef('nsd_centre_origin', E::ts('Centre of Origin'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_centre']],
       'placeholder' => '- select centre -',
@@ -211,7 +217,6 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
    */
   public function addRules() {
     $this->addFormRule(array('CRM_Nihrbackbone_Form_NbrStudy', 'validateStartEndDate'));
-    $this->addFormRule(array('CRM_Nihrbackbone_Form_NbrStudy', 'validateBloodTravel'));
     $this->addFormRule(array('CRM_Nihrbackbone_Form_NbrStudy', 'validateFromTo'));
   }
 
@@ -231,40 +236,6 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
         if (!empty($fields[$fromName]) && $fields[$toName] < $fields[$fromName]) {
           $errors[$toName] = E::ts('To can not be smaller than from.');
         }
-      }
-    }
-    if (!empty($errors)) {
-      return $errors;
-    }
-    else {
-      return TRUE;
-    }
-  }
-
-  /**
-   * Method to validate:
-   * - when blood is required it can not be a data only
-   * - when travel is required it can not be data only or sample only
-   *
-   * @param $fields
-   * @return bool|array
-   */
-  public static function validateBloodTravel($fields) {
-    $errors = [];
-    if (isset($fields['nsc_blood_required']) && $fields['nsc_blood_required'] == TRUE) {
-      if (isset($fields['nsd_data_only']) && $fields['nsd_data_only'] == TRUE) {
-        $errors['nsd_data_only'] = E::ts('Study can not be data only when blood is required.');
-        $errors['nsc_blood_required'] = E::ts('Blood can not be required for a data only study.');
-      }
-    }
-    if (isset($fields['nsc_travel_required']) && $fields['nsc_travel_required'] == TRUE) {
-      if (isset($fields['nsd_data_only']) && $fields['nsd_data_only'] == TRUE) {
-        $errors['nsd_data_only'] = E::ts('Study can not be data only when travel is required.');
-        $errors['nsc_travel_required'] = E::ts('Travel can not be required for a data only study.');
-      }
-      if (isset($fields['nsd_sample_only']) && $fields['nsd_sample_only'] == TRUE) {
-        $errors['nsd_sample_only'] = E::ts('Study can not be sample only when travel is required.');
-        $errors['nsc_travel_required'] = E::ts('Travel can not be required for a sample only study.');
       }
     }
     if (!empty($errors)) {
@@ -299,6 +270,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
    * @throws
    */
   public function preProcess() {
+    CRM_Core_Session::singleton()->pushUserContext(CRM_Utils_System::url("studies-list", "", TRUE));
     $this->setCustomFieldIdsAndColumns();
     switch ($this->_action) {
       case CRM_Core_Action::ADD:

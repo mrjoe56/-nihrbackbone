@@ -43,6 +43,34 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     return TRUE;
   }
 
+  /**
+   * Upgrade 1050 (add scientific notes to study data)
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1050() {
+    $this->ctx->log->info(E::ts('Applying update 1050 - add scientific info to study data'));
+    // only if custom group for study data is present
+    if (CRM_Core_DAO::checkTableExists("civicrm_value_nbr_study_data")) {
+      // add custom field scientific info
+      if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists("civicrm_value_nbr_study_data", "nsd_scientific_info")) {
+        civicrm_api3("CustomField", "create", [
+          'custom_group_id' => 'nbr_study_data',
+          'name' => 'nsd_scientific_info',
+          'column_name' => 'nsd_scientific_info',
+          'label' => 'Scientific Information',
+          'data_type' => 'Memo',
+          'html_type' => 'TextArea',
+          'is_active' => 1,
+          'is_searchable' => 0,
+          'weight' => '500',
+        ]);
+      }
+    }
+    return TRUE;
+  }
+
 
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).

@@ -4,12 +4,22 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
 use \Symfony\Component\DependencyInjection\ContainerBuilder;
 use \Symfony\Component\DependencyInjection\Definition;
 
+function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$values) {
+  if ($objectName == "Case") {
+    if ($op == "case.actions.primary" || $op == "case.selector.actions") {
+      foreach ($links as $key => $link) {
+        if ($link['name'] == "Assign to Another Client" && $link['ref'] == "reassign" && $link['url'] == "civicrm/contact/view/case/editClient") {
+          unset($links[$key]);
+        }
+      }
+    }
+  }
+}
 /**
  * Implements hook_civicrm_container()
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_container/
  */
-
 function nihrbackbone_civicrm_container(ContainerBuilder $container) {
   $container->addCompilerPass(new Civi\Nihrbackbone\NbrBackboneContainer());
 }
@@ -134,6 +144,12 @@ function writeBmi($entityID, $bmi) {
 }
 
 function nihrbackbone_civicrm_buildForm($formName, &$form) {
+  if ($form instanceof CRM_Case_Form_CustomData) {
+    CRM_Nihrbackbone_NbrVolunteerCase::buildFormCustomData($form);
+  }
+  if ($form instanceof CRM_Case_Form_CaseView) {
+    CRM_Nihrbackbone_NbrVolunteerCase::buildFormCaseView($form);
+  }
 
   if ($formName == 'CRM_Contact_Form_CustomData') {
     // validate custom data form
