@@ -25,13 +25,15 @@ class CRM_Nihrbackbone_NihrValidation {
     if ($alias_type == 'cih_type_packid') {                          # pack ID validation
       $msg = 'Error in K Pack ID - ';
       $first = $alias_value[0];                                      #  get first character
-      $last = substr($alias_value, -1);                        #  last character
-      $n_string = substr($alias_value, 1, 6);           #  numeric part
+      $last = substr($alias_value, -1);                         #  last character
+      $n_string = substr($alias_value, 1, 6);             #  numeric part
       $mod = $n_string % 23;                                         #  and modulus
-      $chk_chr = chr($mod+64);                                  #  calculate check digit
-      if ($chk_chr == '@') {$chk_chr = 'Z';}
-      if ($first != 'K') {                                           # VALIDATION:
-        $errors[$errorField] = $msg."first character must be 'K'";   #  first char is K
+      $mod2chk = ['0' => 'Z','1' => 'A','2' => 'B','3' => 'C','4' => 'D','5' => 'E','6' => 'F',
+        '7' => 'G','8' => 'H','9' => 'J','10' => 'K','11' => 'L','12' => 'M','13' => 'N','14' => 'P',
+        '15' => 'Q','16' => 'R','17' => 'S','18' => 'T','19' => 'V','20' => 'W','21' => 'X','22' => 'Y'];
+      $chk_chr = $mod2chk[$mod];                                     # VALIDATION:
+      if (! preg_match( '/[A-Z]/', $first)) {                 #  first char is alpha
+        $errors[$errorField] = $msg."first character must be 'A' to 'Z'";
       }
       elseif (strlen($alias_value) != 8) {                           #  length of input is 8
         $errors[$errorField] = $msg."must be 8 characters long";
@@ -47,7 +49,7 @@ class CRM_Nihrbackbone_NihrValidation {
     if ($alias_type == 'cih_type_nhs_number') {                      # NHS number validation
 
       $msg = 'Error in NHS Number - ';
-      $cd = intval(substr($alias_value, 9, 1));                      #  get check digit
+      $cd = intval(substr($alias_value, 9, 1));           #  get check digit
       $sum =                                                         #  and weighted sum of first 9 digits
         intval(substr($alias_value, 0, 1)) * 10 +
         intval(substr($alias_value, 1, 1)) * 9 +
@@ -65,7 +67,7 @@ class CRM_Nihrbackbone_NihrValidation {
       if (strlen($alias_value) != 10) {                              # VALIDATION:
         $errors[$errorField] = $msg."must be 10 characters long";    #  length of input is 10
       }
-      elseif (! preg_match( '/[0-9]{10}/', $alias_value)) {  #  all chars are numeric
+      elseif (! preg_match( '/[0-9]{10}/', $alias_value)) {   #  all chars are numeric
         $errors[$errorField] = $msg."all characters must be numeric";
       }
       elseif ($calc_cd == 10) {                                      #  invalid check digit
