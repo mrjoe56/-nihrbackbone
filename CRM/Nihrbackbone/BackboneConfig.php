@@ -39,6 +39,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_participationDataCustomGroup = [];
   private $_volunteerStatusCustomGroup = [];
   private $_volunteerGeneralObservationsCustomGroup = [];
+  private $_volunteerLifestyleCustomGroup = [];
   private $_volunteerSelectionEligibilityCustomGroup = [];
   private $_selectionCriteriaCustomGroup = [];
   private $_volunteerIdsCustomGroup = [];
@@ -235,7 +236,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
-   * Getter for volunteer general observations custom group
+   * Getter for volunteer general observation custom group
    *
    * @param null $key
    * @return array|mixed
@@ -246,6 +247,21 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
     else {
       return $this->_volunteerGeneralObservationsCustomGroup;
+    }
+  }
+
+  /**
+   * Getter for volunteer lifestyle custom group
+   *
+   * @param null $key
+   * @return array|mixed
+   */
+  public function getVolunteerLifestyleCustomGroup($key = NULL) {
+    if ($key && isset($this->_volunteerLifestyleCustomGroup[$key])) {
+      return $this->_volunteerLifestyleCustomGroup[$key];
+    }
+    else {
+      return $this->_volunteerLifestyleCustomGroup;
     }
   }
 
@@ -521,7 +537,28 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
-   * Getter for general observation data custom field
+   * Getter for lifestyle data custom field
+   *
+   * @param $customFieldName
+   * @param $key
+   * @return mixed
+   */
+  public function getLifestyleCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_volunteerLifestyleCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Getter for site alias data custom field
    *
    * @param $customFieldName
    * @param $key
@@ -921,6 +958,7 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_volunteer_data',
       'nihr_volunteer_status',
       'nihr_volunteer_general_observations',
+      'nihr_volunteer_lifestyle',
       'nihr_volunteer_selection_eligibility',
       'nbr_selection_criteria',
       'nihr_volunteer_alias',

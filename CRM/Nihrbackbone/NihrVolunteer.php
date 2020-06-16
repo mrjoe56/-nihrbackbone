@@ -169,8 +169,12 @@ class CRM_Nihrbackbone_NihrVolunteer {
     // TODO &&& cnt > 1 -> error, don't store data
     // TODO cnt = 0 -> check further (e.g. name and dob, nhs?)
     // cnt = 1 -> use this ID
-    if ($count <> 1) {
+    if ($count == 0) {
       $id = '';
+    }
+    elseif ($count > 1) {
+      // &&& $this->_logger->logMessage('Multiple records linked to identifier '.$identifier);
+      Civi::log()->warning(E::ts('Multiple records linked to identifier '.$identifier));
     }
     return $id;
   }

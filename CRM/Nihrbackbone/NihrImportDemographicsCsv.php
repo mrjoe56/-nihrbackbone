@@ -107,7 +107,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     // check if mapping contains mandatory columns according to source given
     if (($this->_dataSource == 'ucl' && !isset($this->_mapping['local_id'])) ||
-      ($this->_dataSource == 'ibd' && !isset($this->_mapping['pack_id']) && !isset($this->_mapping['ibd_id']))) {
+      ($this->_dataSource == 'ibd' && !isset($this->_mapping['pack_id']) && !isset($this->_mapping['ibd_id'])) ||
+      ($this->_dataSource == 'starfish' && !isset($this->_mapping['participant_id']))) {
       // todo : log error
     }
     elseif (!isset($this->_mapping['panel'])) {
@@ -183,9 +184,12 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $this->addAddress($contactId, $data);
         $this->addPhone($contactId, $data, 'phone_home', 'Home', 'Phone');
         $this->addPhone($contactId, $data, 'phone_work', 'Work', 'Phone');
-        $this->addPhone($contactId, $data, 'phone_mobile', 'Main', 'Mobile');
-        $this->addPanel($contactId, $this->_dataSource, $data['panel'], $data['site'], $data['centre']);
+        $this->addPhone($contactId, $data, 'phone_mobile', 'Home', 'Mobile');
+        if ($data['panel'] <> '' || $data['site'] <> '' || $data['centre'] <> '') {
+          $this->addPanel($contactId, $this->_dataSource, $data['panel'], $data['site'], $data['centre']);
+        }
 
+        // *** Aliases ***
         if (!empty($data['nhs_number'])) {
           $this->addAlias($contactId, 'cih_type_nhs_number', $data['nhs_number'], 0);
         }
@@ -196,13 +200,16 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           $this->addAlias($contactId, 'cih_type_ibd_id', $data['ibd_id'], 0);
         }
 
+        // *** Diseases ***
+        $this->addDisease($contactId, $data['family_member'], $data['disease'], $data['diagnosis_year'], $data['diagnosis_age'], $data['disease_notes'], $data['taking_medication']);
+
         // *** add source specific identifiers and data *********************************************************
         switch ($this->_dataSource) {
           case "ibd":
-            if (!empty($data['diagnosis'])) {
-              $this->addDisease($contactId, 'family_member_self', $data['diagnosis']);
+            if ($data['diagnosis'] <> '') {
+              $this->addDisease($contactId, 'family_member_self', $data['diagnosis'], '', '', '', '');
             }
-            if (!empty($data['nva_ibdgc_number'])) {
+            if ($data['nva_ibdgc_number'] <> '') {
               $this->addAlias($contactId, 'cih_type_ibdgc_number', $data['nva_ibdgc_number'], 1);
             }
             break;
@@ -220,6 +227,11 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         }
         // todo add all other aliases
         */
+
+
+      // &&&&&  $this->addGeneralObservations($contactId, $data);
+
+
 
         // *** add recruitment case, if volunteer record newly created *************************
         $caseID = '';
@@ -278,6 +290,12 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   private function applyMapping($preMappingData)
   {
     $mappedData = [];
+
+    // *** initialise with all fields
+    foreach($this->_mapping as $item) {
+      $mappedData[$item] = '';
+    }
+
     foreach ($preMappingData as $key => $value) {
       $header = $this->_columnHeaders[$key];
       if (isset($this->_mapping[$header])) {
@@ -289,7 +307,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
       // NOTE: keep names for aliases, need to be added to the database separately
 
-
+      // *** custom group 'general observations'
       if ($newKey == 'ethnicity') {
         $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_ethnicity_id', 'id');
       }
@@ -299,6 +317,61 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       if ($newKey == 'height_m') {
         $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_height_m', 'id');
       }
+      if ($newKey == 'hand_preference') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_hand_preference', 'id');
+      }
+      if ($newKey == 'abo_group') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_abo_group', 'id');
+      }
+      if ($newKey == 'rhesus_factor') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nvgo_rhesus_factor', 'id');
+      }
+
+      // *** custom group 'Lifestyle'
+      if ($newKey == 'alcohol') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_alcohol', 'id');
+      }
+      if ($newKey == 'alcohol_amount') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_alcohol_amount', 'id');
+      }
+      if ($newKey == 'alcohol_notes') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_alcohol_notes', 'id');
+      }
+
+      if ($newKey == 'smoker') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_smoker', 'id');
+      }
+      if ($newKey == 'smoker_amount') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_smoker_amount', 'id');
+      }
+      if ($newKey == 'smoker_years') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_smoker_years', 'id');
+      }
+      if ($newKey == 'smoker_past') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_smoker_past', 'id');
+      }
+      if ($newKey == 'smoker_past_amount') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_smoker_past_amount', 'id');
+      }
+      if ($newKey == 'smoker_past_years') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_smoker_past_years', 'id');
+      }
+      if ($newKey == 'smoker_gave_up') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_smoker_gave_up', 'id');
+      }
+      if ($newKey == 'smoker_notes') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_smoking_notes', 'id');
+      }
+      if ($newKey == 'diet') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_diet', 'id');
+      }
+      if ($newKey == 'diet_notes') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_diet_notes', 'id');
+      }
+
+
+      // *****************************************************************************************
+
 
       if ($newKey == 'local_ucl_id') {
         // todo use new fct from Erik $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nva_ucl_br_local', 'id');
@@ -337,7 +410,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   {
     $this->formatDataItem($xData['first_name']);
     $this->formatDataItem($xData['last_name']);
-    $xData['email'] = strtolower($xData['email']);
+    if (isset($xData['email'])) { $xData['email'] = strtolower($xData['email']); }
     $this->formatDataItem($xData['address_1']);
     $this->formatDataItem($xData['address_2']);
     $this->formatDataItem($xData['address_3']);
@@ -347,8 +420,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
   private function formatDataItem(&$dataItem)
   {
-    $dataItem = ucwords(strtolower($dataItem), '- ');
-    $dataItem = trim($dataItem);
+    if($dataItem <> '') {
+      $dataItem = ucwords(strtolower($dataItem), '- ');
+      $dataItem = trim($dataItem);
+    }
   }
 
 
@@ -370,19 +445,20 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     // NOTE: these two settings are only used for migration and only have any effect if the numbergenerator
     // is disabled when the data is loaded!
-    if(isset($data['participant_id'])) {
+    if(isset($data['participant_id']) && $data['participant_id'] <> '') {
       $participant_custom_id = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomField('nva_participant_id')['id'];
       $data[$participant_custom_id] = $data['participant_id'];
     }
-    if(isset($data['bioresource_id'])) {
+    if(isset($data['bioresource_id']) && $data['bioresource_id'] <> '') {
       $bioresource_custom_id = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomField('nva_bioresource_id')['id'];
       $data[$bioresource_custom_id] = $data['bioresource_id'];
     }
 
     // prepare data for 'preferred contact' (multiple options)
-    $xpref = explode('-', $data['preferred_communication_method']);
-    $data['preferred_communication_method'] = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $xpref);
-
+    if ($data['preferred_communication_method'] <> '') {
+      $xpref = explode('-', $data['preferred_communication_method']);
+      $data['preferred_communication_method'] = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $xpref);
+    }
 
     $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
     $contactId = '';
@@ -401,6 +477,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           $contactId = $volunteer->findVolunteerByAlias($data['ibd_id'], 'cih_type_ibd_id');
         }
         break;
+      case "starfish":
+        $contactId = $volunteer->findVolunteerByAlias($data['participant_id'], 'cih_type_participant_id');
+        break;
+
       default:
         $this->_logger->logMessage('ERROR: no default mapping for ' . $this->_dataSource, 'error');
     }
@@ -418,10 +498,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     else { // new record
       // for records with missing names (e.g. loading from sample receipts) a fake first name and surname needs to be added
-      if (!isset($data['first_name'] )|| $data['first_name'] == '') {
+      if ($data['first_name'] == '') {
         $data['first_name'] = 'x';
       }
-      if (!isset($data['last_name'] )|| $data['last_name'] == '') {
+      if ($data['last_name'] == '') {
         $data['last_name'] = 'x';
       }
 
@@ -445,7 +525,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   {
     // *** add or update volunteer email address
 
-    if (isset ($data['email']) && $data['email'] <> '') {
+    if ($data['email'] <> '') {
       // --- only add if not already on database
       $result = civicrm_api3('Email', 'get', [
         'sequential' => 1,
@@ -490,8 +570,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   {
     // *** add or update volunteer home address
 
-    if (isset($data['address_1']) && isset($data['postcode']) &&
-      $data['address_1'] <> '' && $data['postcode'] <> '') {
+    if ($data['address_1'] <> '' && $data['postcode'] <> '') {
 
       // --- only add if not already on database
       $result = civicrm_api3('Address', 'get', [
@@ -528,10 +607,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             'postal_code' => $data['postcode'],
           ];
           // optional fields, only add if there is data
-          if (isset($data['address_2'])) {
+          if ($data['address_2'] <> '') {
             $fields['supplemental_address_1'] = $data['address_2'];
           }
-          if (isset($data['address_3'])) {
+          if ($data['address_3'] <> '') {
             $fields['supplemental_address_2'] = $data['address_3'];
           }
 
@@ -552,7 +631,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   {
     // *** add or update volunteer phone
 
-    if (isset($data[$fieldName]) && $data[$fieldName] <> '') {
+    if ($data[$fieldName] <> '') {
       $phoneNumber = $data[$fieldName];
 
       // only add if not already on database (do ignore type and location)
@@ -604,10 +683,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     // todo for different alias types allow multiples/updates etc...
 
-    if (isset($aliasType))
+    if (isset($aliasType) && $aliasType <> '')
       // todo and check if aliasType exists
     {
-      if (isset($externalID)) {
+      if (isset($externalID) && $externalID <> '') {
         // &&&& $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomGroup('table_name');
         $table = 'civicrm_value_contact_id_history';
 
@@ -674,47 +753,81 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   }
 
 
-  private function addDisease($contactID, $familyMember, $disease)
+  private function addDisease($contactID, $familyMember, $disease, $diagnosisYear, $diagnosisAge, $diseaseNotes, $takingMedication)
   {
     // *** add disease/conditions
 
-    if (isset($familyMember))
+    if ($familyMember <> '' and $disease <> '')
     {
-      if (isset($disease)) {
-        // todo check if disease exists
+      // todo check if disease and family member exists
 
-        // todo $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerDisease('table_name');
-        $table = 'civicrm_value_nihr_volunteer_disease';
-        // --- check if disease already exists ---------------------------------------------------------------------
+      // todo $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerDisease('table_name');
+      $table = 'civicrm_value_nihr_volunteer_disease';
+      // --- check if disease already exists ---------------------------------------------------------------------
 
-        // todo: add more fields; only one brother, sister etc possible per disease!!!!
-        $query = "SELECT count(*)
-                    from $table
-                    where entity_id = %1
-                    and nvdi_family_member = %2
-                    and nvdi_disease = %3";
+      // todo: add more fields; only one brother, sister etc possible per disease!!!!
+      $query = "SELECT count(*)
+                  from $table
+                  where entity_id = %1
+                  and nvdi_family_member = %2
+                  and nvdi_disease = %3";
+      $queryParams = [
+        1 => [$contactID, "Integer"],
+        2 => [$familyMember, "String"],
+        3 => [$disease, "String"],
+      ];
+      $cnt = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+
+      if ($cnt == 0) {
+        // --- insert --------------------------------------------------------------------------------------------
+        $query = "insert into $table (entity_id, nvdi_family_member, nvdi_disease, nvdi_disease_notes ";
+        if ($diagnosisYear <> '') {
+          $query .= ", nvdi_diagnosis_year ";
+        }
+        if ($diagnosisAge <> '') {
+          $query .= ", nvdi_diagnosis_age ";
+        }
+        if ($takingMedication <> '') {
+          $query .= ", nvdi_taking_medication ";
+        }
+        $query .= ") values (%1,%2,%3,%4";
+        $i=5;
+        if ($diagnosisYear <> '') {
+          $query .= ",%$i";
+          $i++;
+        }
+        if ($diagnosisAge <> '') {
+          $query .= ",%$i";
+          $i++;
+        }
+        if ($takingMedication <> '') {
+          $query .= ",%$i";
+        }
+        $query .= ")";
+
         $queryParams = [
           1 => [$contactID, "Integer"],
           2 => [$familyMember, "String"],
           3 => [$disease, "String"],
+          4 => [$diseaseNotes, "String"]
         ];
-        $cnt = CRM_Core_DAO::singleValueQuery($query, $queryParams);
 
-        if ($cnt == 0) {
-          // --- insert --------------------------------------------------------------------------------------------
-
-          $query = "insert into $table (entity_id, nvdi_family_member, nvdi_disease) values (%1,%2,%3)";
-          $queryParams = [
-            1 => [$contactID, "Integer"],
-            2 => [$familyMember, "String"],
-            3 => [$disease, "String"],
-          ];
-          CRM_Core_DAO::executeQuery($query, $queryParams);
+        if ($diagnosisYear <> '') {
+          $ref = [$diagnosisYear, "Integer"];
+          array_push($queryParams, $ref);
         }
+        if ($diagnosisAge <> '') {
+          $ref = [$diagnosisAge, "Integer"];
+          array_push($queryParams, $ref);
+        }
+        if ($takingMedication <> '') {
+          $ref = [$takingMedication, "Integer"];
+          array_push($queryParams, $ref);
+        }
+        CRM_Core_DAO::executeQuery($query, $queryParams);
       }
     }
   }
-
 
   private function addPanel($contactID, $dataSource, $panel, $site, $centre)
   {
@@ -834,5 +947,48 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       }
     }
   }
+
+/*
+  private function addGeneralObservations($contactID, $data)
+  {
+    // *** add or update volunteer questionnaire data
+
+    if ((isset ($data['weight']) && $data['weight'] <> '') {
+
+    $table = 'civicrm_value_nihr_general_observations';
+    $xdata = [];
+    $xdata['id'] = $contactID;
+
+    // *** check if panel exists and if so, select ID
+    if (isset($panel)) {
+      try {
+        $result = civicrm_api3('Contact', 'get', [
+          'contact_sub_type' => "nbr_panel",
+          'display_name' => $panel,
+        ]);
+      } catch (CiviCRM_API3_Exception $ex) {
+        $this->_logger->logMessage('Error selecting panel ' . $panel . ': ' . $ex->getMessage(), 'error');
+      }
+
+      if ($result['count'] <> 1) {
+        // error, panel does not exist, exit
+        $this->_logger->logMessage('Panel does not exist on database: ' . $panel, 'error');
+        return;
+      } else {
+        $xdata[$volunteerPanelCustomField] = $result['id'];
+        //  &&& $panelID = $result['id'];
+      }
+    }
+
+
+
+
+      try {
+        $result = civicrm_api3("Contact", "create", $xdata);
+      } catch (CiviCRM_API3_Exception $ex) {
+        $this->_logger->logMessage('Error inserting panel for volunteer ' . $contactID . ': '. $ex->getMessage(), 'error');
+      }
+    }
+  } */
 }
 
