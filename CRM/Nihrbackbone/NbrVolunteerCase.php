@@ -922,18 +922,18 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @return bool|string
    * @throws Exception
    */
-  public static function getLatestVisit($caseId) {
+  public static function getNearestVisit($caseId) {
     if (empty($caseId)) {
       return FALSE;
     }
+    // get nearest in the future if there is one
     $query = "SELECT ca.activity_date_time
         FROM civicrm_case_activity AS cca
             JOIN civicrm_case AS cc ON cca.case_id = cc.id
             JOIN civicrm_activity AS ca ON cca.activity_id = ca.id
             JOIN civicrm_option_value AS ov ON ca.activity_type_id = ov.value AND ov.option_group_id = %1
         WHERE cc.is_deleted = %2 AND ca.is_deleted = %2 AND ca.is_test = %2 AND ca.is_current_revision = %3
-          AND cca.case_id = %4 AND ov.name LIKE %5
-        ORDER BY ca.activity_date_time DESC LIMIT 1";
+          AND cca.case_id = %4 AND ov.name LIKE %5 AND ca.activity_date_time > NOW() LIMIT 1";
     $queryParams = [
       1 => [Civi::service('nbrBackbone')->getActivityTypeOptionGroupId(), "Integer"],
       2 => [0, "Integer"],
@@ -941,12 +941,29 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       4 => [(int) $caseId, "Integer"],
       5 => [Civi::service('nbrBackbone')->getVisitStage2Substring() . "%", "String"],
     ];
-    $latestVisit = CRM_Core_DAO::singleValueQuery($query, $queryParams);
-    if ($latestVisit) {
-      if (!$latestVisit instanceof DateTime) {
-        $latestVisit = new DateTime($latestVisit);
+    $nearestVisit = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($nearestVisit) {
+      if (!$nearestVisit instanceof DateTime) {
+        $nearestVisit = new DateTime($nearestVisit);
       }
-      return $latestVisit->format('d-m-Y H:i');
+      return $nearestVisit->format('d-m-Y H:i');
+    }
+    else {
+      // get latest in the past if no in the future
+      $query = "SELECT ca.activity_date_time
+        FROM civicrm_case_activity AS cca
+            JOIN civicrm_case AS cc ON cca.case_id = cc.id
+            JOIN civicrm_activity AS ca ON cca.activity_id = ca.id
+            JOIN civicrm_option_value AS ov ON ca.activity_type_id = ov.value AND ov.option_group_id = %1
+        WHERE cc.is_deleted = %2 AND ca.is_deleted = %2 AND ca.is_test = %2 AND ca.is_current_revision = %3
+          AND cca.case_id = %4 AND ov.name LIKE %5 ORDER BY ca.activity_date_time DESC LIMIT 1";
+      $latestVisit = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+      if ($latestVisit) {
+        if (!$latestVisit instanceof DateTime) {
+          $latestVisit = new DateTime($latestVisit);
+        }
+        return $latestVisit->format('d-m-Y H:i');
+      }
     }
     return "";
   }
