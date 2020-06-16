@@ -933,7 +933,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
             JOIN civicrm_activity AS ca ON cca.activity_id = ca.id
             JOIN civicrm_option_value AS ov ON ca.activity_type_id = ov.value AND ov.option_group_id = %1
         WHERE cc.is_deleted = %2 AND ca.is_deleted = %2 AND ca.is_test = %2 AND ca.is_current_revision = %3
-          AND cca.case_id = %4 AND ov.name LIKE %5 AND ca.activity_date_time > NOW() LIMIT 1";
+          AND cca.case_id = %4 AND ov.name LIKE %5 AND ca.activity_date_time > NOW() ORDER BY ca.activity_date_time LIMIT 1";
     $queryParams = [
       1 => [Civi::service('nbrBackbone')->getActivityTypeOptionGroupId(), "Integer"],
       2 => [0, "Integer"],

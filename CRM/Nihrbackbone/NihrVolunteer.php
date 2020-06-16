@@ -38,9 +38,11 @@ class CRM_Nihrbackbone_NihrVolunteer {
         'id' => $contactId,
         'return' => 'contact_sub_type',
       ]);
-      foreach ($contactSubTypes as $contactSubTypeId => $contactSubTypeName) {
-        if ($contactSubTypeName == $this->_volunteerContactSubType['name']) {
-          return TRUE;
+      if (!empty($contactSubTypes)) {
+        foreach ($contactSubTypes as $contactSubTypeId => $contactSubTypeName) {
+          if ($contactSubTypeName == $this->_volunteerContactSubType['name']) {
+            return TRUE;
+          }
         }
       }
     }
@@ -673,6 +675,48 @@ class CRM_Nihrbackbone_NihrVolunteer {
       Civi::log()->warning(E::ts('Could not retrieve volunteer status for contactID ') . $volunteerId . E::ts(' in ') . __METHOD__);
       return FALSE;
     }
+  }
+
+  /**
+   * Method to check if volunteer is deceased
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function isDeceased($volunteerId) {
+    try {
+      $result = civicrm_api3('Contact', 'getvalue', [
+        'return' => "is_deceased",
+        'id' => (int) $volunteerId,
+      ]);
+      if ($result == "1") {
+        return TRUE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return FALSE;
+  }
+
+  /**
+   * Check if volunteer allows email
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function allowsEmail($volunteerId) {
+    try {
+      $result = civicrm_api3('Contact', 'getvalue', [
+        'return' => "do_not_email",
+        'id' => (int) $volunteerId,
+      ]);
+      if ($result == "1") {
+        return FALSE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return TRUE;
   }
 
 }
