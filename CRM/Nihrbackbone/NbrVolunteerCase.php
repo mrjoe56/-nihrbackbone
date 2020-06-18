@@ -284,10 +284,11 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         ]);
         // if replace is false, make sure the current status are also saved
         // apart from when it is eligible because that can not be in combination with others
+        // note: if adding a new status, eligible can always be removed
         if (!$replace) {
           if (isset($result[$eligibleCustomField])) {
             foreach ($result[$eligibleCustomField] as $currentStatus) {
-              if (!in_array($currentStatus, $newStatus)) {
+              if (!in_array($currentStatus, $newStatus) && $currentStatus != Civi::service('nbrBackbone')->getEligibleEligibilityStatusValue()) {
                 $newStatus[] = $currentStatus;
               }
             }
