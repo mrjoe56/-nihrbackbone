@@ -4,6 +4,11 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
 use \Symfony\Component\DependencyInjection\ContainerBuilder;
 use \Symfony\Component\DependencyInjection\Definition;
 
+/**
+ * Implements hook_civicrm_links()
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_links/
+ */
 function nihrbackbone_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$values) {
   if ($objectName == "Case") {
     if ($op == "case.actions.primary" || $op == "case.selector.actions") {
@@ -72,7 +77,6 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 /** Implements hook_civicrm_summary JB 27/01/20 */
 function nihrbackbone_civicrm_summary($contactID, &$content, &$contentPlacement) {
   CRM_Nihrbackbone_NihrContactSummary::nihrbackbone_civicrm_summary($contactID);
-  #Civi::log()->debug('civicrm_summary hook - $contactID : ' . $contactID);
 }
 
 /** Implements hook_civicrm_tabset JB 27/01/20 */
@@ -172,6 +176,15 @@ function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form,
   if ($form instanceof CRM_Case_Form_Case) {
     CRM_Nihrbackbone_NbrVolunteerCase::validateForm($fields, $form, $errors);
   }
+
+  // if custom form and contact identities
+  if ($form instanceof CRM_Contact_Form_CustomData) {
+    $groupId = $form->getVar("_groupID");
+    if ($groupId == Civi::service('nbrBackbone')->getContactIdentityCustomGroupID()) {
+      CRM_Nihrbackbone_NbrContactIdentity::validateForm($fields, $form, $errors);
+    }
+  }
+
   # validate form data
   if ($formName == 'CRM_Contact_Form_CustomData') {
     CRM_Nihrbackbone_NihrValidation::validateAlias($formName, $fields, $files, $form, $errors);
@@ -188,6 +201,13 @@ function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form,
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
  */
 function nihrbackbone_civicrm_config(&$config) {
+  // ugly hack to ensure contact identifiers are not inline editable
+  $newCallBack = serialize(['CRM_Nihrbackbone_NbrContactIdentity', 'getMultiRecordFieldList']);
+  $query = "UPDATE civicrm_menu SET page_callback = %1 WHERE path = %2";
+  CRM_Core_DAO::executeQuery($query, [
+    1 => [$newCallBack, "String"],
+    2 => ["civicrm/ajax/multirecordfieldlist", "String"],
+  ]);
   _nihrbackbone_civix_civicrm_config($config);
 }
 

@@ -22,6 +22,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition->setFactory(['CRM_Nihrbackbone_NbrConfig', 'getInstance']);
     $this->setActivityTypes($definition);
     $this->setConsentStatus($definition);
+    $this->setCustomGroupIds($definition);
     $this->setEligibilityStatus($definition);
     $this->setOptionGroups($definition);
     $this->setParticipationStatus($definition);
@@ -30,6 +31,20 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition->addMethodCall('setVisitStage2Substring', ["nihr_visit_stage2"]);
     $container->setDefinition('nbrBackbone', $definition);
   }
+
+  /**
+   * Method to set the custom group ids
+   *
+   * @param $definition
+   */
+  private function setCustomGroupIds(&$definition) {
+    $query = "SELECT id FROM civicrm_custom_group WHERE name = %1";
+    $id = \CRM_Core_DAO::singleValueQuery($query, [1 =>["contact_id_history", "String"]]);
+    if ($id) {
+      $definition->addMethodCall('setContactIdentityCustomGroupId', [(int) $id]);
+    }
+  }
+
   /**
    * Method to set option group ids
    *

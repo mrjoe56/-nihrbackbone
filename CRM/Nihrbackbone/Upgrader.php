@@ -6,8 +6,6 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  */
 class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
 
-
-
   /**
    * Upgrade 1030 (add log table - see https://issues.civicoop.org/issues/4950)
    *
@@ -71,16 +69,8 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     return TRUE;
   }
 
-
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).
-
-  /**
-   * Example: Run an external SQL script when the module is installed.
-   *
-  public function install() {
-    $this->executeSqlFile('sql/myinstall.sql');
-  }
 
   /**
    * Example: Work with entities usually not available during the install step.
