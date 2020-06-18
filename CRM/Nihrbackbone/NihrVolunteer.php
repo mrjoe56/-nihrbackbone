@@ -719,4 +719,35 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return TRUE;
   }
 
+  /**
+   * Method to set the eligibility other on all cases where volunteer is selected and study is
+   * not the current one
+   *
+   * @param $contactId
+   * @param $caseId
+   */
+  public static function updateEligibilityAfterInvite($contactId, $caseId) {
+    // retrieve study id of caseId -> ignore that study
+    $currentStudyId = (int) CRM_Nihrbackbone_NbrVolunteerCase::getStudyId($caseId);
+    // select all active cases on recruiting studies where volunteer is selected
+    $query = "SELECT DISTINCT(pd.entity_id) AS case_id
+        FROM civicrm_value_nbr_participation_data AS pd
+            JOIN civicrm_case AS cc ON pd.entity_id = cc.id
+            JOIN civicrm_case_contact AS ccc ON cc.id = ccc.case_id
+        WHERE cc.is_deleted = %1 AND ccc.contact_id = %2 AND cc.case_type_id = %3
+          AND pd.nvpd_study_id != %4 AND pd.nvpd_study_participation_status = %5";
+    $queryParams = [
+      1 => [0, "Integer"],
+      2 => [$contactId, "Integer"],
+      3 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+      4 => [$currentStudyId, "Integer"],
+      5 => [Civi::service('nbrBackbone')->getSelectedParticipationStatusValue(), "String"],
+    ];
+    $case = CRM_Core_DAO::executeQuery($query, $queryParams);
+    while ($case->fetch()) {
+      // set eligibility to "invited on other" for those cases
+      CRM_Nihrbackbone_NbrVolunteerCase::setEligibilityStatus([Civi::service('nbrBackbone')->getOtherEligibilityStatusValue()], (int) $case->case_id);
+    }
+  }
+
 }
