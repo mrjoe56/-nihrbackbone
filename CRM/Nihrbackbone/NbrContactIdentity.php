@@ -19,8 +19,15 @@ class CRM_Nihrbackbone_NbrContactIdentity {
    * @param $errors
    */
   public static function validateForm(&$fields, &$form, &$errors) {
-    $protected = Civi::settings()->get('nbr_protected_identifier_types');
-
+    $protected = explode(",", Civi::settings()->get('nbr_protected_identifier_types'));
+    $typeCustomField = "custom_" . Civi::service('nbrBackbone')->getIdentifierTypeCustomFieldId();
+    foreach ($fields as $key => $value) {
+      if (strpos($key, $typeCustomField) !== FALSE) {
+        if (in_array($value, $protected)) {
+          $errors[$key] = E::ts('You can not manually add an identifier of this type.');
+        }
+      }
+    }
   }
 
   /**

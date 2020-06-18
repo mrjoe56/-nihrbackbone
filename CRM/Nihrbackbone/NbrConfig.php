@@ -39,8 +39,9 @@ class CRM_Nihrbackbone_NbrConfig {
   // activity types
   private $_activityTypeOptionGroupId = NULL;
   private $_consentActivityTypeId = NULL;
-  // custom group ids
+  // custom group and field ids
   private $_contactIdentityCustomGroupId = NULL;
+  private $_identifierTypeCustomFieldId = NULL;
   // others
   private $_selectedParticipationStatusValue = NULL;
   private $_invitedParticipationStatusValue = NULL;
@@ -442,6 +443,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getContactIdentityCustomGroupId() {
     return $this->_contactIdentityCustomGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setIdentifierTypeCustomFieldId($id) {
+    $this->_identifierTypeCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getIdentifierTypeCustomFieldId() {
+    return $this->_identifierTypeCustomFieldId;
   }
 
 }

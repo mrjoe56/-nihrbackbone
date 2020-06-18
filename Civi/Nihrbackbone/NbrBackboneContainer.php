@@ -22,6 +22,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition->setFactory(['CRM_Nihrbackbone_NbrConfig', 'getInstance']);
     $this->setActivityTypes($definition);
     $this->setConsentStatus($definition);
+    $this->setCustomFieldIds($definition);
     $this->setCustomGroupIds($definition);
     $this->setEligibilityStatus($definition);
     $this->setOptionGroups($definition);
@@ -30,6 +31,26 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $this->setVolunteerStatus($definition);
     $definition->addMethodCall('setVisitStage2Substring', ["nihr_visit_stage2"]);
     $container->setDefinition('nbrBackbone', $definition);
+  }
+
+  /**
+   * Method to set the custom field ids
+   *
+   * @param $definition
+   */
+  private function setCustomFieldIds(&$definition) {
+    $query = "SELECT cf.id
+        FROM civicrm_custom_group AS cg
+            JOIN civicrm_custom_field AS cf ON cg.id = cf.custom_group_id
+        WHERE cg.name = %1 AND cf.name = %2";
+    $queryParams = [
+      1 => ["contact_id_history", "String"],
+      2 => ["id_history_entry_type", "String"],
+    ];
+    $id = \CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($id) {
+      $definition->addMethodCall('setIdentifierTypeCustomFieldId', [(int) $id]);
+    }
   }
 
   /**
