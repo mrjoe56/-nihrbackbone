@@ -184,7 +184,7 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                 if ($operator != '') {
                     array_push($clauses, ' contact_id '.$operator.' (select cc.contact_id from civicrm_case_contact cc, civicrm_case_activity ca, 
                                                        civicrm_activity a where cc.case_id = ca.case_id and ca.activity_id = a.id 
-                                                       and a.activity_type_id = '.$stage1_visit_act_type.' and a.status_id = 1)');
+                                                       and a.activity_type_id = '.$stage1_visit_act_type.' and a.status_id = 2)');
                 }
             }
         }

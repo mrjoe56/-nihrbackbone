@@ -81,15 +81,16 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
             CRM_Core_DAO::executeQuery($query);
         }
         if (!CRM_Core_DAO::checkTableExists('vw_stage1_consent_site')) {
-            $query = "CREATE view vw_stage1_consent_site as select c.id as contact_id, c.first_name, c.last_name, c.birth_date,
-                    ch_pack.identifier as pack_id, vp.nvp_site, sc.display_name as site_name, sc.sic_code as site_ods_code, vp.nvp_panel, 
-                    pc.display_name as panel_name 
-                    from (civicrm_contact c left join civicrm_value_contact_id_history ch_pack on c.id = ch_pack.entity_id
-                    left join civicrm_value_nihr_volunteer_panel vp on vp.entity_id = c.id
-                    join civicrm_contact as sc on sc.id = vp.nvp_site
-                    join civicrm_contact as pc on pc.id = vp.nvp_panel)
-                    left join civicrm_value_contact_id_history ch_nhs on c.id = ch_nhs.entity_id
-                    where ch_pack.identifier_type = 'cih_type_packid' and ch_nhs.identifier_type = 'cih_type_nhs_number'";
+            $query = "CREATE view vw_stage1_consent_site as select c.id as contact_id, c.first_name, c.last_name, c.birth_date, 
+            ch_pack.identifier as pack_id, vp.nvp_site, sc.display_name as site_name, sc.sic_code as site_ods_code,
+            vp.nvp_panel, pc.display_name as panel_name
+            from
+            (civicrm_contact c 
+            left join civicrm_value_contact_id_history ch_pack on c.id = ch_pack.entity_id
+            left join civicrm_value_nihr_volunteer_panel vp on vp.entity_id = c.id
+            join civicrm_contact as sc on sc.id = vp.nvp_site
+            join civicrm_contact as pc on pc.id = vp.nvp_panel)
+            where ch_pack.identifier_type = 'cih_type_packid'";
             CRM_Core_DAO::executeQuery($query);
         }
         if (!CRM_Core_DAO::checkTableExists('vw_cpms')) {
