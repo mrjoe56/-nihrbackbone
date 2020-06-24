@@ -82,8 +82,6 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                 ),
         );
 
-        #$this->_groupFilter = TRUE;
-        #$this->_tagFilter = TRUE;
         parent::__construct();
     }
 
@@ -204,7 +202,6 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                     'label' => "Visit Stage 1",
                 ]);
                 $stage1_visit_act_type = $result['values'][0]['value'];
-                Civi::log()->debug('$stage1_visit_act_type = '.$stage1_visit_act_type.'  $operator = '.$operator);
                 if ($operator != '') {
                     array_push($clauses, ' contact_id '.$operator.' (select cc.contact_id from civicrm_case_contact cc, civicrm_case_activity ca, 
                                                        civicrm_activity a where cc.case_id = ca.case_id and ca.activity_id = a.id 
@@ -219,7 +216,6 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                     'label' => "CPMS Accrual",
                 ]);
                 $accrual_act_type = $result['values'][0]['value'];
-                Civi::log()->debug('$accrual_act_type = '.$accrual_act_type.'  $accr_operator = '.$accr_operator);
                 if ($accr_operator != '') {
                     array_push($clauses, ' contact_id '.$accr_operator.' (select ac.contact_id from civicrm_activity_contact ac, civicrm_activity a 
                                                         where a.id = ac.activity_id and a.activity_type_id = '.$accrual_act_type.' 
@@ -233,7 +229,6 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                     'label' => "Sample received",
                 ]);
                 $sample_receipt_act_type = $result['values'][0]['value'];
-                Civi::log()->debug('$sample_receipt_act_type = '.$sample_receipt_act_type.'  $brcd_operator = '.$srcd_operator);
                 if ($srcd_operator != '') {
                     array_push($clauses, ' contact_id '.$srcd_operator.' (select ac.contact_id from civicrm_activity_contact ac, civicrm_activity a 
                                                         where a.id = ac.activity_id and a.activity_type_id = '.$sample_receipt_act_type.' 
@@ -244,11 +239,9 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
         }
         if (empty($clauses)) {
             $this->_where = "WHERE ( 1 ) ";
-            Civi::log()->debug('no clauses');
         }
         else {
             $this->_where = "WHERE " .implode(' AND ', $clauses);
-            Civi::log()->debug('$this->_where :'.$this->_where);
         }
         if ($this->_aclWhere) {
             $this->_where .= " AND {$this->_aclWhere} ";
@@ -258,7 +251,6 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
     function postProcess() {
         $this->beginPostProcess();
         $sql = $this->buildQuery(TRUE);
-        Civi::log()->debug('$sql : '.$sql);
         $rows = $graphRows = array();
         $this->buildRows($sql, $rows);
         $this->formatDisplay($rows);
