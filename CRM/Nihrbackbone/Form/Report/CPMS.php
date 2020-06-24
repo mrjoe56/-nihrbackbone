@@ -66,9 +66,18 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                         'visit' => [
                             'title' => ts('Completed Stage 1 Visit'),
                             'type' => CRM_Utils_Type::T_BOOLEAN,
-                            'default' => 1
+                            #'default' => 1
                         ],
-
+                        'accrual' => [
+                            'title' => ts('Completed CPMS Accrual'),
+                            'type' => CRM_Utils_Type::T_BOOLEAN,
+                            #'default' => 1
+                        ],
+                        'sample_received' => [
+                            'title' => ts('Sample received'),
+                            'type' => CRM_Utils_Type::T_BOOLEAN,
+                            #'default' => 1
+                        ],
                     ),
                 ),
         );
@@ -143,6 +152,22 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                             $operator = ($visit == 1 ? 'in' : 'not in');
                         }
                     }
+                    else if ($fieldName == 'accrual') {
+                        $accrual = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);
+                        if ($accrual == '') {
+                            $accr_operator = '';
+                        } else {
+                            $accr_operator = ($accrual == 1 ? 'in' : 'not in');
+                        }
+                    }
+                    else if ($fieldName == 'sample_received') {
+                        $sample_received = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);
+                        if ($sample_received == '') {
+                            $srcd_operator = '';
+                        } else {
+                            $srcd_operator = ($sample_received == 1 ? 'in' : 'not in');
+                        }
+                    }
                     else {
                         $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
                         if ($fieldName == 'rid') {
@@ -171,8 +196,7 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                         $clauses[] = $clause;
                     }
                 }
-
-
+                // completed stage 1 visit filter
                 $result = civicrm_api3('OptionValue', 'get', [
                     'sequential' => 1,
                     'return' => ["value"],
@@ -180,11 +204,41 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                     'label' => "Visit Stage 1",
                 ]);
                 $stage1_visit_act_type = $result['values'][0]['value'];
-                Civi::log()->debug('visit = '.$visit.'  $operator = '.$operator);
+                Civi::log()->debug('$stage1_visit_act_type = '.$stage1_visit_act_type.'  $operator = '.$operator);
                 if ($operator != '') {
                     array_push($clauses, ' contact_id '.$operator.' (select cc.contact_id from civicrm_case_contact cc, civicrm_case_activity ca, 
                                                        civicrm_activity a where cc.case_id = ca.case_id and ca.activity_id = a.id 
-                                                       and a.activity_type_id = '.$stage1_visit_act_type.' and a.status_id = 2)');
+                                                       and a.activity_type_id = '.$stage1_visit_act_type.' 
+                                                       and a.activity_date_time <= CURDATE()
+                                                       and a.status_id = 2)');
+                }
+                # completed accrual filter
+                $result = civicrm_api3('OptionValue', 'get', [
+                    'sequential' => 1,
+                    'option_group_id' => "activity_type",
+                    'label' => "CPMS Accrual",
+                ]);
+                $accrual_act_type = $result['values'][0]['value'];
+                Civi::log()->debug('$accrual_act_type = '.$accrual_act_type.'  $accr_operator = '.$accr_operator);
+                if ($accr_operator != '') {
+                    array_push($clauses, ' contact_id '.$accr_operator.' (select ac.contact_id from civicrm_activity_contact ac, civicrm_activity a 
+                                                        where a.id = ac.activity_id and a.activity_type_id = '.$accrual_act_type.' 
+                                                        and a.activity_date_time <= CURDATE() 
+                                                        and a.status_id = 2)');
+                }
+                # completed sample recieved filter
+                $result = civicrm_api3('OptionValue', 'get', [
+                    'sequential' => 1,
+                    'option_group_id' => "activity_type",
+                    'label' => "Sample received",
+                ]);
+                $sample_receipt_act_type = $result['values'][0]['value'];
+                Civi::log()->debug('$sample_receipt_act_type = '.$sample_receipt_act_type.'  $brcd_operator = '.$srcd_operator);
+                if ($srcd_operator != '') {
+                    array_push($clauses, ' contact_id '.$srcd_operator.' (select ac.contact_id from civicrm_activity_contact ac, civicrm_activity a 
+                                                        where a.id = ac.activity_id and a.activity_type_id = '.$sample_receipt_act_type.' 
+                                                        and a.activity_date_time <= CURDATE() 
+                                                        and a.status_id = 2)');
                 }
             }
         }
