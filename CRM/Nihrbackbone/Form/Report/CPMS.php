@@ -61,22 +61,18 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                             'alias' => 'vw_cpms',
                             'title' => ts('Panel Name'),
                             'type' => CRM_Utils_Type::T_STRING,
-                            'default' => 'IBD'
                         ],
                         'visit' => [
                             'title' => ts('Completed Stage 1 Visit'),
                             'type' => CRM_Utils_Type::T_BOOLEAN,
-                            #'default' => 1
                         ],
                         'accrual' => [
                             'title' => ts('Completed CPMS Accrual'),
                             'type' => CRM_Utils_Type::T_BOOLEAN,
-                            #'default' => 1
                         ],
                         'sample_received' => [
                             'title' => ts('Sample received'),
                             'type' => CRM_Utils_Type::T_BOOLEAN,
-                            #'default' => 1
                         ],
                     ),
                 ),
