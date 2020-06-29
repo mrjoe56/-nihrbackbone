@@ -128,6 +128,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $dao = \CRM_Core_DAO::executeQuery($query, [1 => ["nbr_study_participation_status", "String"]]);
     while ($dao->fetch()) {
       switch ($dao->name) {
+        case "study_participation_status_excluded":
+          $definition->addMethodCall('setExcludedParticipationStatusValue', [$dao->value]);
+          break;
+
         case "study_participation_status_invited":
           $definition->addMethodCall('setInvitedParticipationStatusValue', [$dao->value]);
           break;

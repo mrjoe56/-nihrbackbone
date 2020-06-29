@@ -43,6 +43,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_contactIdentityCustomGroupId = NULL;
   private $_identifierTypeCustomFieldId = NULL;
   // others
+  private $_excludedParticipationStatusValue = NULL;
   private $_selectedParticipationStatusValue = NULL;
   private $_invitedParticipationStatusValue = NULL;
   private $_correctConsentStatusValue = NULL;
@@ -345,6 +346,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getTravelEligibilityStatusValue() {
     return $this->_travelEligibilityStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setExcludedParticipationStatusValue($value) {
+    $this->_excludedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getExcludedParticipationStatusValue() {
+    return $this->_excludedParticipationStatusValue;
   }
 
   /**
