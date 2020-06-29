@@ -27,11 +27,16 @@
         case 'volunteer_status_pending':
           $hdr_colour = '#FFD858';                                               // orange
           break;
+        case 'volunteer_status_not_recruited':
+        case 'volunteer_status_redundant':
         case 'volunteer_status_withdrawn':
           $hdr_colour = '#FA8072';                                               // red
           break;
         case 'volunteer_status_deceased':
           $hdr_colour = 'lightgray';
+          break;
+        case 'volunteer_status_consent_outdated':                                // blue
+          $hdr_colour = '#62cff0';
           break;
         default:
           var $hdr_colour = '#badbae';                                           // green
