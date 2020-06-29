@@ -695,7 +695,22 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         'return' => $customFieldId,
       ]);
       $eligible = Civi::service('nbrBackbone')->getEligibleEligibilityStatusValue();
-      if (!is_array($result) && $result == $eligible) {
+      // check if there is only 1 eligibility status, if there are more then volunteer
+      // is not eligible
+      if (is_array($result)) {
+        if (count($result) == 1) {
+          foreach ($result as $key => $value) {
+            $status = $value;
+          }
+        }
+        else {
+          return FALSE;
+        }
+      }
+      else {
+        $status = $result;
+      }
+      if ($status == $eligible) {
         return TRUE;
       }
       else {
