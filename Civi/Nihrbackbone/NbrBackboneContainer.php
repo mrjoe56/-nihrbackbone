@@ -170,11 +170,17 @@ class NbrBackboneContainer implements CompilerPassInterface {
         case "nihr_excluded_commercial":
           $definition->addMethodCall('setCommercialEligibilityStatusValue', [$dao->value]);
           break;
+        case "nihr_excluded_drugs":
+          $definition->addMethodCall('setDrugsEligibilityStatusValue', [$dao->value]);
+          break;
         case "nihr_excluded_ethnicity":
           $definition->addMethodCall('setEthnicityEligibilityStatusValue', [$dao->value]);
           break;
         case "nihr_excluded_gender":
           $definition->addMethodCall('setGenderEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_excluded_mri":
+          $definition->addMethodCall('setMriEligibilityStatusValue', [$dao->value]);
           break;
         case "nihr_excluded_panel":
           $definition->addMethodCall('setPanelEligibilityStatusValue', [$dao->value]);

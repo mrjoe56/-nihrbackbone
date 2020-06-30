@@ -814,6 +814,14 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     if (CRM_Nihrbackbone_NbrStudy::requiresBlood($studyId) && !CRM_Nihrbackbone_NihrVolunteer::availableForBlood($volunteerId)) {
       $eligibilities[] = Civi::service('nbrBackbone')->getBloodEligibilityStatusValue();
     }
+    // does study require drugs and does volunteer not do drugs?
+    if (CRM_Nihrbackbone_NbrStudy::requiresDrugs($studyId) && !CRM_Nihrbackbone_NihrVolunteer::availableForDrugs($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getDrugsEligibilityStatusValue();
+    }
+    // does study require MRI and does volunteer not do MRI?
+    if (CRM_Nihrbackbone_NbrStudy::requiresMri($studyId) && !CRM_Nihrbackbone_NihrVolunteer::availableForMri($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getMriEligibilityStatusValue();
+    }
     // does volunteer have required ethnicity?
     if (!CRM_Nihrbackbone_NbrVolunteerCase::hasEthnicity($volunteerId, $studyId)) {
       $eligibilities[] = Civi::service('nbrBackbone')->getEthnicityEligibilityStatusValue();

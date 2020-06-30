@@ -26,9 +26,11 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_bloodEligibilityStatusValue = NULL;
   private $_bmiEligibilityStatusValue = NULL;
   private $_commercialEligibilityStatusValue = NULL;
+  private $_drugsEligibilityStatusValue = NULL;
   private $_eligibleEligibilityStatusValue = NULL;
   private $_ethnicityEligibilityStatusValue = NULL;
   private $_genderEligibilityStatusValue = NULL;
+  private $_mriEligibilityStatusValue = NULL;
   private $_maxEligibilityStatusValue = NULL;
   private $_otherStudyEligibilityStatusValue = NULL;
   private $_panelEligibilityStatusValue = NULL;
@@ -239,6 +241,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string $value
    */
+  public function setDrugsEligibilityStatusValue($value) {
+    $this->_drugsEligibilityStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getDrugsEligibilityStatusValue() {
+    return $this->_drugsEligibilityStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
   public function setEligibleEligibilityStatusValue($value) {
     $this->_eligibleEligibilityStatusValue = $value;
   }
@@ -276,6 +292,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getGenderEligibilityStatusValue() {
     return $this->_genderEligibilityStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setMriEligibilityStatusValue($value) {
+    $this->_mriEligibilityStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getMriEligibilityStatusValue() {
+    return $this->_mriEligibilityStatusValue;
   }
 
   /**

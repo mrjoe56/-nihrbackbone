@@ -94,6 +94,8 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'class' => 'crm-select2',
       'placeholder' => '- select gender -']);
     $this->add('advcheckbox', 'nsc_blood_required', E::ts('Blood required?'), [], FALSE);
+    $this->add('advcheckbox', 'nsc_drug_required', E::ts('Drugs required?'), [], FALSE);
+    $this->add('advcheckbox', 'nsc_mri_required', E::ts('MRI required?'), [], FALSE);
     $this->add('advcheckbox', 'nsc_travel_required', E::ts('Travel required?'), [], FALSE);
     $this->addEntityRef('nsc_ethnicity_id', E::ts('Ethnicity'), [
       'entity' => 'option_value',
@@ -175,6 +177,8 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'disabled' => 'disabled',
       ]);
     $this->add('advcheckbox', 'nsc_blood_required', E::ts('Blood required?'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsc_drug_required', E::ts('Drugs required?'), ['disabled' => 'disabled'], FALSE);    $this->add('advcheckbox', 'nsc_blood_required', E::ts('Blood required?'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsc_mri_required', E::ts('MRI required?'), ['disabled' => 'disabled'], FALSE);    $this->add('advcheckbox', 'nsc_blood_required', E::ts('Blood required?'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsc_travel_required', E::ts('Travel required?'), ['disabled' => 'disabled'], FALSE);
     $this->addEntityRef('nsc_ethnicity_id', E::ts('Ethnicity'), [
       'entity' => 'option_value',
