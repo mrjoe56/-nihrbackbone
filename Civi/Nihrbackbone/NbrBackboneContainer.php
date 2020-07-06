@@ -128,16 +128,52 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $dao = \CRM_Core_DAO::executeQuery($query, [1 => ["nbr_study_participation_status", "String"]]);
     while ($dao->fetch()) {
       switch ($dao->name) {
+        case "study_participation_status_accepted":
+          $definition->addMethodCall('setAcceptedParticipationStatusValue', [$dao->value]);
+          break;
+
         case "study_participation_status_excluded":
           $definition->addMethodCall('setExcludedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_invitation_pending":
+          $definition->addMethodCall('setInvitationPendingParticipationStatusValue', [$dao->value]);
           break;
 
         case "study_participation_status_invited":
           $definition->addMethodCall('setInvitedParticipationStatusValue', [$dao->value]);
           break;
 
+        case "study_participation_status_no_response":
+          $definition->addMethodCall('setNoResponseParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_not_participated":
+          $definition->addMethodCall('setNotParticipatedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_participated":
+          $definition->addMethodCall('setParticipatedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_refused":
+          $definition->addMethodCall('setRefusedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_reneged":
+          $definition->addMethodCall('setRenegedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_return_to_sender":
+          $definition->addMethodCall('setReturnToSenderParticipationStatusValue', [$dao->value]);
+          break;
+
         case "study_participation_status_selected":
           $definition->addMethodCall('setSelectedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_withdrawn":
+          $definition->addMethodCall('setWithdrawnParticipationStatusValue', [$dao->value]);
           break;
       }
     }

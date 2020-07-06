@@ -44,10 +44,20 @@ class CRM_Nihrbackbone_NbrConfig {
   // custom group and field ids
   private $_contactIdentityCustomGroupId = NULL;
   private $_identifierTypeCustomFieldId = NULL;
-  // others
+  // study participation status
+  private $_acceptedParticipationStatusValue = NULL;
   private $_excludedParticipationStatusValue = NULL;
-  private $_selectedParticipationStatusValue = NULL;
+  private $_invitationPendingParticipationStatusValue = NULL;
   private $_invitedParticipationStatusValue = NULL;
+  private $_noResponseParticipationStatusValue = NULL;
+  private $_notParticipatedParticipationStatusValue = NULL;
+  private $_participatedParticipationStatusValue = NULL;
+  private $_refusedParticipationStatusValue = NULL;
+  private $_renegedParticipationStatusValue = NULL;
+  private $_returnToSenderParticipationStatusValue = NULL;
+  private $_selectedParticipationStatusValue = NULL;
+  private $_withdrawnParticipationStatusValue = NULL;
+  // others
   private $_correctConsentStatusValue = NULL;
   private $_visitStage2Substring = NULL;
 
@@ -381,6 +391,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string $value
    */
+  public function setAcceptedParticipationStatusValue($value) {
+    $this->_acceptedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getAcceptedParticipationStatusValue() {
+    return $this->_acceptedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
   public function setExcludedParticipationStatusValue($value) {
     $this->_excludedParticipationStatusValue = $value;
   }
@@ -390,6 +414,118 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getExcludedParticipationStatusValue() {
     return $this->_excludedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setInvitationPendingParticipationStatusValue($value) {
+    $this->_invitationPendingParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getInvitationPendingParticipationStatusValue() {
+    return $this->_invitationPendingParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setInvitedParticipationStatusValue($value) {
+    $this->_invitedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getInvitedParticipationStatusValue() {
+    return $this->_invitedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setNoResponseParticipationStatusValue($value) {
+    $this->_noResponseParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getNoResponseParticipationStatusValue() {
+    return $this->_noResponseParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setNotParticipatedParticipationStatusValue($value) {
+    $this->_notParticipatedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getNotParticipatedParticipationStatusValue() {
+    return $this->_notParticipatedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setParticipatedParticipationStatusValue($value) {
+    $this->_participatedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getParticipatedParticipationStatusValue() {
+    return $this->_participatedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setRefusedParticipationStatusValue($value) {
+    $this->_refusedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getRefusedParticipationStatusValue() {
+    return $this->_refusedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setRenegedParticipationStatusValue($value) {
+    $this->_renegedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getRenegedParticipationStatusValue() {
+    return $this->_renegedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setReturnToSenderParticipationStatusValue($value) {
+    $this->_returnToSenderParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getReturnToSenderParticipationStatusValue() {
+    return $this->_returnToSenderParticipationStatusValue;
   }
 
   /**
@@ -409,15 +545,15 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string $value
    */
-  public function setInvitedParticipationStatusValue($value) {
-    $this->_invitedParticipationStatusValue = $value;
+  public function setWithdrawnParticipationStatusValue($value) {
+    $this->_withdrawnParticipationStatusValue = $value;
   }
 
   /**
    * @return string
    */
-  public function getInvitedParticipationStatusValue() {
-    return $this->_invitedParticipationStatusValue;
+  public function getWithdrawnParticipationStatusValue() {
+    return $this->_withdrawnParticipationStatusValue;
   }
 
   /**
