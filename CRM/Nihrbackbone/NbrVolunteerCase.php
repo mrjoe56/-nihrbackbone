@@ -318,33 +318,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   }
 
   /**
-   * Method to remove the max reached eligible status for the volunteer
-   *
-   * @param $volunteerId
-   */
-  public static function unsetMaxStatus($volunteerId) {
-    $maxReachedStatusId = Civi::service('nbrBackbone')->getMaxEligibilityStatusValue();
-    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-    $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
-    // retrieve current eligible status from each volunteer participation cases
-    $query = "SELECT a." . $eligibleColumnName . ", a.entity_id
-      FROM " . $tableName . " AS a
-      JOIN civicrm_case AS b ON a.entity_id = b.id
-      JOIN civicrm_case_contact AS c ON a.entity_id = c.case_id
-      WHERE b.is_deleted = %1 AND b.case_type_id = %2 AND c.contact_id = %3 AND b.status_id != %4";
-    $queryParams = [
-      1 => [0, 'Integer'],
-      2 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), 'Integer'],
-      3 => [$volunteerId, 'Integer'],
-      4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), 'Integer'],
-    ];
-    $current = CRM_Core_DAO::executeQuery($query, $queryParams);
-    while ($current->fetch()) {
-      self::removeEligibilityStatus((int) $current->entity_id, $current->$eligibleColumnName, $maxReachedStatusId);
-    }
-  }
-
-  /**
    * Method to remove an eligible status from the list
    *
    * @param int $caseId
