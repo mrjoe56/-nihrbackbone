@@ -18,19 +18,18 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                     'alias' => 'vw_cpms',
                     'fields' =>
                         array(
-                            'pack_id' => array('alias' => 'vw_cpms', 'title' => ts('Volunteer Pack ID'), 'required' => TRUE),
-                            'first_name' => array('alias' => 'vw_cpms', 'title' => ts('Forename')),
-                            'last_name' => array('alias' => 'vw_cpms', 'title' => ts('Surname')),
-                            'birth_date' => array('alias' => 'vw_cpms', 'title' => ts('DOB')),
-                            'consent_date' => array('alias' => 'vw_cpms', 'title' => ts('Volunteer Consent Date'), 'required' => TRUE,),
-                            'site_name' => array('alias' => 'vw_cpms', 'title' => ts('Site Name'),'default' => TRUE),
-                            'site_ods_code' => array('alias' => 'vw_cpms', 'title' => ts('Site ODS Code'),'default' => TRUE),
-                            'nvp_panel' => array('alias' => 'vw_cpms', 'title' => ts('Panel ID')),
-                            'panel_name' => array('alias' => 'vw_cpms', 'title' => ts('Panel Name')),
-                            'stage1_visit_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE),
-                            'cpms_accrual_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE),
-                            'sample_received_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE),
-
+                          'site_ods_code' => array('alias' => 'vw_cpms', 'title' => ts('Site ODS Code'),'default' => TRUE),
+                          'site_name' => array('alias' => 'vw_cpms', 'title' => ts('Site Name'),'default' => TRUE),
+                          'consent_date' => array('alias' => 'vw_cpms', 'title' => ts('Volunteer Consent Date'), 'required' => TRUE,),
+                          'pack_id' => array('alias' => 'vw_cpms', 'title' => ts('Volunteer Pack ID'), 'required' => TRUE),
+                          'panel_name' => array('alias' => 'vw_cpms', 'title' => ts('Panel Name')),
+                          'nvp_panel' => array('alias' => 'vw_cpms', 'title' => ts('Panel ID')),
+                          'first_name' => array('alias' => 'vw_cpms', 'title' => ts('Forename')),
+                          'last_name' => array('alias' => 'vw_cpms', 'title' => ts('Surname')),
+                          'birth_date' => array('alias' => 'vw_cpms', 'title' => ts('DOB')),
+                          'stage1_visit_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE, 'no_display' => TRUE),
+                          'cpms_accrual_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE, 'no_display' => TRUE),
+                          'sample_received_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE, 'no_display' => TRUE),
                         ),
                     'filters' => array(
                         'consent_date' => array(
@@ -120,11 +119,14 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
             $clause = NULL;
             # date filter clause
             if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
+              Civi::log()->debug('date');
                 $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
                 $from = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
                 $to = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
+                Civi::log()->debug('$relative : '.$relative.'  $from : '.$from.'  $to : '.$to);
                 if ($relative || $from || $to) {
                     $clause = $this->dateClause($field['name'], $relative, $from, $to, $field['type']);
+                    Civi::log()->debug('$clause : '.$clause);
                 }
             }
               # activity status filters
@@ -132,7 +134,7 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
 
                 $status_array = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);                                 # for status activity filters
                 $status_op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
-                Civi::log()->debug('$status_op '.$status_op);
+                #Civi::log()->debug('$status_op '.$status_op);
                 $status_clause = '';                                                                                               #  if we have values for this status filter
                 if ($status_array) {                                                                                               #   set the where clause and operator
                   if ($status_op == 'in') {                                                                                        #   operator = 'is one of'
@@ -152,7 +154,7 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                 }
 
                 $filter_clause[$fieldName] = $status_clause;                                                                      #  update where clause array
-                Civi::log()->debug('$status_clause '.$status_clause);
+                #Civi::log()->debug('$status_clause '.$status_clause);
               }
             else {
               $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
