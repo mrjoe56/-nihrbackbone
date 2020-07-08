@@ -1,35 +1,12 @@
 <?php
-/*
- +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2019                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
- */
-
 /**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2019
- */
+ * CPMS.php
+ * @title       CPMS (Central processing management system) monthly report template
+ * @author      John Boucher <jab1012@bioresource.nihr.ac.uk>
+ * @date        06/07/20
+ * @extension   nihrbackbone
+ **/
+
 class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
 
     /** Class constructor. */
@@ -50,6 +27,10 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                             'site_ods_code' => array('alias' => 'vw_cpms', 'title' => ts('Site ODS Code'),'default' => TRUE),
                             'nvp_panel' => array('alias' => 'vw_cpms', 'title' => ts('Panel ID')),
                             'panel_name' => array('alias' => 'vw_cpms', 'title' => ts('Panel Name')),
+                            'stage1_visit_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE),
+                            'cpms_accrual_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE),
+                            'sample_received_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE),
+
                         ),
                     'filters' => array(
                         'consent_date' => array(
@@ -62,18 +43,24 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                             'title' => ts('Panel Name'),
                             'type' => CRM_Utils_Type::T_STRING,
                         ],
-                        'visit' => [
-                            'title' => ts('Completed Stage 1 Visit'),
-                            'type' => CRM_Utils_Type::T_BOOLEAN,
-                        ],
-                        'accrual' => [
-                            'title' => ts('Completed CPMS Accrual'),
-                            'type' => CRM_Utils_Type::T_BOOLEAN,
-                        ],
-                        'sample_received' => [
-                            'title' => ts('Sample received'),
-                            'type' => CRM_Utils_Type::T_BOOLEAN,
-                        ],
+                      'stage1_visit_status' => [
+                        'title' => ts('Stage 1 Visit actvity where activity status'),
+                        'type' => CRM_Utils_Type::T_STRING,
+                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                        'options' => CRM_Core_PseudoConstant::activityStatus(),
+                      ],
+                      'sample_received_status' => [
+                        'title' => ts('Sample Received actvity where activity status'),
+                        'type' => CRM_Utils_Type::T_STRING,
+                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                        'options' => CRM_Core_PseudoConstant::activityStatus(),
+                      ],
+                      'cpms_accrual_status' => [
+                        'title' => ts('CPMS accrual actvity where activity status'),
+                        'type' => CRM_Utils_Type::T_STRING,
+                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                        'options' => CRM_Core_PseudoConstant::activityStatus(),
+                      ],
                     ),
                 ),
         );
@@ -116,133 +103,125 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
 
 
     function from() {
-        $this->_from = "FROM vw_cpms ";
+      $this->_from = "FROM vw_cpms ";
     }
+
 
     /* Generate where clause. */
     function where() {
 
-        $clauses = array();
-        foreach ($this->_columns as $tableName => $table) {
+      $clauses = array();
+      $filter_clause = ['stage1_visit_status' => '', 'sample_received_status' => '', 'cpms_accrual_status' => ''];      # set filter clause array
+      foreach ($this->_columns as $tableName => $table) {
 
-            if (array_key_exists('filters', $table)) {
-                $operator = '';
-                foreach ($table['filters'] as $fieldName => $field) {
-                    $clause = NULL;
-                    if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
-                        $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
-                        $from = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
-                        $to = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
-
-                        if ($relative || $from || $to) {
-                            $clause = $this->dateClause($field['name'], $relative, $from, $to, $field['type']);
-                        }
-                    }
-                    else if ($fieldName == 'visit') {
-                        $visit = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);
-                        if ($visit == '') {
-                            $operator = '';
-                        } else {
-                            $operator = ($visit == 1 ? 'in' : 'not in');
-                        }
-                    }
-                    else if ($fieldName == 'accrual') {
-                        $accrual = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);
-                        if ($accrual == '') {
-                            $accr_operator = '';
-                        } else {
-                            $accr_operator = ($accrual == 1 ? 'in' : 'not in');
-                        }
-                    }
-                    else if ($fieldName == 'sample_received') {
-                        $sample_received = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);
-                        if ($sample_received == '') {
-                            $srcd_operator = '';
-                        } else {
-                            $srcd_operator = ($sample_received == 1 ? 'in' : 'not in');
-                        }
-                    }
-                    else {
-                        $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
-                        if ($fieldName == 'rid') {
-                            $value = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);
-                            if (!empty($value)) {
-                                $operator = '';
-                                if ($op == 'notin') {
-                                    $operator = 'NOT';
-                                }
-                                $regexp = "[[:cntrl:]]*" . implode('[[:>:]]*|[[:<:]]*', $value) . "[[:cntrl:]]*";
-                                $clause = "{$field['dbAlias']} {$operator} REGEXP '{$regexp}'";
-                            }
-                            $op = NULL;
-                        }
-
-                        if ($op) {
-                            $clause = $this->whereClause($field,
-                                $op,
-                                CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
-                                CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
-                                CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
-                            );
-                        }
-                    }
-                    if (!empty($clause)) {
-                        $clauses[] = $clause;
-                    }
-                }
-                // completed stage 1 visit filter
-                $result = civicrm_api3('OptionValue', 'get', [
-                    'sequential' => 1,
-                    'return' => ["value"],
-                    'option_group_id' => "activity_type",
-                    'label' => "Visit Stage 1",
-                ]);
-                $stage1_visit_act_type = $result['values'][0]['value'];
-                if ($operator != '') {
-                    array_push($clauses, ' contact_id '.$operator.' (select cc.contact_id from civicrm_case_contact cc, civicrm_case_activity ca, 
-                                                       civicrm_activity a where cc.case_id = ca.case_id and ca.activity_id = a.id 
-                                                       and a.activity_type_id = '.$stage1_visit_act_type.' 
-                                                       and a.activity_date_time <= CURDATE()
-                                                       and a.status_id = 2)');
-                }
-                # completed accrual filter
-                $result = civicrm_api3('OptionValue', 'get', [
-                    'sequential' => 1,
-                    'option_group_id' => "activity_type",
-                    'label' => "CPMS Accrual",
-                ]);
-                $accrual_act_type = $result['values'][0]['value'];
-                if ($accr_operator != '') {
-                    array_push($clauses, ' contact_id '.$accr_operator.' (select ac.contact_id from civicrm_activity_contact ac, civicrm_activity a 
-                                                        where a.id = ac.activity_id and a.activity_type_id = '.$accrual_act_type.' 
-                                                        and a.activity_date_time <= CURDATE() 
-                                                        and a.status_id = 2)');
-                }
-                # completed sample recieved filter
-                $result = civicrm_api3('OptionValue', 'get', [
-                    'sequential' => 1,
-                    'option_group_id' => "activity_type",
-                    'label' => "Sample received",
-                ]);
-                $sample_receipt_act_type = $result['values'][0]['value'];
-                if ($srcd_operator != '') {
-                    array_push($clauses, ' contact_id '.$srcd_operator.' (select ac.contact_id from civicrm_activity_contact ac, civicrm_activity a 
-                                                        where a.id = ac.activity_id and a.activity_type_id = '.$sample_receipt_act_type.' 
-                                                        and a.activity_date_time <= CURDATE() 
-                                                        and a.status_id = 2)');
+        if (array_key_exists('filters', $table)) {
+          #  $operator = '';
+          foreach ($table['filters'] as $fieldName => $field) {
+            $clause = NULL;
+            # date filter clause
+            if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
+                $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
+                $from = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
+                $to = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
+                if ($relative || $from || $to) {
+                    $clause = $this->dateClause($field['name'], $relative, $from, $to, $field['type']);
                 }
             }
+              # activity status filters
+              else if ($fieldName == 'stage1_visit_status'||$fieldName == 'sample_received_status'||$fieldName == 'cpms_accrual_status') {
+
+                $status_array = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);                                 # for status activity filters
+                $status_op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
+                Civi::log()->debug('$status_op '.$status_op);
+                $status_clause = '';                                                                                               #  if we have values for this status filter
+                if ($status_array) {                                                                                               #   set the where clause and operator
+                  if ($status_op == 'in') {                                                                                        #   operator = 'is one of'
+                    $status_clause = ' and a.status_id in (' . implode(',', $status_array) . ')';                             #
+                  } else if ($status_op == 'notin') {                                                                              #   operator = 'is not one of'
+                    $status_clause = ' and a.status_id not in (' . implode(',', $status_array) . ')';
+                  }
+                }
+                else {
+                  $status_array = [1,2,3,4,5,6,7,8];
+                  if ($status_op == 'nll') {                                                                                       #  operator = 'is empty'
+                    $status_clause = ' and a.status_id not in (' . implode(',', $status_array) . ')';
+                  }
+                  if ($status_op == 'nnll') {                                                                                      #  operator = 'is not empty'
+                    $status_clause = ' and a.status_id in (' . implode(',', $status_array) . ')';
+                  }
+                }
+
+                $filter_clause[$fieldName] = $status_clause;                                                                      #  update where clause array
+                Civi::log()->debug('$status_clause '.$status_clause);
+              }
+            else {
+              $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
+              if ($fieldName == 'rid') {
+                $value = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);
+                if (!empty($value)) {
+                  $operator = '';
+                  if ($op == 'notin') {
+                    $operator = 'NOT';
+                  }
+                  $regexp = "[[:cntrl:]]*" . implode('[[:>:]]*|[[:<:]]*', $value) . "[[:cntrl:]]*";
+                  $clause = "{$field['dbAlias']} {$operator} REGEXP '{$regexp}'";
+                }
+                $op = NULL;
+              }
+
+              if ($op) {
+                $clause = $this->whereClause($field,
+                  $op,
+                  CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
+                  CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
+                  CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
+                );
+              }
+            }
+            if (!empty($clause)) {
+                $clauses[] = $clause;
+            }
+          }
+
+          $filter_activity_type = ['stage1_visit_status' => '', 'sample_received_status' => '', 'cpms_accrual_status' => ''];      # set activity type values array
+          $results = civicrm_api3('OptionValue', 'get', [                                                             # for status activity filters
+            'sequential' => 1,                                                                                                     #
+            'return' => ["label", "value"],
+            'option_group_id' => "activity_type",
+            'label' => ['IN' => ["CPMS Accrual", "Sample received", "Visit stage 1"]],
+          ]);
+          foreach ($results['values'] as $key => $val) {                                                                           #  get activity type values
+            if ($val['label'] == 'Visit Stage 1') {$filter_activity_type['stage1_visit_status'] = $val['value'];}
+            if ($val['label'] == 'CPMS Accrual') {$filter_activity_type['cpms_accrual_status'] = $val['value'];}
+            if ($val['label'] == 'Sample received') {$filter_activity_type['sample_received_status'] = $val['value'];}
+          }                                                                                                                        #  and update array
+
+          if ($filter_clause['cpms_accrual_status']!= '') {                                                                        # add filter clauses for status activity filters
+            array_push($clauses, ' contact_id in (select ac.contact_id from civicrm_activity_contact ac, civicrm_activity a
+                                                      where a.id = ac.activity_id and a.activity_type_id = '.$filter_activity_type['cpms_accrual_status'].$filter_clause['cpms_accrual_status'].')');
+          }
+          if ($filter_clause['sample_received_status']!= '') {
+              array_push($clauses, ' contact_id in (select ac.contact_id from civicrm_activity_contact ac, civicrm_activity a
+                                                  where a.id = ac.activity_id and a.activity_type_id = '.$filter_activity_type['sample_received_status'].$filter_clause['sample_received_status'].')');
+            }
+          if ($filter_clause['stage1_visit_status']!= '') {
+            array_push($clauses, ' contact_id in (select cc.contact_id from civicrm_case_contact cc, civicrm_case_activity ca,
+                                                   civicrm_activity a where cc.case_id = ca.case_id and ca.activity_id = a.id
+                                                   and a.activity_type_id = '.$filter_activity_type['stage1_visit_status'].$filter_clause['stage1_visit_status'].')');
+          }
         }
-        if (empty($clauses)) {
-            $this->_where = "WHERE ( 1 ) ";
-        }
-        else {
-            $this->_where = "WHERE " .implode(' AND ', $clauses);
-        }
-        if ($this->_aclWhere) {
-            $this->_where .= " AND {$this->_aclWhere} ";
-        }
-    }
+      }                                                                                                                            # // for each loop
+
+      if (empty($clauses)) {
+        $this->_where = "WHERE ( 1 ) ";
+      }
+      else {
+        $this->_where = "WHERE " .implode(' AND ', $clauses);
+      }
+      if ($this->_aclWhere) {
+        $this->_where .= " AND {$this->_aclWhere} ";
+      }
+    }                                                                                                                              # // where funct
 
     function postProcess() {
         $this->beginPostProcess();

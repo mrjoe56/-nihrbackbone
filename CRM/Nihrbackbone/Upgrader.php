@@ -73,20 +73,29 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     public function upgrade_1060() {
         $this->ctx->log->info(E::ts('Applying update 1060 - add view vw_valid_consent'));
         if (!CRM_Core_DAO::checkTableExists('vw_valid_consent')) {
-            $query = "CREATE view vw_valid_consent as select cc.contact_id, DATE_FORMAT(activity_date_time, '%d/%m/%Y') as consent_date 
-                        from civicrm_case_contact cc join civicrm_case c on c.id = cc.case_id join civicrm_case_type ct on ct.id =  c.case_type_id
-                        join civicrm_case_activity ca on c.id = ca.case_id join civicrm_value_nihr_volunteer_consent vc on ca.activity_id = vc.entity_id
-                        join civicrm_activity act on ca.activity_id = act.id where vc.nvc_consent_status = 'consent_form_status_correct'
-                        and ct.name = 'nihr_recruitment'";
+            $query = "CREATE view vw_valid_consent as
+            select cc.contact_id ,date_format(act.activity_date_time,'%d/%m/%Y') AS consent_date
+            from civicrm_case_contact cc
+            join civicrm_contact con on cc.contact_id = con.id
+            join civicrm_case c on c.id = cc.case_id
+            join civicrm_case_type ct on ct.id = c.case_type_id
+            join civicrm_case_activity ca on c.id = ca.case_id
+            join civicrm_value_nihr_volunteer_consent vc on ca.activity_id = vc.entity_id
+            join civicrm_activity act on ca.activity_id = act.id
+            where c.is_deleted = 0
+            and con.is_deleted = 0
+            and vc.nvc_consent_status = 'consent_form_status_correct'
+            and ct.name = 'nihr_recruitment'
+            ";
             CRM_Core_DAO::executeQuery($query);
         }
         if (!CRM_Core_DAO::checkTableExists('vw_stage1_consent_site')) {
-            $query = "CREATE view vw_stage1_consent_site as 
-            select c.id as contact_id, c.first_name, c.last_name, c.birth_date, ch_pack.identifier as pack_id, 
+            $query = "CREATE view vw_stage1_consent_site as
+            select c.id as contact_id, c.first_name, c.last_name, c.birth_date, ch_pack.identifier as pack_id,
             vp.nvp_site, sc.display_name as site_name, sc.sic_code as site_ods_code,
             vp.nvp_panel, pc.display_name as panel_name
             from
-            (civicrm_contact c 
+            (civicrm_contact c
             left join civicrm_value_contact_id_history ch_pack on c.id = ch_pack.entity_id
             left join civicrm_value_nihr_volunteer_panel vp on vp.entity_id = c.id
             join civicrm_contact as sc on sc.id = vp.nvp_site
