@@ -32,6 +32,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_genderEligibilityStatusValue = NULL;
   private $_mriEligibilityStatusValue = NULL;
   private $_maxEligibilityStatusValue = NULL;
+  private $_onlineOnlyEligibilityStatusValue = NULL;
   private $_otherStudyEligibilityStatusValue = NULL;
   private $_panelEligibilityStatusValue = NULL;
   private $_recallableEligibilityStatusValue = NULL;
@@ -330,6 +331,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getMaxEligibilityStatusValue() {
     return $this->_maxEligibilityStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setOnlineOnlyEligibilityStatusValue($value) {
+    $this->_onlineOnlyEligibilityStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getOnlineOnlyEligibilityStatusValue() {
+    return $this->_onlineOnlyEligibilityStatusValue;
   }
 
   /**

@@ -198,53 +198,6 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
-   * Method to determine if the volunteer has max study invitations / this is the max
-   *
-   * @param string $type final/initial
-   * @param int $volunteerId
-   * @param int $studyId
-   * @return bool
-   * @throws
-   */
-  public static function hasMaxStudyInvitationsNow($type, $volunteerId, $studyId) {
-    if (!empty($volunteerId)) {
-      $maxNumber = (int) Civi::settings()->get('nbr_max_invitations');
-      $checkDate = self::calculateCheckDateMaxInvitations();
-      $participationTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-      $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
-      $statusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
-      $query = "SELECT COUNT(*)
-        FROM civicrm_value_nbr_participation_data AS cvnpd
-        JOIN civicrm_case AS cc ON cvnpd.entity_id = cc.id
-        JOIN civicrm_case_contact AS ccc ON cc.id = ccc.case_id
-        JOIN civicrm_campaign AS camp ON cvnpd.nvpd_study_id = camp.id
-        WHERE cvnpd. nvpd_study_id <> %1 AND cc.is_deleted = %2 AND ccc.contact_id = %3
-        AND camp.start_date >= %4 AND cvnpd." . $statusColumn . " = %5";
-      $queryParams = [
-        1 => [(int) $studyId, "Integer"],
-        2 => [0, "Integer"],
-        3 => [(int) $volunteerId, "Integer"],
-        4 => [$checkDate->format('Y-m-d'), "String"],
-        5 => [Civi::service('nbrBackbone')->getInvitedParticipationStatusValue(), "String"],
-      ];
-      $studyCount = CRM_Core_DAO::singleValueQuery($query, $queryParams);
-      if ($type == "final") {
-        // for this comparison the current study should count (but was excluded in query)
-        $studyCount++;
-        if ($studyCount == $maxNumber) {
-          return TRUE;
-        }
-      }
-      else {
-        if ($studyCount >= $maxNumber) {
-          return TRUE;
-        }
-      }
-    }
-    return FALSE;
-  }
-
-  /**
    * Method to calculate the check date for the max invitations each volunteer
    *
    * @throws Exception
@@ -257,74 +210,6 @@ class CRM_Nihrbackbone_NihrVolunteer {
     $modifier = '-' . $noMonths . ' months';
     $checkDate->modify($modifier);
     return $checkDate;
-  }
-
-  /**
-   * Method to count the distinct number of studies where volunteer has been invited after a certain date
-   *
-   * @param $contactId
-   * @param $checkDate
-   * @return bool|int
-   * @throws Exception
-   */
-  private static function countDistinctStudiesWithInvitations($contactId, $checkDate) {
-    if (empty($contactId) || empty($checkDate)) {
-      return FALSE;
-    }
-    if (!$checkDate instanceof DateTime) {
-      $checkDate = new DateTime($checkDate);
-    }
-    $studyQuery = "SELECT COUNT(DISTINCT(std.nsd_study_number))
-        FROM civicrm_value_nbr_study_data AS std
-        LEFT JOIN civicrm_value_nbr_participation_data AS nvpd ON std.entity_id = nvpd.nvpd_study_id
-        LEFT JOIN civicrm_case AS cc ON nvpd.entity_id = cc.id
-        LEFT JOIN civicrm_case_contact AS cont ON cc.id = cont.case_id
-        LEFT JOIN civicrm_case_activity AS cac ON cc.id = cac.case_id
-        LEFT JOIN civicrm_activity AS act ON cac.activity_id = act.id AND act.is_current_revision = %1
-        WHERE cc.is_deleted = %2 AND cc.case_type_id = %3 AND act.activity_type_id = %4 AND cont.contact_id = %5
-        AND act.is_deleted = %2 AND act.activity_date_time > %6";
-    $studyCount =  (int) CRM_Core_DAO::singleValueQuery($studyQuery, [
-      1 => [1, 'Integer'],
-      2 => [0, 'Integer'],
-      3 => [(int)CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), 'Integer'],
-      4 => [(int)CRM_Nihrbackbone_BackboneConfig::singleton()->getInviteProjectActivityTypeId(), 'Integer'],
-      5 => [(int)$contactId, 'Integer'],
-      6 => [$checkDate->format('Y-m-d'), 'String'],
-    ]);
-    return $studyCount;
-  }
-
-  /**
-   * Method to return all the active studies the contact has not been invited to yet
-   *
-   * @param $contactId
-   * @return array
-   * @throws Exception
-   */
-  public static function getCurrentSelectedStudies($contactId) {
-    $studies = [];
-    if (!empty($contactId)) {
-      $studyQuery = "SELECT DISTINCT(c.nvpd_study_id) AS study_id
-        FROM civicrm_case_contact AS a
-        JOIN civicrm_case AS b ON a.case_id = b.id
-        LEFT JOIN civicrm_value_nbr_participation_data AS c ON a.case_id = c.entity_id
-        LEFT JOIN civicrm_campaign AS d ON d.id = c.nvpd_study_id
-        WHERE a.contact_id = %1 AND b.is_deleted = %2 AND b.case_type_id = %3
-          AND d.status_id in (%4, %5)";
-      $dao = CRM_Core_DAO::executeQuery($studyQuery, [
-        1 => [(int) $contactId, 'Integer'],
-        2 => [0, 'Integer'],
-        3 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), 'Integer'],
-        4 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), 'Integer'],
-        5 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getPendingStudyStatus(), 'Integer'],
-      ]);
-      while ($dao->fetch()) {
-        if (!CRM_Nihrbackbone_NbrVolunteerCase::hasBeenInvited($contactId, $dao->study_id)) {
-          $studies[] = $dao->study_id;
-        }
-      }
-    }
-    return $studies;
   }
 
   /**
@@ -782,6 +667,141 @@ class CRM_Nihrbackbone_NihrVolunteer {
       // set eligibility to "invited on other" for those cases
       CRM_Nihrbackbone_NbrVolunteerCase::setEligibilityStatus([Civi::service('nbrBackbone')->getOtherEligibilityStatusValue()], (int) $case->case_id);
     }
+  }
+
+  /**
+   * Check if the volunteer has the max number of face to face invites in the period
+   *
+   * @param $volunteerId
+   * @param $type
+   * @return bool
+   */
+  public static function hasMaxFaceToFaceInvitesNow($volunteerId) {
+    $max = (int) Civi::settings()->get('nbr_max_facetoface_invitations');
+    $count = self::getCountVolunteerStudyInvitesInPeriod($volunteerId, "facetoface");
+    if ($count > $max) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Check if the volunteer reaches final if we add one more
+   *
+   * @param $volunteerId
+   * @param $type
+   * @return bool
+   */
+  public static function hasFinalFaceToFaceInvitesNow($volunteerId) {
+    $max = (int) Civi::settings()->get('nbr_max_facetoface_invitations');
+    $count = self::getCountVolunteerStudyInvitesInPeriod($volunteerId, "facetoface");
+    $count++;
+    if ($count == $max) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Check if the volunteer has the total max number of invites in the period
+   *
+   * @param $volunteerId
+   * @param $type
+   * @return bool
+   */
+  public static function hasMaxTotalInvitesNow($volunteerId) {
+    $max = (int) Civi::settings()->get('nbr_max_online_invitations') + Civi::settings()->get('nbr_max_facetoface_invitations');
+    $count = self::getCountVolunteerStudyInvitesInPeriod($volunteerId, "total");
+    if ($count > $max) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Check if the volunteer reaches final if we add one more
+   *
+   * @param $volunteerId
+   * @param $type
+   * @return bool
+   */
+  public static function hasFinalTotalInvitesNow($volunteerId) {
+    $max = (int) Civi::settings()->get('nbr_max_online_invitations') + Civi::settings()->get('nbr_max_facetoface_invitations');
+    $count = self::getCountVolunteerStudyInvitesInPeriod($volunteerId, "total");
+    $count++;
+    if ($count == $max) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Method to get the studies the volunteer has been invited to in the last xxxx months
+   *
+   * @param $contactId
+   * @param $type (facetoface or online)
+   */
+  public static function getCountVolunteerStudyInvitesInPeriod($contactId, $type) {
+    if (empty($contactId) || empty($type)) {
+      Civi::log()->warning(E::ts("Empty contactId or type in ") . __METHOD__);
+      return FALSE;
+    }
+    $faceToFaceColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField("nsd_recall", "column_name");
+    $onLineColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField("nsd_online_study", "column_name");
+    $studyTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyDataCustomGroup("table_name");
+    $participationTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup("table_name");
+    $inviteColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField("nvpd_date_invited", "column_name");
+    $partStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField("nvpd_study_participation_status", "column_name");
+    $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField("nvpd_study_id", "column_name");
+    $checkDate = self::calculateCheckDateMaxInvitations();
+    $query = "SELECT COUNT(DISTINCT(c.id)) AS study_count
+        FROM " . $participationTable . " AS a
+            JOIN civicrm_campaign AS b ON a." . $studyIdColumn . " = b.id
+            JOIN civicrm_case AS c ON a.entity_id = c.id
+            JOIN civicrm_case_contact AS d ON c.id = d.case_id
+            LEFT JOIN " . $studyTable . " AS e ON b.id = e.entity_id
+        WHERE a." . $inviteColumn . " >= %1 AND a." . $inviteColumn . " IS NOT NULL
+          AND b.status_id IN (%2, %3, %4) AND c.is_deleted = %5 AND c.case_type_id = %6 AND d.contact_id = %7
+          AND a." . $partStatusColumn. " IN(%8, %9, %10, %11, %12)  AND ";
+    $queryParams = [
+      1 => [$checkDate->format("Y-m-d"), "String"],
+      2 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), "Integer"],
+      3 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getCompletedStudyStatus(), "Integer"],
+      4 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedStudyStatus(), "Integer"],
+      5 => [0, "Integer"],
+      6 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+      7 => [(int) $contactId, "Integer"],
+      8 => [Civi::service('nbrBackbone')->getAcceptedParticipationStatusValue(), "String"],
+      9 => [Civi::service('nbrBackbone')->getExcludedParticipationStatusValue(), "String"],
+      10 => [Civi::service('nbrBackbone')->getInvitationPendingParticipationStatusValue(), "String"],
+      11 => [Civi::service('nbrBackbone')->getInvitedParticipationStatusValue(), "String"],
+      12 => [Civi::service('nbrBackbone')->getParticipatedParticipationStatusValue(), "String"],
+      13 => [1, "Integer"],
+    ];
+    switch ($type) {
+      case "facetoface":
+        $query .= $faceToFaceColumn . " = %13";
+        break;
+      case "online":
+        $query .= $onLineColumn . " = %13";
+        break;
+      case "total":
+        $query .= "(" . $faceToFaceColumn . " = %13 OR " . $onLineColumn . " = %13)";
+        break;
+      default:
+        Civi::log()->warning(E::ts("Invalid type " . $type . " in ") . __METHOD__);
+        return FALSE;
+        break;
+    }
+    return (int) CRM_Core_DAO::singleValueQuery($query, $queryParams);
   }
 
 }
