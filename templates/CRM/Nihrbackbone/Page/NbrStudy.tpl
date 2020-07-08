@@ -13,11 +13,11 @@
         <th id="sortable">{ts}Study Name{/ts}</th>
         <th id="sortable">{ts}Status{/ts}</th>
         <th id="sortable">{ts}Site{/ts}</th>
-        <th id="sortable">{ts}Recall?{/ts}</th>
-        <th id="sortable">{ts}Sample?{/ts}</th>
-        <th id="nosort">{ts}Data?{/ts}</th>
-        <th id="nosort">{ts}Multi visit?{/ts}</th>
-        <th id="nosort">{ts}Online?{/ts}</th>
+        <th id="sortable">{ts}Recall: Face to Face?{/ts}</th>
+        <th id="sortable">{ts}Stored Sample{/ts}</th>
+        <th id="nosort">{ts}Data{/ts}</th>
+        <th id="nosort">{ts}Recall: Multi visit{/ts}</th>
+        <th id="nosort">{ts}Recall: Online{/ts}</th>
         <th id="sortable">{ts}Blood?{/ts}</th>
         <th id="sortable">{ts}Travel?{/ts}</th>
         <th id ="sortable">{ts}PI/Researcher{/ts}</th>

@@ -345,6 +345,40 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Method to find out if volunteer is available for drug studies
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function availableForDrugs($volunteerId) {
+    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_no_drug_studies', 'column_name');
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
+    $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
+    $excludeFromDrugs = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
+    if (!$excludeFromDrugs) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to find out if volunteer is available for MRI studies
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function availableForMri($volunteerId) {
+    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_no_mri', 'column_name');
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
+    $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
+    $excludeFromMri = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
+    if (!$excludeFromMri) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
    * Method to find out if volunteer is available for commercial studies
    *
    * @param $volunteerId

@@ -76,12 +76,12 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [], FALSE);
     $this->add('advcheckbox', 'nsd_ethics_approved', E::ts('Ethics approved?'), [], FALSE);
     $this->add('textarea', 'nsd_study_notes', E::ts('Notes'), ['rows' => 4, 'cols' => 100], FALSE);
-    $this->add('advcheckbox', 'nsd_commercial', E::ts('Commercial?'), [], FALSE);
-    $this->add('advcheckbox', 'nsd_recall', E::ts('Recall?'), [], FALSE);
-    $this->add('advcheckbox', 'nsd_sample_only', E::ts('Sample?'), [], FALSE);
-    $this->add('advcheckbox', 'nsd_data_only', E::ts('Data?'), [], FALSE);
-    $this->add('advcheckbox', 'nsd_online_study', E::ts('Online?'), [], FALSE);
-    $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Multiple visits?'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_commercial', E::ts('Commercial'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_recall', E::ts('Recall: Face-to-Face'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_sample_only', E::ts('Stored Sample'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_data_only', E::ts('Data'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_online_study', E::ts('Recall: Online'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Recall: Multiple visits'), [], FALSE);
     $this->addEntityRef('nsd_primary_nurse', E::ts('Primary nurse'), [
       'api' => ['params' => ['group' => 'nbr_bioresourcers']],
       'placeholder' => '- select nurse -',
@@ -94,6 +94,8 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'class' => 'crm-select2',
       'placeholder' => '- select gender -']);
     $this->add('advcheckbox', 'nsc_blood_required', E::ts('Blood required?'), [], FALSE);
+    $this->add('advcheckbox', 'nsc_drug_required', E::ts('Drugs required?'), [], FALSE);
+    $this->add('advcheckbox', 'nsc_mri_required', E::ts('MRI required?'), [], FALSE);
     $this->add('advcheckbox', 'nsc_travel_required', E::ts('Travel required?'), [], FALSE);
     $this->addEntityRef('nsc_ethnicity_id', E::ts('Ethnicity'), [
       'entity' => 'option_value',
@@ -153,12 +155,12 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'cols' => 100,
       'disabled' => 'disabled',
       ], FALSE);
-    $this->add('advcheckbox', 'nsd_commercial', E::ts('Commercial?'), ['disabled' => 'disabled'], FALSE);
-    $this->add('advcheckbox', 'nsd_recall', E::ts('Recall?'), ['disabled' => 'disabled'], FALSE);
-    $this->add('advcheckbox', 'nsd_sample_only', E::ts('Sample?'), ['disabled' => 'disabled'], FALSE);
-    $this->add('advcheckbox', 'nsd_data_only', E::ts('Data?'), ['disabled' => 'disabled'], FALSE);
-    $this->add('advcheckbox', 'nsd_online_study', E::ts('Online?'), ['disabled' => 'disabled'], FALSE);
-    $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Multiple visits?'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsd_commercial', E::ts('Commercial'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsd_recall', E::ts('Recall: Face-tot-Face'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsd_sample_only', E::ts('Stored Sample'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsd_data_only', E::ts('Data'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsd_online_study', E::ts('Recall: Online'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Recall: Multiple visits'), ['disabled' => 'disabled'], FALSE);
     $this->addEntityRef('nsd_primary_nurse', E::ts('Primary nurse'), [
       'api' => ['params' => ['group' => 'nbr_bioresourcers']],
       'placeholder' => '- select nurse -',
@@ -175,6 +177,8 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'disabled' => 'disabled',
       ]);
     $this->add('advcheckbox', 'nsc_blood_required', E::ts('Blood required?'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsc_drug_required', E::ts('Drugs required?'), ['disabled' => 'disabled'], FALSE);    $this->add('advcheckbox', 'nsc_blood_required', E::ts('Blood required?'), ['disabled' => 'disabled'], FALSE);
+    $this->add('advcheckbox', 'nsc_mri_required', E::ts('MRI required?'), ['disabled' => 'disabled'], FALSE);    $this->add('advcheckbox', 'nsc_blood_required', E::ts('Blood required?'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsc_travel_required', E::ts('Travel required?'), ['disabled' => 'disabled'], FALSE);
     $this->addEntityRef('nsc_ethnicity_id', E::ts('Ethnicity'), [
       'entity' => 'option_value',

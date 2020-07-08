@@ -21,20 +21,15 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                           'site_ods_code' => array('alias' => 'vw_cpms', 'title' => ts('Site ODS Code'),'default' => TRUE),
                           'site_name' => array('alias' => 'vw_cpms', 'title' => ts('Site Name'),'default' => TRUE),
                           'consent_date' => array('alias' => 'vw_cpms', 'title' => ts('Volunteer Consent Date'), 'required' => TRUE,),
-                            'pack_id' => array('alias' => 'vw_cpms', 'title' => ts('Volunteer Pack ID'), 'required' => TRUE),
+                          'pack_id' => array('alias' => 'vw_cpms', 'title' => ts('Volunteer Pack ID'), 'required' => TRUE),
                           'panel_name' => array('alias' => 'vw_cpms', 'title' => ts('Panel Name')),
                           'nvp_panel' => array('alias' => 'vw_cpms', 'title' => ts('Panel ID')),
                           'first_name' => array('alias' => 'vw_cpms', 'title' => ts('Forename')),
-                            'last_name' => array('alias' => 'vw_cpms', 'title' => ts('Surname')),
-                            'birth_date' => array('alias' => 'vw_cpms', 'title' => ts('DOB')),
-
-
-
-
-                            'stage1_visit_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE, 'no_display' => TRUE),
-                            'cpms_accrual_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE, 'no_display' => TRUE),
-                            'sample_received_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE, 'no_display' => TRUE),
-
+                          'last_name' => array('alias' => 'vw_cpms', 'title' => ts('Surname')),
+                          'birth_date' => array('alias' => 'vw_cpms', 'title' => ts('DOB')),
+                          'stage1_visit_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE, 'no_display' => TRUE),
+                          'cpms_accrual_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE, 'no_display' => TRUE),
+                          'sample_received_status' => array('alias' => 'vw_cpms', 'is_pseudofield' => TRUE, 'no_display' => TRUE),
                         ),
                     'filters' => array(
                         'consent_date' => array(
@@ -46,7 +41,6 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                             'alias' => 'vw_cpms',
                             'title' => ts('Panel Name'),
                             'type' => CRM_Utils_Type::T_STRING,
-                            #'default' => 'IBD'
                         ],
                       'stage1_visit_status' => [
                         'title' => ts('Stage 1 Visit actvity where activity status'),
@@ -66,7 +60,6 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                         'options' => CRM_Core_PseudoConstant::activityStatus(),
                       ],
-
                     ),
                 ),
         );

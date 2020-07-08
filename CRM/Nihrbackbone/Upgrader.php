@@ -89,8 +89,9 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
             CRM_Core_DAO::executeQuery($query);
         }
         if (!CRM_Core_DAO::checkTableExists('vw_stage1_consent_site')) {
-            $query = "CREATE view vw_stage1_consent_site as select c.id as contact_id, c.first_name, c.last_name, c.birth_date,
-            ch_pack.identifier as pack_id, vp.nvp_site, sc.display_name as site_name, sc.sic_code as site_ods_code,
+            $query = "CREATE view vw_stage1_consent_site as
+            select c.id as contact_id, c.first_name, c.last_name, c.birth_date, ch_pack.identifier as pack_id,
+            vp.nvp_site, sc.display_name as site_name, sc.sic_code as site_ods_code,
             vp.nvp_panel, pc.display_name as panel_name
             from
             (civicrm_contact c
