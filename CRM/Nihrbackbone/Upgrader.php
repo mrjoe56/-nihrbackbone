@@ -74,7 +74,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
         $this->ctx->log->info(E::ts('Applying update 1060 - add view vw_valid_consent'));
         if (!CRM_Core_DAO::checkTableExists('vw_valid_consent')) {
             $query = "CREATE view vw_valid_consent as
-            select cc.contact_id, activity_date_time as consent_date
+            select cc.contact_id, date(activity_date_time) as consent_date
             from civicrm_case_contact cc
             join civicrm_contact con on cc.contact_id = con.id
             join civicrm_case c on c.id = cc.case_id
