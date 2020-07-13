@@ -91,11 +91,24 @@ function nihrbackbone_civicrm_tabset($tabsetName, &$tabs, $context) {
   }
 }
 
+function nihrbackbone_civicrm_pre($op, $objectName, $id, &$params) {  # JB1
+Civi::log()->debug('pre hook');
+  }
+
+
 /**
  * Implements hook_civicrm_custom.
  *
  */
 function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
+
+  // if group = contact identity JB
+  # $gid = Civi::service('nbrBackbone')->getContactIdentityCustomGroupId();
+  # Civi::log()->debug('$gid : '.$gid);
+  if ($groupID == Civi::service('nbrBackbone')->getContactIdentityCustomGroupId()) {
+    CRM_Nihrbackbone_NbrContactIdentity::checkDuplicatContactIdentity($op,$groupID, $entityID, $params);
+  }
+
   // if group = participation data and study status is invited, customInviteHook
   if ($groupID == CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('id')) {
     foreach ($params as $paramKey => $paramValues) {
@@ -164,7 +177,6 @@ function nihrbackbone_civicrm_buildForm($formName, &$form) {
   CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'templates/CRM/Nihrbackbone/nbr_utils.js');
 
 }
-
 
 /**
  * Implements hook_civicrm_custom.
@@ -339,10 +351,25 @@ function nihrbackbone_civicrm_entityTypes(&$entityTypes) {
  * Implements hook_civicrm_preProcess().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function nihrbackbone_civicrm_preProcess($formName, &$form) {
+ **/
+function nihrbackbone_civicrm_preProcess($formName, &$form) {  #JB1
 
-} // */
+  #Civi::log()->debug('PRERPOCESS');
+  #foreach ($form as $key => $value) {#
+
+    #if (is_array($value)) {
+    #  Civi::log()->debug('$key : ' . $key . '  values : ');
+    #  foreach ($value as $k => $v) {
+    #    Civi::log()->debug('$k : ' . $k . '  $v : ' . $v);
+    #  }
+    #}
+    #else {
+    #  Civi::log()->debug('$key : ' . $key . '  $value : ' . $value);
+    #}
+ # }
+
+
+}
 
 /**
  * Implements hook_civicrm_navigationMenu().

@@ -10,6 +10,58 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  */
 
 class CRM_Nihrbackbone_NbrContactIdentity {
+
+
+  public static function checkDuplicatContactIdentity($op,$groupID, $entityID, $params)  {
+    Civi::log()->debug('CID call, $entityID ' . $entityID);
+    $contact_duplicates = [];                                                                                                      # array of contacts with a duplicate
+    # contact identity (CI)
+    foreach ($params as $key => $valuesarray) {
+      if ($valuesarray['column_name'] == 'identifier_type') {                                                                        # for CI being edited
+        $this_ci_type = $valuesarray['value'];                                                                                     #   get type
+        if ($valuesarray['column_name'] == 'identifier') {
+          $this_ci_value = $valuesarray['value'];                                                                                    #   and value
+        }
+      }
+
+      # check if old value was duplicated here - hmm
+
+
+      foreach (['cih_type_packid', 'cih_type_nhs_number'] as $ci_type) {                                                              # for each appropriate CI type
+        $query = "select identifier from civicrm_value_contact_id_history
+                where identifier_type = '" . $ci_type . "' and entity_id = " . $entityID;
+        $dao = CRM_Core_DAO::executeQuery($query);                                                                                   #  and for each this.value of the type
+        while ($dao->fetch()) {
+          #Civi::log()->debug('$ci_type : ' . $ci_type . ' value : ' . $dao->identifier);
+          if ($ci_type == 'cih_type_packid') {
+            $tag_id = 'Duplicate Pack ID';
+          }
+          if ($ci_type == 'cih_type_nhs_number') {
+            $tag_id = 'Duplicate NHS number';
+          }
+          $query1 = "select entity_id as duplicate_contact_id from civicrm_value_contact_id_history
+                   where identifier_type = '" . $ci_type . "' and identifier = '" . $dao->identifier . "'
+                   and entity_id != " . $entityID;
+          #Civi::log()->debug('$query1 ' . $query1);
+          $dao1 = CRM_Core_DAO::executeQuery($query1);                                                                               #   if there are other contacts with the same
+          while ($dao1->fetch()) {                                                                                                   #   CI type and value
+            #Civi::log()->debug('$ci_type : ' . $ci_type . ' value duplicated for contact : ' . $dao1->duplicate_contact_id);
+            $params = ['entity_table' => 'civicrm_contact', 'entity_id' => $dao1->duplicate_contact_id, 'tag_id' => $tag_id,];
+            $getcount = civicrm_api3('EntityTag', 'getcount', $params);                                                #     then check if the other contact
+            if ($getcount == 0) {                                                                                                   #     already has a tag for the CI type
+              #Civi::log()->debug('adding');
+              $result = civicrm_api3('EntityTag', 'create', $params);                                                  #      and if not - add the tag
+            }
+          }
+        }
+      }
+
+
+      #Civi::log()->debug('$contact_duplicates : '.implode(', ', $contact_duplicates));
+
+    }
+  }
+
   /**
    * Method to process validateForm hook for contact identity
    * - do not allow edit or add when contact identifier is protected

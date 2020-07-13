@@ -3,16 +3,19 @@ class CRM_Nihrbackbone_NihrValidation {
 
   public static function validateAlias($formName, &$fields, &$files, &$form, &$errors) {
 
+    $contact_id = CRM_Utils_Request::retrieve('entityID', 'String');
+
     # get contact id history custom field IDs
-    $query = "select id from civicrm_custom_field where name = 'id_history_entry_type'";  # custom_7
+    $query = "select id from civicrm_custom_field where name = 'id_history_entry_type'";  # custom_12
     $dao  = CRM_Core_DAO::executeQuery($query);
     if ($dao->fetch()) {$alias_type_id = 'custom_'.$dao->id;};
 
-    $query = "select id from civicrm_custom_field where name = 'id_history_entry'"; # custom_8
+    $query = "select id from civicrm_custom_field where name = 'id_history_entry'"; # custom_13
     $dao  = CRM_Core_DAO::executeQuery($query);
     if ($dao->fetch()) {$alias_value_id = 'custom_'.$dao->id;};
 
     foreach($fields as $key => $value) {
+      #Civi::log()->debug('$key : '.$key.'  $value : '.$value);
       if (strpos($key,$alias_type_id) !== false) {                   # contact id history custom field found
         $alias_type = $value;                                        #  get custom field value
         $errorField = $key;                                          #  and field name - for error logging
@@ -38,11 +41,24 @@ class CRM_Nihrbackbone_NihrValidation {
       elseif (strlen($alias_value) != 8) {                           #  length of input is 8
         $errors[$errorField] = $msg."must be 8 characters long";
       }
-      elseif (! preg_match( '/[0-9]{6}/', $n_string)) {       #  chars 2-7 are numeric
+      elseif (! preg_match( '/[0-9]{6}/', $n_string)) {       # chars 2-7 are numeric
         $errors[$errorField] = $msg."2nd to 7th characters must be numeric";
       }
       elseif ($chk_chr != $last) {                                   # check digit is correct
         $errors[$errorField] = $msg."Check character incorrect (".$chk_chr.")";
+      }
+      else {                                                         # check if pack ID is in use on another contact
+        #Civi::log()->debug('doing check on cid '.$contact_id.'  pack id : '.$alias_value);
+        $query = "select  c.id as otherid, sort_name from civicrm_value_contact_id_history h, civicrm_contact c
+                  where c.id = entity_id and identifier_type = 'cih_type_packid' and identifier = '".$alias_value."' and entity_id != ".$contact_id;
+        $dao = CRM_Core_DAO::executeQuery($query);
+        $dao->fetch();
+        if ($dao->otherid) {
+          #Civi::log()->debug('check result id = ' . $dao->otherid);
+          #Civi::log()->debug('check result sort_name = ' . $dao->sort_name);
+          $msg = ts('This pack ID is already in use for Contact ID '.$dao->otherid.' ('.$dao->sort_name.')');
+          CRM_Core_Session::setStatus($msg, ts('Notice'), 'alert');
+        }
       }
     }
 
