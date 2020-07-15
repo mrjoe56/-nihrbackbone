@@ -679,7 +679,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
   public static function hasMaxFaceToFaceInvitesNow($volunteerId) {
     $max = (int) Civi::settings()->get('nbr_max_facetoface_invitations');
     $count = self::getCountVolunteerStudyInvitesInPeriod($volunteerId, "facetoface");
-    if ($count > $max) {
+    if ($count >= $max) {
       return TRUE;
     }
     else {
@@ -697,7 +697,6 @@ class CRM_Nihrbackbone_NihrVolunteer {
   public static function hasFinalFaceToFaceInvitesNow($volunteerId) {
     $max = (int) Civi::settings()->get('nbr_max_facetoface_invitations');
     $count = self::getCountVolunteerStudyInvitesInPeriod($volunteerId, "facetoface");
-    $count++;
     if ($count == $max) {
       return TRUE;
     }
@@ -714,9 +713,9 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @return bool
    */
   public static function hasMaxTotalInvitesNow($volunteerId) {
-    $max = (int) Civi::settings()->get('nbr_max_online_invitations') + Civi::settings()->get('nbr_max_facetoface_invitations');
+    $max = (int) Civi::settings()->get('nbr_max_total_invitations');
     $count = self::getCountVolunteerStudyInvitesInPeriod($volunteerId, "total");
-    if ($count > $max) {
+    if ($count >= $max) {
       return TRUE;
     }
     else {
@@ -732,9 +731,8 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @return bool
    */
   public static function hasFinalTotalInvitesNow($volunteerId) {
-    $max = (int) Civi::settings()->get('nbr_max_online_invitations') + Civi::settings()->get('nbr_max_facetoface_invitations');
+    $max = (int) Civi::settings()->get('nbr_max_total_invitations');
     $count = self::getCountVolunteerStudyInvitesInPeriod($volunteerId, "total");
-    $count++;
     if ($count == $max) {
       return TRUE;
     }
