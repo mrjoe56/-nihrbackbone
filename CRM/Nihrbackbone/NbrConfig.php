@@ -26,9 +26,11 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_bloodEligibilityStatusValue = NULL;
   private $_bmiEligibilityStatusValue = NULL;
   private $_commercialEligibilityStatusValue = NULL;
+  private $_drugsEligibilityStatusValue = NULL;
   private $_eligibleEligibilityStatusValue = NULL;
   private $_ethnicityEligibilityStatusValue = NULL;
   private $_genderEligibilityStatusValue = NULL;
+  private $_mriEligibilityStatusValue = NULL;
   private $_maxEligibilityStatusValue = NULL;
   private $_otherStudyEligibilityStatusValue = NULL;
   private $_panelEligibilityStatusValue = NULL;
@@ -39,9 +41,23 @@ class CRM_Nihrbackbone_NbrConfig {
   // activity types
   private $_activityTypeOptionGroupId = NULL;
   private $_consentActivityTypeId = NULL;
-  // others
-  private $_selectedParticipationStatusValue = NULL;
+  // custom group and field ids
+  private $_contactIdentityCustomGroupId = NULL;
+  private $_identifierTypeCustomFieldId = NULL;
+  // study participation status
+  private $_acceptedParticipationStatusValue = NULL;
+  private $_excludedParticipationStatusValue = NULL;
+  private $_invitationPendingParticipationStatusValue = NULL;
   private $_invitedParticipationStatusValue = NULL;
+  private $_noResponseParticipationStatusValue = NULL;
+  private $_notParticipatedParticipationStatusValue = NULL;
+  private $_participatedParticipationStatusValue = NULL;
+  private $_refusedParticipationStatusValue = NULL;
+  private $_renegedParticipationStatusValue = NULL;
+  private $_returnToSenderParticipationStatusValue = NULL;
+  private $_selectedParticipationStatusValue = NULL;
+  private $_withdrawnParticipationStatusValue = NULL;
+  // others
   private $_correctConsentStatusValue = NULL;
   private $_visitStage2Substring = NULL;
 
@@ -235,6 +251,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string $value
    */
+  public function setDrugsEligibilityStatusValue($value) {
+    $this->_drugsEligibilityStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getDrugsEligibilityStatusValue() {
+    return $this->_drugsEligibilityStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
   public function setEligibleEligibilityStatusValue($value) {
     $this->_eligibleEligibilityStatusValue = $value;
   }
@@ -272,6 +302,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getGenderEligibilityStatusValue() {
     return $this->_genderEligibilityStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setMriEligibilityStatusValue($value) {
+    $this->_mriEligibilityStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getMriEligibilityStatusValue() {
+    return $this->_mriEligibilityStatusValue;
   }
 
   /**
@@ -347,15 +391,43 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string $value
    */
-  public function setSelectedParticipationStatusValue($value) {
-    $this->_selectedParticipationStatusValue = $value;
+  public function setAcceptedParticipationStatusValue($value) {
+    $this->_acceptedParticipationStatusValue = $value;
   }
 
   /**
    * @return string
    */
-  public function getSelectedParticipationStatusValue() {
-    return $this->_selectedParticipationStatusValue;
+  public function getAcceptedParticipationStatusValue() {
+    return $this->_acceptedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setExcludedParticipationStatusValue($value) {
+    $this->_excludedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getExcludedParticipationStatusValue() {
+    return $this->_excludedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setInvitationPendingParticipationStatusValue($value) {
+    $this->_invitationPendingParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getInvitationPendingParticipationStatusValue() {
+    return $this->_invitationPendingParticipationStatusValue;
   }
 
   /**
@@ -370,6 +442,118 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getInvitedParticipationStatusValue() {
     return $this->_invitedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setNoResponseParticipationStatusValue($value) {
+    $this->_noResponseParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getNoResponseParticipationStatusValue() {
+    return $this->_noResponseParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setNotParticipatedParticipationStatusValue($value) {
+    $this->_notParticipatedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getNotParticipatedParticipationStatusValue() {
+    return $this->_notParticipatedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setParticipatedParticipationStatusValue($value) {
+    $this->_participatedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getParticipatedParticipationStatusValue() {
+    return $this->_participatedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setRefusedParticipationStatusValue($value) {
+    $this->_refusedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getRefusedParticipationStatusValue() {
+    return $this->_refusedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setRenegedParticipationStatusValue($value) {
+    $this->_renegedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getRenegedParticipationStatusValue() {
+    return $this->_renegedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setReturnToSenderParticipationStatusValue($value) {
+    $this->_returnToSenderParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getReturnToSenderParticipationStatusValue() {
+    return $this->_returnToSenderParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setSelectedParticipationStatusValue($value) {
+    $this->_selectedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getSelectedParticipationStatusValue() {
+    return $this->_selectedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setWithdrawnParticipationStatusValue($value) {
+    $this->_withdrawnParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getWithdrawnParticipationStatusValue() {
+    return $this->_withdrawnParticipationStatusValue;
   }
 
   /**
@@ -426,6 +610,34 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getActivityTypeOptionGroupId() {
     return $this->_activityTypeOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setContactIdentityCustomGroupId($id) {
+    $this->_contactIdentityCustomGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getContactIdentityCustomGroupId() {
+    return $this->_contactIdentityCustomGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setIdentifierTypeCustomFieldId($id) {
+    $this->_identifierTypeCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getIdentifierTypeCustomFieldId() {
+    return $this->_identifierTypeCustomFieldId;
   }
 
 }

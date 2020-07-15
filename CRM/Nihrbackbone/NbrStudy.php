@@ -197,6 +197,50 @@ class CRM_Nihrbackbone_NbrStudy {
   }
 
   /**
+   * Method to check if the study requires drugs
+   *
+   * @param $studyId
+   * @return bool
+   */
+  public static function requiresDrugs($studyId) {
+    if (empty($studyId)) {
+      return FALSE;
+    }
+    $drugsColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_drug_required', 'column_name');
+    $criteriaTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('table_name');
+    $query = "SELECT " . $drugsColumn . " FROM " . $criteriaTable . " WHERE entity_id = %1";
+    $required = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $studyId, "Integer"]]);
+    if ($required == 1) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Method to check if the study requires MRI
+   *
+   * @param $studyId
+   * @return bool
+   */
+  public static function requiresMri($studyId) {
+    if (empty($studyId)) {
+      return FALSE;
+    }
+    $mriColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nsc_mri_required', 'column_name');
+    $criteriaTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomGroup('table_name');
+    $query = "SELECT " . $mriColumn . " FROM " . $criteriaTable . " WHERE entity_id = %1";
+    $required = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $studyId, "Integer"]]);
+    if ($required == 1) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  /**
    * Method to check if the study requires travel
    *
    * @param $studyId

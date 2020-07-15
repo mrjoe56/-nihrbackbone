@@ -22,6 +22,8 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition->setFactory(['CRM_Nihrbackbone_NbrConfig', 'getInstance']);
     $this->setActivityTypes($definition);
     $this->setConsentStatus($definition);
+    $this->setCustomFieldIds($definition);
+    $this->setCustomGroupIds($definition);
     $this->setEligibilityStatus($definition);
     $this->setOptionGroups($definition);
     $this->setParticipationStatus($definition);
@@ -30,6 +32,40 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition->addMethodCall('setVisitStage2Substring', ["nihr_visit_stage2"]);
     $container->setDefinition('nbrBackbone', $definition);
   }
+
+  /**
+   * Method to set the custom field ids
+   *
+   * @param $definition
+   */
+  private function setCustomFieldIds(&$definition) {
+    $query = "SELECT cf.id
+        FROM civicrm_custom_group AS cg
+            JOIN civicrm_custom_field AS cf ON cg.id = cf.custom_group_id
+        WHERE cg.name = %1 AND cf.name = %2";
+    $queryParams = [
+      1 => ["contact_id_history", "String"],
+      2 => ["id_history_entry_type", "String"],
+    ];
+    $id = \CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($id) {
+      $definition->addMethodCall('setIdentifierTypeCustomFieldId', [(int) $id]);
+    }
+  }
+
+  /**
+   * Method to set the custom group ids
+   *
+   * @param $definition
+   */
+  private function setCustomGroupIds(&$definition) {
+    $query = "SELECT id FROM civicrm_custom_group WHERE name = %1";
+    $id = \CRM_Core_DAO::singleValueQuery($query, [1 =>["contact_id_history", "String"]]);
+    if ($id) {
+      $definition->addMethodCall('setContactIdentityCustomGroupId', [(int) $id]);
+    }
+  }
+
   /**
    * Method to set option group ids
    *
@@ -92,12 +128,52 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $dao = \CRM_Core_DAO::executeQuery($query, [1 => ["nbr_study_participation_status", "String"]]);
     while ($dao->fetch()) {
       switch ($dao->name) {
+        case "study_participation_status_accepted":
+          $definition->addMethodCall('setAcceptedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_excluded":
+          $definition->addMethodCall('setExcludedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_invitation_pending":
+          $definition->addMethodCall('setInvitationPendingParticipationStatusValue', [$dao->value]);
+          break;
+
         case "study_participation_status_invited":
           $definition->addMethodCall('setInvitedParticipationStatusValue', [$dao->value]);
           break;
 
+        case "study_participation_status_no_response":
+          $definition->addMethodCall('setNoResponseParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_not_participated":
+          $definition->addMethodCall('setNotParticipatedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_participated":
+          $definition->addMethodCall('setParticipatedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_refused":
+          $definition->addMethodCall('setRefusedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_reneged":
+          $definition->addMethodCall('setRenegedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_return_to_sender":
+          $definition->addMethodCall('setReturnToSenderParticipationStatusValue', [$dao->value]);
+          break;
+
         case "study_participation_status_selected":
           $definition->addMethodCall('setSelectedParticipationStatusValue', [$dao->value]);
+          break;
+
+        case "study_participation_status_withdrawn":
+          $definition->addMethodCall('setWithdrawnParticipationStatusValue', [$dao->value]);
           break;
       }
     }
@@ -130,11 +206,17 @@ class NbrBackboneContainer implements CompilerPassInterface {
         case "nihr_excluded_commercial":
           $definition->addMethodCall('setCommercialEligibilityStatusValue', [$dao->value]);
           break;
+        case "nihr_excluded_drugs":
+          $definition->addMethodCall('setDrugsEligibilityStatusValue', [$dao->value]);
+          break;
         case "nihr_excluded_ethnicity":
           $definition->addMethodCall('setEthnicityEligibilityStatusValue', [$dao->value]);
           break;
         case "nihr_excluded_gender":
           $definition->addMethodCall('setGenderEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_excluded_mri":
+          $definition->addMethodCall('setMriEligibilityStatusValue', [$dao->value]);
           break;
         case "nihr_excluded_panel":
           $definition->addMethodCall('setPanelEligibilityStatusValue', [$dao->value]);

@@ -15,7 +15,7 @@ class CRM_Nihrbackbone_NbrConsent
   {
     // caseID cannot be empty, a consent is always linked to a case
     if ($caseID == '') {
-      Civi::log()->debug('Error: ') . " case ID is missing";
+      Civi::log()->error("Case ID is missing in " . __METHOD__);
     }
     else {
       $consentVersion = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_consent_version', 'id');

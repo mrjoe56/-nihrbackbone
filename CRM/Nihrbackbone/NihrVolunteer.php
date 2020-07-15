@@ -38,9 +38,11 @@ class CRM_Nihrbackbone_NihrVolunteer {
         'id' => $contactId,
         'return' => 'contact_sub_type',
       ]);
-      foreach ($contactSubTypes as $contactSubTypeId => $contactSubTypeName) {
-        if ($contactSubTypeName == $this->_volunteerContactSubType['name']) {
-          return TRUE;
+      if (!empty($contactSubTypes)) {
+        foreach ($contactSubTypes as $contactSubTypeId => $contactSubTypeName) {
+          if ($contactSubTypeName == $this->_volunteerContactSubType['name']) {
+            return TRUE;
+          }
         }
       }
     }
@@ -337,6 +339,40 @@ class CRM_Nihrbackbone_NihrVolunteer {
     $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
     $excludeFromBlood = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
     if (!$excludeFromBlood) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to find out if volunteer is available for drug studies
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function availableForDrugs($volunteerId) {
+    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_no_drug_studies', 'column_name');
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
+    $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
+    $excludeFromDrugs = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
+    if (!$excludeFromDrugs) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to find out if volunteer is available for MRI studies
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function availableForMri($volunteerId) {
+    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_no_mri', 'column_name');
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
+    $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
+    $excludeFromMri = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
+    if (!$excludeFromMri) {
       return TRUE;
     }
     return FALSE;
@@ -672,6 +708,79 @@ class CRM_Nihrbackbone_NihrVolunteer {
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->warning(E::ts('Could not retrieve volunteer status for contactID ') . $volunteerId . E::ts(' in ') . __METHOD__);
       return FALSE;
+    }
+  }
+
+  /**
+   * Method to check if volunteer is deceased
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function isDeceased($volunteerId) {
+    try {
+      $result = civicrm_api3('Contact', 'getvalue', [
+        'return' => "is_deceased",
+        'id' => (int) $volunteerId,
+      ]);
+      if ($result == "1") {
+        return TRUE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return FALSE;
+  }
+
+  /**
+   * Check if volunteer allows email
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function allowsEmail($volunteerId) {
+    try {
+      $result = civicrm_api3('Contact', 'getvalue', [
+        'return' => "do_not_email",
+        'id' => (int) $volunteerId,
+      ]);
+      if ($result == "1") {
+        return FALSE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return TRUE;
+  }
+
+  /**
+   * Method to set the eligibility other on all cases where volunteer is selected and study is
+   * not the current one
+   *
+   * @param $contactId
+   * @param $caseId
+   */
+  public static function updateEligibilityAfterInvite($contactId, $caseId) {
+    // retrieve study id of caseId -> ignore that study
+    $currentStudyId = (int) CRM_Nihrbackbone_NbrVolunteerCase::getStudyId($caseId);
+    // select all active cases on recruiting studies where volunteer is selected
+    $query = "SELECT DISTINCT(pd.entity_id) AS case_id
+        FROM civicrm_value_nbr_participation_data AS pd
+            JOIN civicrm_case AS cc ON pd.entity_id = cc.id
+            JOIN civicrm_case_contact AS ccc ON cc.id = ccc.case_id
+        WHERE cc.is_deleted = %1 AND ccc.contact_id = %2 AND cc.case_type_id = %3
+          AND pd.nvpd_study_id != %4 AND pd.nvpd_study_participation_status = %5";
+    $queryParams = [
+      1 => [0, "Integer"],
+      2 => [$contactId, "Integer"],
+      3 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+      4 => [$currentStudyId, "Integer"],
+      5 => [Civi::service('nbrBackbone')->getSelectedParticipationStatusValue(), "String"],
+    ];
+    $case = CRM_Core_DAO::executeQuery($query, $queryParams);
+    while ($case->fetch()) {
+      // set eligibility to "invited on other" for those cases
+      CRM_Nihrbackbone_NbrVolunteerCase::setEligibilityStatus([Civi::service('nbrBackbone')->getOtherEligibilityStatusValue()], (int) $case->case_id);
     }
   }
 

@@ -10,11 +10,11 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
 
 class CRM_Nihrbackbone_NihrContactSummary {
   public static function nihrbackbone_civicrm_summary($contactID) {
-    #Civi::log()->debug('*************************************************');
-    #Civi::log()->debug('civicrm_summary hook - $contactID : ' . $contactID);
-    $query = "select Concat(cp.display_name,', ',cc.display_name,', ',cs.display_name) as panel_data
-    from civicrm_value_nihr_volunteer_panel panel, civicrm_contact cp, civicrm_contact cc, civicrm_contact cs
-    where cp.id = panel.nvp_panel and cc.id = panel.nvp_centre and cs.id = panel.nvp_site and panel.entity_id  = %1 limit 3";
+    $query = "select Concat(coalesce(cp.display_name, ''),', ',coalesce(cc.display_name, ''),', ',coalesce(cs.display_name, '')) as panel_data 
+            from civicrm_value_nihr_volunteer_panel panel left join civicrm_contact cp on cp.id = panel.nvp_panel 
+            left join civicrm_contact cc on cc.id = panel.nvp_centre left join civicrm_contact cs on cs.id = panel.nvp_site 
+            where panel.entity_id  = %1 limit 3";
+
     $dao = CRM_Core_DAO::executeQuery($query, [1 => [(int) $contactID, 'Integer']]);
     $index = 0;
     while ($dao->fetch()) {

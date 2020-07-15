@@ -284,10 +284,11 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         ]);
         // if replace is false, make sure the current status are also saved
         // apart from when it is eligible because that can not be in combination with others
+        // note: if adding a new status, eligible can always be removed
         if (!$replace) {
           if (isset($result[$eligibleCustomField])) {
             foreach ($result[$eligibleCustomField] as $currentStatus) {
-              if (!in_array($currentStatus, $newStatus)) {
+              if (!in_array($currentStatus, $newStatus) && $currentStatus != Civi::service('nbrBackbone')->getEligibleEligibilityStatusValue()) {
                 $newStatus[] = $currentStatus;
               }
             }
@@ -313,33 +314,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     }
     else {
       Civi::log()->error(E::ts('Could not find a custom field for eligible status in ') . __METHOD__);
-    }
-  }
-
-  /**
-   * Method to remove the max reached eligible status for the volunteer
-   *
-   * @param $volunteerId
-   */
-  public static function unsetMaxStatus($volunteerId) {
-    $maxReachedStatusId = Civi::service('nbrBackbone')->getMaxEligibilityStatusValue();
-    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-    $eligibleColumnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
-    // retrieve current eligible status from each volunteer participation cases
-    $query = "SELECT a." . $eligibleColumnName . ", a.entity_id
-      FROM " . $tableName . " AS a
-      JOIN civicrm_case AS b ON a.entity_id = b.id
-      JOIN civicrm_case_contact AS c ON a.entity_id = c.case_id
-      WHERE b.is_deleted = %1 AND b.case_type_id = %2 AND c.contact_id = %3 AND b.status_id != %4";
-    $queryParams = [
-      1 => [0, 'Integer'],
-      2 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), 'Integer'],
-      3 => [$volunteerId, 'Integer'],
-      4 => [CRM_Nihrbackbone_BackboneConfig::singleton()->getClosedCaseStatusId(), 'Integer'],
-    ];
-    $current = CRM_Core_DAO::executeQuery($query, $queryParams);
-    while ($current->fetch()) {
-      self::removeEligibilityStatus((int) $current->entity_id, $current->$eligibleColumnName, $maxReachedStatusId);
     }
   }
 
@@ -694,7 +668,22 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         'return' => $customFieldId,
       ]);
       $eligible = Civi::service('nbrBackbone')->getEligibleEligibilityStatusValue();
-      if (!is_array($result) && $result == $eligible) {
+      // check if there is only 1 eligibility status, if there are more then volunteer
+      // is not eligible
+      if (is_array($result)) {
+        if (count($result) == 1) {
+          foreach ($result as $key => $value) {
+            $status = $value;
+          }
+        }
+        else {
+          return FALSE;
+        }
+      }
+      else {
+        $status = $result;
+      }
+      if ($status == $eligible) {
         return TRUE;
       }
       else {
@@ -797,6 +786,14 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     // does study require blood and does volunteer not give blood?
     if (CRM_Nihrbackbone_NbrStudy::requiresBlood($studyId) && !CRM_Nihrbackbone_NihrVolunteer::availableForBlood($volunteerId)) {
       $eligibilities[] = Civi::service('nbrBackbone')->getBloodEligibilityStatusValue();
+    }
+    // does study require drugs and does volunteer not do drugs?
+    if (CRM_Nihrbackbone_NbrStudy::requiresDrugs($studyId) && !CRM_Nihrbackbone_NihrVolunteer::availableForDrugs($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getDrugsEligibilityStatusValue();
+    }
+    // does study require MRI and does volunteer not do MRI?
+    if (CRM_Nihrbackbone_NbrStudy::requiresMri($studyId) && !CRM_Nihrbackbone_NihrVolunteer::availableForMri($volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getMriEligibilityStatusValue();
     }
     // does volunteer have required ethnicity?
     if (!CRM_Nihrbackbone_NbrVolunteerCase::hasEthnicity($volunteerId, $studyId)) {
@@ -933,7 +930,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
             JOIN civicrm_activity AS ca ON cca.activity_id = ca.id
             JOIN civicrm_option_value AS ov ON ca.activity_type_id = ov.value AND ov.option_group_id = %1
         WHERE cc.is_deleted = %2 AND ca.is_deleted = %2 AND ca.is_test = %2 AND ca.is_current_revision = %3
-          AND cca.case_id = %4 AND ov.name LIKE %5 AND ca.activity_date_time > NOW() LIMIT 1";
+          AND cca.case_id = %4 AND ov.name LIKE %5 AND ca.activity_date_time > NOW() ORDER BY ca.activity_date_time LIMIT 1";
     $queryParams = [
       1 => [Civi::service('nbrBackbone')->getActivityTypeOptionGroupId(), "Integer"],
       2 => [0, "Integer"],

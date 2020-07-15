@@ -19,22 +19,23 @@ class CRM_Nihrbackbone_NbrInvitation {
    * @param CRM_Core_DAO $activityObject
    */
   public static function postInviteHook($op, $activityId, $activityObject) {
-    if ($op == "create") {
-      // only process if study status not updated manually in UI
-      $qfDefault = CRM_Utils_Request::retrieveValue('_qf_default', "String");
-      if (isset($activityObject->case_id) && $qfDefault != "CustomData:upload") {
-        try {
-          $targetId = civicrm_api3('ActivityContact', 'getvalue', [
-            'return' => "contact_id",
-            'activity_id' => (int) $activityId,
-            'record_type_id' => "Activity Targets",
-          ]);
-          CRM_Nihrbackbone_NbrVolunteerCase::updateStudyStatus($activityObject->case_id, $targetId, 'study_participation_status_invited');
+    if ($op == "create" && isset($activityObject->case_id)) {
+      try {
+        $targetId = civicrm_api3('ActivityContact', 'getvalue', [
+          'return' => "contact_id",
+          'activity_id' => (int) $activityId,
+          'record_type_id' => "Activity Targets",
+        ]);
+        // set eligibility to "invited on other" for all other cases where volunteer is selected
+        CRM_Nihrbackbone_NihrVolunteer::updateEligibilityAfterInvite((int) $targetId, (int) $activityObject->case_id);
+        $qfDefault = CRM_Utils_Request::retrieveValue('_qf_default', "String");
+        if ($qfDefault != "CustomData:upload") {
+          CRM_Nihrbackbone_NbrVolunteerCase::updateStudyStatus((int) $activityObject->case_id, (int) $targetId, 'study_participation_status_invited');
         }
-        catch (CiviCRM_API3_Exception $ex) {
-          Civi::log()->warning(E::ts("Could not find a target contact id for activity ") . $activityId
-            . E::ts(" in ") . __METHOD__ . E::ts(", study status NOT set to invited!"));
-        }
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+        Civi::log()->warning(E::ts("Could not find a target contact id for activity ") . $activityId
+          . E::ts(" in ") . __METHOD__ . E::ts(", study status NOT set to invited!"));
       }
     }
   }
