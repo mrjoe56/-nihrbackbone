@@ -152,7 +152,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   {
     $container = CRM_Extension_System::singleton()->getFullContainer();
     $resourcePath = $container->getPath('nihrbackbone') . '/resources/';
-    $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . $this->_dataSource . "_mapping_xxxxxx.json";
+    $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . $this->_dataSource . "_mapping.json";
     if (!file_exists($mappingFile)) {
       $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . "default_mapping.json";
     }
@@ -948,47 +948,47 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     }
   }
 
-/*
-  private function addGeneralObservations($contactID, $data)
-  {
-    // *** add or update volunteer questionnaire data
+  /*
+    private function addGeneralObservations($contactID, $data)
+    {
+      // *** add or update volunteer questionnaire data
 
-    if ((isset ($data['weight']) && $data['weight'] <> '') {
+      if ((isset ($data['weight']) && $data['weight'] <> '') {
 
-    $table = 'civicrm_value_nihr_general_observations';
-    $xdata = [];
-    $xdata['id'] = $contactID;
+      $table = 'civicrm_value_nihr_general_observations';
+      $xdata = [];
+      $xdata['id'] = $contactID;
 
-    // *** check if panel exists and if so, select ID
-    if (isset($panel)) {
-      try {
-        $result = civicrm_api3('Contact', 'get', [
-          'contact_sub_type' => "nbr_panel",
-          'display_name' => $panel,
-        ]);
-      } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error selecting panel ' . $panel . ': ' . $ex->getMessage(), 'error');
+      // *** check if panel exists and if so, select ID
+      if (isset($panel)) {
+        try {
+          $result = civicrm_api3('Contact', 'get', [
+            'contact_sub_type' => "nbr_panel",
+            'display_name' => $panel,
+          ]);
+        } catch (CiviCRM_API3_Exception $ex) {
+          $this->_logger->logMessage('Error selecting panel ' . $panel . ': ' . $ex->getMessage(), 'error');
+        }
+
+        if ($result['count'] <> 1) {
+          // error, panel does not exist, exit
+          $this->_logger->logMessage('Panel does not exist on database: ' . $panel, 'error');
+          return;
+        } else {
+          $xdata[$volunteerPanelCustomField] = $result['id'];
+          //  &&& $panelID = $result['id'];
+        }
       }
 
-      if ($result['count'] <> 1) {
-        // error, panel does not exist, exit
-        $this->_logger->logMessage('Panel does not exist on database: ' . $panel, 'error');
-        return;
-      } else {
-        $xdata[$volunteerPanelCustomField] = $result['id'];
-        //  &&& $panelID = $result['id'];
+
+
+
+        try {
+          $result = civicrm_api3("Contact", "create", $xdata);
+        } catch (CiviCRM_API3_Exception $ex) {
+          $this->_logger->logMessage('Error inserting panel for volunteer ' . $contactID . ': '. $ex->getMessage(), 'error');
+        }
       }
-    }
-
-
-
-
-      try {
-        $result = civicrm_api3("Contact", "create", $xdata);
-      } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error inserting panel for volunteer ' . $contactID . ': '. $ex->getMessage(), 'error');
-      }
-    }
-  } */
+    } */
 }
 
