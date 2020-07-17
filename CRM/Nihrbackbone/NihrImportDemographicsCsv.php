@@ -186,12 +186,12 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $this->addPhone($contactId, $data, 'phone_work', 'Work', 'Phone');
         $this->addPhone($contactId, $data, 'phone_mobile', 'Home', 'Mobile');
         if ($data['panel'] <> '' || $data['site'] <> '' || $data['centre'] <> '') {
-          $this->addPanel($contactId, $this->_dataSource, $data['panel'], $data['site'], $data['centre']);
+          $this->addPanel($contactId, $this->_dataSource, $data['panel'], $data['site'], $data['centre'], $data['source']);
         }
 
         // *** Aliases ***
         if (!empty($data['nhs_number'])) {
-          $this->addAlias($contactId, 'cih_type_nhs_number', $data['nhs_number'], 0);
+          $this->addAlias($contactId, 'cih_type_nhs_number', $data['nhs_number'], 1);
         }
         if (!empty($data['pack_id'])) {
           $this->addAlias($contactId, 'cih_type_pack_id_din', $data['pack_id'], 0);
@@ -199,6 +199,11 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         if (!empty($data['ibd_id'])) {
           $this->addAlias($contactId, 'cih_type_ibd_id', $data['ibd_id'], 0);
         }
+
+        if (isset($data['alias_type_former_surname']) && !empty($data['alias_type_former_surname'])) {
+          $this->addAlias($contactId, 'cih_type_former_surname', $data['alias_type_former_surname'], 1);
+        }
+
 
         // *** Diseases ***
         $this->addDisease($contactId, $data['family_member'], $data['disease'], $data['diagnosis_year'], $data['diagnosis_age'], $data['disease_notes'], $data['taking_medication']);
@@ -234,9 +239,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
 
         // *** add recruitment case, if volunteer record newly created *************************
+        // (unless migration -> datasource 'Starfish')
         $caseID = '';
 
-        if ($new_volunteer) {
+        if ($new_volunteer && $this->_dataSource <> 'starfish') {
           // use consent date as case started date
           $consentDate = date('Y-m-d',strtotime($data['consent_date']));
 
@@ -275,6 +281,11 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           // add consent to recruitment case
           $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
           $nbrConsent->addConsent($contactId, $caseID, 'consent_form_status_not_valid', $data, $this->_logger);
+        }
+
+        // *** migration - consents all migrated into one recruitment case
+        if ($this->_dataSource == 'starfish' && $data['consent_version'] <> '') {
+          $this->migrationAddConsent($contactId, $data);
         }
       }
     }
@@ -369,18 +380,11 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getLifestyleCustomField('nvl_diet_notes', 'id');
       }
 
-
-      // *****************************************************************************************
-
-
-      if ($newKey == 'local_ucl_id') {
-        // todo use new fct from Erik $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getGeneralObservationCustomField('nva_ucl_br_local', 'id');
-        $mappedData[$newKey] = $value;
-        // mapping ID is entered twice, once for insert (custom ID) and once for mapping (local_ucl_id)
-        $newKey = 'custom_253';
-        // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_ucl_br_local', 'id');
-
+      // *** selection eligibility
+      if ($newKey == 'unable_to_travel') {
+        $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionCriteriaCustomField('nvse_unable_to_travel', 'id');
       }
+
       // todo don't use hardcoded
       if ($newKey == 'pack_id') {
         // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_ucl_br_local', 'id');
@@ -518,6 +522,9 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     } catch (CiviCRM_API3_Exception $ex) {
       $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . " " . $ex->getMessage() . 'error');
     }
+
+    // **** if no name is available ('x' inserted) - use participant ID instead
+    // &&&
   }
 
 
@@ -829,7 +836,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     }
   }
 
-  private function addPanel($contactID, $dataSource, $panel, $site, $centre)
+  private function addPanel($contactID, $dataSource, $panel, $site, $centre, $source)
   {
     // TODO &&& for the time being, the IBD site code is in 'nickname' this is going to change
 
@@ -842,6 +849,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     $volunteerPanelCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_panel', 'id');
     $volunteerCentreCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_centre', 'id');
     $volunteerSiteCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_site', 'id');
+    $volunteerSourceCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_source', 'id');
+
     // ---
     $siteAliasTypeCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getSiteAliasCustomField('nsa_alias_type', 'id');
     $siteAliasCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getSiteAliasCustomField('nsa_alias', 'id');
@@ -858,7 +867,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     $xdata['id'] = $contactID;
 
     // *** check if panel exists and if so, select ID
-    if (isset($panel)) {
+    if (isset($panel) && $panel <> '') {
       try {
         $result = civicrm_api3('Contact', 'get', [
           'contact_sub_type' => "nbr_panel",
@@ -880,74 +889,120 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     // *** check if site exists and if so, select ID
     // (site name selected over acronym; todo STRIDES and IBD only at the moment)
-    if (isset($site)) {
+    if (isset($site) && $site <> '') {
       try {
-          $result = civicrm_api3('Contact', 'get', [
-            'sequential' => 1,
-            'contact_type' => "Organization",
-            'contact_sub_type' => "nbr_site",
-            $siteAliasTypeCustomField => $siteAliasTypeValue,
-            $siteAliasCustomField => $site,
-          ]);
+        $result = civicrm_api3('Contact', 'get', [
+          'sequential' => 1,
+          'contact_type' => "Organization",
+          'contact_sub_type' => "nbr_site",
+          $siteAliasTypeCustomField => $siteAliasTypeValue,
+          $siteAliasCustomField => $site,
+        ]);
       } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error selecting site ' . $site . ': '. $ex->getMessage(), 'error');
+        $this->_logger->logMessage('Error selecting site ' . $site . ': ' . $ex->getMessage(), 'error');
       }
 
       if ($result['count'] <> 1) {
         // error, site does not exist, exit
         $this->_logger->logMessage('Site does not exist on database: ' . $site, 'error');
         return;
-      }
-      else {
+      } else {
         // &&& $siteID = $result['id'];
         $xdata[$volunteerSiteCustomField] = $result['id'];
       }
+    }
 
-      // *** check if centre exists
-      if (isset($centre)) {
-        try {
-          $result = civicrm_api3('Contact', 'get', [
-            'contact_sub_type' => "nbr_centre",
-            'display_name' => $centre,
-          ]);
-        } catch (CiviCRM_API3_Exception $ex) {
-          $this->_logger->logMessage('Error selecting centre ' . $centre . ': ' . $ex->getMessage(), 'error');
-        }
-
-        if ($result['count'] <> 1) {
-          // error, centre does not exist, exit
-          $this->_logger->logMessage('Centre does not exist on database: ' . $centre, 'error');
-          return;
-        } else {
-          // &&&  $centreID = $result['id'];
-          $xdata[$volunteerCentreCustomField] = $result['id'];
-        }
-      }
-
-      // --- check that data was provided
-      if(count($xdata) < 2) {
-        $this->_logger->logMessage('No panel information provided for : ' . $contactID, 'error');
-        return;
-      }
-
-      // --- check if panel/site/centre combination is already linked to volunteer ------------------
+    // *** check if centre exists
+    if (isset($centre) && $centre <> '') {
       try {
-        $result = civicrm_api3('Contact', 'get', $xdata);
+        $result = civicrm_api3('Contact', 'get', [
+          'contact_sub_type' => "nbr_centre",
+          'display_name' => $centre,
+        ]);
       } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error selecting volunteer with panel ' . $contactID . ': '. $ex->getMessage(), 'error');
+        $this->_logger->logMessage('Error selecting centre ' . $centre . ': ' . $ex->getMessage(), 'error');
       }
 
-      if ($result['count'] == 0) {
-        // --- panel not yet linked to volunteer, insert -----------------------------------
-        try {
-          $result = civicrm_api3("Contact", "create", $xdata);
-        } catch (CiviCRM_API3_Exception $ex) {
-          $this->_logger->logMessage('Error inserting panel for volunteer ' . $contactID . ': '. $ex->getMessage(), 'error');
-        }
+      if ($result['count'] <> 1) {
+        // error, centre does not exist, exit
+        $this->_logger->logMessage('Centre does not exist on database: ' . $centre, 'error');
+        return;
+      } else {
+        // &&&  $centreID = $result['id'];
+        $xdata[$volunteerCentreCustomField] = $result['id'];
+      }
+    }
+
+    // --- check that data was provided
+    if(count($xdata) < 3) {
+      $this->_logger->logMessage('No panel information provided for : ' . $contactID, 'error');
+      return;
+    }
+
+    // --- check if panel/site/centre combination is already linked to volunteer ------------------
+    try {
+      $result = civicrm_api3('Contact', 'get', $xdata);
+    } catch (CiviCRM_API3_Exception $ex) {
+      $this->_logger->logMessage('Error selecting volunteer with panel ' . $contactID . ': '. $ex->getMessage(), 'error');
+    }
+
+    if ($result['count'] == 0) {
+      // --- panel not yet linked to volunteer, insert -----------------------------------
+      // *** add source, if given
+      if(isset($source) && !empty($source)) {
+        $xdata[$volunteerSourceCustomField] = $source;
+      }
+
+      try {
+        $result = civicrm_api3("Contact", "create", $xdata);
+      } catch (CiviCRM_API3_Exception $ex) {
+        $this->_logger->logMessage('Error inserting panel for volunteer ' . $contactID . ': '. $ex->getMessage(), 'error');
       }
     }
   }
 
+
+  private function migrationAddConsent($contactId, $data)
+  {
+    // only to be used for starfish data migration: migrate all consents to the same recruitment case
+
+    $caseId = '';
+    // check if recruitment case already exists
+    $params = [1 => [$contactId, 'Integer'], ];
+    $sql = "select cc.case_id
+            from civicrm_case_contact cc, civicrm_case cas, civicrm_case_type cct
+            where cc.case_id = cas.id
+            and cas.case_type_id  = cct.id
+            and cct.name = 'nihr_recruitment'
+            and contact_id = %1";
+
+    try {
+      $caseId = CRM_Core_DAO::singleValueQuery($sql, $params);
+    } catch (CiviCRM_API3_Exception $ex) {
+    }
+
+    if (!isset($caseId)) {
+      // create recruitment case, use date of first consent
+      $consentDate = date('Y-m-d', strtotime($data['consent_date']));
+      try {
+        $result = civicrm_api3('NbrVolunteerCase', 'create', [
+          'contact_id' => $contactId,
+          'case_type' => 'recruitment',
+          'start_date' => $consentDate
+        ]);
+        $caseId = $result['case_id'];
+        $message = E::ts('Recruitment case for volunteer ' . $contactId . '  added');
+        CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
+      } catch (CiviCRM_API3_Exception $ex) {
+        $message = E::ts('Error when creating recruitment case for volunteer ') . $contactId
+          . E::ts(' from API NbrVolunteerCase create : ') . $ex->getMessage();
+        CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
+      }
+    }
+    // add consent information
+    $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
+    $nbrConsent->addConsent($contactId, $caseId, $data['consent_status'], $data, $this->_logger);
+  }
   /*
     private function addGeneralObservations($contactID, $data)
     {

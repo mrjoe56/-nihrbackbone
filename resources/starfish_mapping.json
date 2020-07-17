@@ -6,11 +6,13 @@
   "ibd_id": "ibd_id",
   "national_id": "national_id",
   "participant_id": "participant_id",
+  "bioresource_id": "bioresource_id",
   "title": "prefix_id",
   "first_name": "first_name",
+  "middle_names": "middle_name",
   "preferred_first_name": "nick_name",
   "surname": "last_name",
-  "previous_names": "alias_type_former_surname",
+  "previous_name": "alias_type_former_surname",
   "dob": "birth_date",
   "gender": "gender_id",
   "nhs_number": "nhs_number",
@@ -31,7 +33,10 @@
   "consent": "consent",
   "consent_date": "consent_date",
   "consent_version": "consent_version",
+  "consent_form_status": "consent_status",
+  "consented_by": "consented_by",
   "information_leaflet_version": "information_leaflet_version",
+  "genetic_feedback": "genetic_feedback",
   "ibdgc_no": "nva_ibdgc_number",
   "ethnicity": "ethnicity",
   "cohort": "cohort",
@@ -40,6 +45,7 @@
   "centre": "centre",
   "panel": "panel",
   "site": "site",
+  "source": "source",
   "withdraw": "xx",
   "withdraw_date_request": "xx",
   "weight": "weight_kg",
@@ -73,5 +79,7 @@
   "sp_anon_id": "sp_anon_id",
   "sp_status": "sp_status",
   "sp_date_invited": "sp_date_invited",
-  "sp_recall_group": "sp_recall_group"
+  "sp_recall_group": "sp_recall_group",
+
+  "unable_to_travel": "unable_to_travel"
 }
