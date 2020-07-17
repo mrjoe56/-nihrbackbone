@@ -390,4 +390,52 @@ class CRM_Nihrbackbone_NbrStudy {
     return $commercial;
   }
 
+  /**
+   * Method to determine is study is a face to face study
+   *
+   * @param $studyId
+   * @return bool
+   */
+  public static function isFaceToFace($studyId) {
+    if (!empty($studyId)) {
+      $recallField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField("nsd_recall", "id");
+      try {
+        $faceToFace = civicrm_api3('Campaign', 'getvalue', [
+          'return' => $recallField,
+          'id' => $studyId,
+        ]);
+        if ($faceToFace == TRUE) {
+          return TRUE;
+        }
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to determine is study is online study
+   *
+   * @param $studyId
+   * @return bool
+   */
+  public static function isOnline($studyId) {
+    if (!empty($studyId)) {
+      $onlineField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField("nsd_online_study", "id");
+      try {
+        $online = civicrm_api3('Campaign', 'getvalue', [
+          'return' => $onlineField,
+          'id' => $studyId,
+        ]);
+        if ($online == TRUE) {
+          return TRUE;
+        }
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+      }
+    }
+    return FALSE;
+  }
+
 }

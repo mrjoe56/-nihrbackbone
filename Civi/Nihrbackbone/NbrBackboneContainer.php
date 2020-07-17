@@ -227,7 +227,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
         case "nihr_invited_other":
           $definition->addMethodCall('setOtherEligibilityStatusValue', [$dao->value]);
           break;
-        case "nihr_maximum_reached":
+        case "nihr_max_invites":
           $definition->addMethodCall('setMaxEligibilityStatusValue', [$dao->value]);
           break;
         case "nihr_not_active":
@@ -235,6 +235,9 @@ class NbrBackboneContainer implements CompilerPassInterface {
           break;
         case "nihr_not_recallable":
           $definition->addMethodCall('setRecallableEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_online_only":
+          $definition->addMethodCall('setOnlineOnlyEligibilityStatusValue', [$dao->value]);
           break;
       }
     }
