@@ -119,14 +119,11 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
             $clause = NULL;
             # date filter clause
             if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
-              Civi::log()->debug('date');
                 $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
                 $from = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
                 $to = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
-                Civi::log()->debug('$relative : '.$relative.'  $from : '.$from.'  $to : '.$to);
                 if ($relative || $from || $to) {
                     $clause = $this->dateClause($field['name'], $relative, $from, $to, $field['type']);
-                    Civi::log()->debug('$clause : '.$clause);
                 }
             }
               # activity status filters
@@ -134,7 +131,6 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
 
                 $status_array = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);                                 # for status activity filters
                 $status_op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
-                #Civi::log()->debug('$status_op '.$status_op);
                 $status_clause = '';                                                                                               #  if we have values for this status filter
                 if ($status_array) {                                                                                               #   set the where clause and operator
                   if ($status_op == 'in') {                                                                                        #   operator = 'is one of'
@@ -154,7 +150,6 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
                 }
 
                 $filter_clause[$fieldName] = $status_clause;                                                                      #  update where clause array
-                #Civi::log()->debug('$status_clause '.$status_clause);
               }
             else {
               $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
@@ -200,15 +195,15 @@ class CRM_Nihrbackbone_Form_Report_CPMS extends CRM_Report_Form {
 
           if ($filter_clause['cpms_accrual_status']!= '') {                                                                        # add filter clauses for status activity filters
             array_push($clauses, ' contact_id in (select ac.contact_id from civicrm_activity_contact ac, civicrm_activity a
-                                                      where a.id = ac.activity_id and a.activity_type_id = '.$filter_activity_type['cpms_accrual_status'].$filter_clause['cpms_accrual_status'].')');
+                                                      where a.id = ac.activity_id and a.is_deleted = 0 and a.activity_type_id = '.$filter_activity_type['cpms_accrual_status'].$filter_clause['cpms_accrual_status'].')');
           }
           if ($filter_clause['sample_received_status']!= '') {
               array_push($clauses, ' contact_id in (select ac.contact_id from civicrm_activity_contact ac, civicrm_activity a
-                                                  where a.id = ac.activity_id and a.activity_type_id = '.$filter_activity_type['sample_received_status'].$filter_clause['sample_received_status'].')');
+                                                  where a.id = ac.activity_id and a.is_deleted = 0 and a.activity_type_id = '.$filter_activity_type['sample_received_status'].$filter_clause['sample_received_status'].')');
             }
           if ($filter_clause['stage1_visit_status']!= '') {
             array_push($clauses, ' contact_id in (select cc.contact_id from civicrm_case_contact cc, civicrm_case_activity ca,
-                                                   civicrm_activity a where cc.case_id = ca.case_id and ca.activity_id = a.id
+                                                   civicrm_activity a where cc.case_id = ca.case_id and ca.activity_id = a.id and a.is_deleted = 0
                                                    and a.activity_type_id = '.$filter_activity_type['stage1_visit_status'].$filter_clause['stage1_visit_status'].')');
           }
         }
