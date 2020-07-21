@@ -41,7 +41,13 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_tempNonRecallTagId = NULL;
   // activity types
   private $_activityTypeOptionGroupId = NULL;
+  private $_emailActivityTypeId = NULL;
   private $_consentActivityTypeId = NULL;
+  private $_incomingCommunicationActivityTypeId = NULL;
+  private $_letterActivityTypeId = NULL;
+  private $_meetingActivityTypeId = NULL;
+  private $_phoneActivityTypeId = NULL;
+  private $_smsActivityTypeId = NULL;
   // custom group and field ids
   private $_contactIdentityCustomGroupId = NULL;
   private $_identifierTypeCustomFieldId = NULL;
@@ -597,6 +603,90 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getConsentActivityTypeId() {
     return $this->_consentActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setEmailActivityTypeId($id) {
+    $this->_emailActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getEmailActivityTypeId() {
+    return $this->_emailActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setIncomingCommunicationActivityTypeId($id) {
+    $this->_incomingCommunicationActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getIncomingCommunicationActivityTypeId() {
+    return $this->_incomingCommunicationActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setLetterActivityTypeId($id) {
+    $this->_letterActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getLetterActivityTypeId() {
+    return $this->_letterActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setMeetingActivityTypeId($id) {
+    $this->_meetingActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getMeetingActivityTypeId() {
+    return $this->_meetingActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setPhoneActivityTypeId($id) {
+    $this->_phoneActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getPhoneActivityTypeId() {
+    return $this->_phoneActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setSmsActivityTypeId($id) {
+    $this->_smsActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getSmsActivityTypeId() {
+    return $this->_smsActivityTypeId;
   }
 
   /**

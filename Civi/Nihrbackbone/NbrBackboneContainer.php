@@ -85,15 +85,49 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setActivityTypes(&$definition) {
-    $query = "SELECT cov.value FROM civicrm_option_group AS cog
+    $query = "SELECT cov.value, cov.name FROM civicrm_option_group AS cog
         JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
-        WHERE cog.name = %1 AND cov.name = %2";
-    $id = \CRM_Core_DAO::singleValueQuery($query, [
+        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8)";
+    $dao = \CRM_Core_DAO::executeQuery($query, [
       1 => ["activity_type", "String"],
       2 => ["nihr_consent", "String"],
+      3 => ["Meeting", "String"],
+      4 => ["Email", "String"],
+      5 => ["nbr_incoming_communication", "String"],
+      6 => ["Phone Call", "String"],
+      7 => ["Print PDF Letter", "String"],
+      8 => ["SMS", "String"],
     ]);
-    if ($id) {
-      $definition->addMethodCall('setConsentActivityTypeId', [(int) $id]);
+    while ($dao->fetch()) {
+      switch ($dao->name) {
+        case "Email":
+          $definition->addMethodCall('setEmailActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "Meeting":
+          $definition->addMethodCall('setMeetingActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nbr_incoming_communication":
+          $definition->addMethodCall('setIncomingCommunicationActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nihr_consent":
+          $definition->addMethodCall('setConsentActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "Phone Call":
+          $definition->addMethodCall('setPhoneActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "Print PDF Letter":
+          $definition->addMethodCall('setLetterActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "SMS":
+          $definition->addMethodCall('setSmsActivityTypeId', [(int) $dao->value]);
+          break;
+      }
     }
   }
 
