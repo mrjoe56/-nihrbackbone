@@ -29,7 +29,7 @@ function nihrbackbone_civicrm_container(ContainerBuilder $container) {
   $container->addCompilerPass(new Civi\Nihrbackbone\NbrBackboneContainer());
 }
 
-/** Implements hook_civicrm_post JB 18/12/19 */
+/** Implements hook_civicrm_post 18/12/19 */
 function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
   // if new invite activity, set status to invited and invite date to now
   if ($objectName == "Activity") {
@@ -74,12 +74,12 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 
 }
 
-/** Implements hook_civicrm_summary JB 27/01/20 */
+/** Implements hook_civicrm_summary  27/01/20 */
 function nihrbackbone_civicrm_summary($contactID, &$content, &$contentPlacement) {
   CRM_Nihrbackbone_NihrContactSummary::nihrbackbone_civicrm_summary($contactID);
 }
 
-/** Implements hook_civicrm_tabset JB 27/01/20 */
+/** Implements hook_civicrm_tabset  27/01/20 */
 function nihrbackbone_civicrm_tabset($tabsetName, &$tabs, $context) {
   if ($tabsetName == 'civicrm/contact/view') {
     $customGroupId = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomGroup('id');
@@ -90,21 +90,12 @@ function nihrbackbone_civicrm_tabset($tabsetName, &$tabs, $context) {
     }
   }
 }
-
-function nihrbackbone_civicrm_pre($op, $objectName, $id, &$params) {  # JB1
-Civi::log()->debug('pre hook');
-  }
-
-
 /**
- * Implements hook_civicrm_custom.
+ * Implements hook_civicrm_custom. JB2
  *
  */
 function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
 
-  // if group = contact identity JB
-  # $gid = Civi::service('nbrBackbone')->getContactIdentityCustomGroupId();
-  # Civi::log()->debug('$gid : '.$gid);
   if ($groupID == Civi::service('nbrBackbone')->getContactIdentityCustomGroupId()) {
     CRM_Nihrbackbone_NbrContactIdentity::checkDuplicatContactIdentity($op,$groupID, $entityID, $params);
   }
@@ -160,7 +151,7 @@ function writeBmi($entityID, $bmi) {
   }
 }
 
-function nihrbackbone_civicrm_buildForm($formName, &$form) {
+function nihrbackbone_civicrm_buildForm($formName, &$form) {  # jb2
   if ($form instanceof CRM_Case_Form_CustomData) {
     CRM_Nihrbackbone_NbrVolunteerCase::buildFormCustomData($form);
   }
@@ -352,21 +343,8 @@ function nihrbackbone_civicrm_entityTypes(&$entityTypes) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
  **/
-function nihrbackbone_civicrm_preProcess($formName, &$form) {  #JB1
+function nihrbackbone_civicrm_preProcess($formName, &$form) {  #JB
 
-  #Civi::log()->debug('PRERPOCESS');
-  #foreach ($form as $key => $value) {#
-
-    #if (is_array($value)) {
-    #  Civi::log()->debug('$key : ' . $key . '  values : ');
-    #  foreach ($value as $k => $v) {
-    #    Civi::log()->debug('$k : ' . $k . '  $v : ' . $v);
-    #  }
-    #}
-    #else {
-    #  Civi::log()->debug('$key : ' . $key . '  $value : ' . $value);
-    #}
- # }
 
 
 }
