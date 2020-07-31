@@ -20,13 +20,15 @@ class NbrBackboneContainer implements CompilerPassInterface {
   public function process(ContainerBuilder $container) {
     $definition = new Definition('CRM_Nihrbackbone_NbrConfig');
     $definition->setFactory(['CRM_Nihrbackbone_NbrConfig', 'getInstance']);
+    $this->setActivityStatus($definition);
     $this->setActivityTypes($definition);
     $this->setConsentStatus($definition);
-    $this->setCustomFieldIds($definition);
-    $this->setCustomGroupIds($definition);
+    $this->setCustomGroups($definition);
     $this->setEligibilityStatus($definition);
+    $this->setEncounterMedium($definition);
     $this->setOptionGroups($definition);
     $this->setParticipationStatus($definition);
+    $this->setPriority($definition);
     $this->setTags($definition);
     $this->setVolunteerStatus($definition);
     $definition->addMethodCall('setVisitStage2Substring', ["nihr_visit_stage2"]);
@@ -34,35 +36,226 @@ class NbrBackboneContainer implements CompilerPassInterface {
   }
 
   /**
-   * Method to set the custom field ids
+   * Method to set the encounter medium ids
    *
    * @param $definition
    */
-  private function setCustomFieldIds(&$definition) {
-    $query = "SELECT cf.id
-        FROM civicrm_custom_group AS cg
-            JOIN civicrm_custom_field AS cf ON cg.id = cf.custom_group_id
-        WHERE cg.name = %1 AND cf.name = %2";
-    $queryParams = [
-      1 => ["contact_id_history", "String"],
-      2 => ["id_history_entry_type", "String"],
-    ];
-    $id = \CRM_Core_DAO::singleValueQuery($query, $queryParams);
-    if ($id) {
-      $definition->addMethodCall('setIdentifierTypeCustomFieldId', [(int) $id]);
+  private function setEncounterMedium(&$definition) {
+    $query = "SELECT cov.value, cov.name
+        FROM civicrm_option_group AS cog
+            JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
+        WHERE cog.name = %1";
+    $dao = \CRM_Core_DAO::executeQuery($query, [1 => ["encounter_medium", "String"]]);
+    while ($dao->fetch()) {
+      switch ($dao->name) {
+        case "email":
+          $definition->addMethodCall('setEmailMediumId', [(int) $dao->value]);
+          break;
+        case "in_person":
+          $definition->addMethodCall('setInPersonMediumId', [(int) $dao->value]);
+          break;
+        case "letter_mail":
+          $definition->addMethodCall('setLetterMediumId', [(int) $dao->value]);
+          break;
+        case "phone":
+          $definition->addMethodCall('setPhoneMediumId', [(int) $dao->value]);
+          break;
+        case "SMS":
+          $definition->addMethodCall('setSmsMediumId', [(int) $dao->value]);
+          break;
+      }
     }
   }
+
+  /**
+   * Method to set the (activity) priority
+   *
+   * @param $definition
+   */
+  private function setPriority(&$definition) {
+    $query = "SELECT cov.value
+        FROM civicrm_option_group AS cog
+            JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
+        WHERE cog.name = %1 AND cov.name = %2";
+    $priorityId = \CRM_Core_DAO::singleValueQuery($query, [
+      1 => ["priority", "String"],
+      2 => ["Normal", "String"],
+    ]);
+    if ($priorityId) {
+      $definition->addMethodCall('setNormalPriorityId', [(int) $priorityId]);
+    }
+  }
+
+  /**
+   * Method to set the activity status ids
+   *
+   * @param $definition
+   */
+  private function setActivityStatus(&$definition) {
+    $query = "SELECT cov.name, cov.value
+      FROM civicrm_option_group AS cog
+          JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
+      WHERE cog.name = %1 AND cov.name IN (%2, %3, %4)";
+    $dao = \CRM_Core_DAO::executeQuery($query, [
+      1 => ["activity_status", "String"],
+      2 => ["Completed", "String"],
+      3 => ["Scheduled", "String"],
+      4 => ["Return to sender", "String"],
+    ]);
+    while ($dao->fetch()) {
+      switch ($dao->name) {
+        case "Completed":
+          $definition->addMethodCall('setCompletedActivityStatusId', [(int) $dao->value]);
+          break;
+
+        case "Return to sender":
+          $definition->addMethodCall('setReturnToSenderActivityStatusId', [(int) $dao->value]);
+          break;
+
+        case "Scheduled":
+          $definition->addMethodCall('setScheduledActivityStatusId', [(int) $dao->value]);
+          break;
+      }
+    }
+  }
+
+  /**
+   * Method om custom fields te halen
+   *
+   * @param int $customGroupId
+   * @param string $customGroupName
+   * @param $definition
+   * @return array
+   */
+  private function setCustomFields($customGroupId, $customGroupName, &$definition) {
+    $result = [];
+    $query = "SELECT id, name, column_name FROM civicrm_custom_field WHERE custom_group_id = %1";
+    $dao = \CRM_Core_DAO::executeQuery($query, [1 => [(int) $customGroupId, "Integer"]]);
+    while ($dao->fetch()) {
+      switch ($customGroupName) {
+        case "contact_id_history":
+          if ($dao->name == "id_history_entry_type") {
+            $definition->addMethodCall('setIdentifierTypeCustomFieldId', [(int) $dao->id]);
+          }
+          break;
+
+        case "nihr_visit_data":
+          $this->setVisitCustomFields($dao, $definition);
+          break;
+
+        case "nihr_visit_data_stage2":
+          if ($dao->name == "nvi_visit_participation_study_payment") {
+            $definition->addMethodCall('setStudyPaymentCustomFieldId', [(int) $dao->id]);
+          }
+          break;
+
+        case "nihr_volunteer_consent_stage2":
+          $this->setConsentStage2CustomFields($dao, $definition);
+          break;
+      }
+    }
+    return $result;
+  }
+
+  /**
+   * Method to set the custom field properties for consent stage2 data
+   *
+   * @param $dao
+   * @param $definition
+   */
+  private function setConsentStage2CustomFields($dao, &$definition) {
+    switch ($dao->name) {
+      case "nvc2_consent_version":
+        $definition->addMethodCall('setConsentVersionStage2CustomFieldId', [(int) $dao->id]);
+        break;
+
+      case "nvc2_questionnaire_version":
+        $definition->addMethodCall('setQuestionnaireVersionStage2CustomFieldId', [(int) $dao->id]);
+        break;
+    }
+  }
+
+  /**
+   * Method to set the custom field properties for visit data
+   *
+   * @param $dao
+   * @param $definition
+   */
+  private function setVisitCustomFields($dao, &$definition) {
+    switch ($dao->name) {
+      case "nvi1_bleed_attempts":
+        $definition->addMethodCall('setAttemptsCustomFieldId', [(int) $dao->id]);
+        break;
+      case "nvi1_bd_incident_form_completed":
+        $definition->addMethodCall('setIncidentFormCustomFieldId', [(int) $dao->id]);
+        break;
+      case "nvi1_bleed_difficulties":
+        $definition->addMethodCall('setBleedDifficultiesCustomFieldId', [(int) $dao->id]);
+        break;
+      case "nvi1_bleed_site":
+        $definition->addMethodCall('setSampleSiteCustomFieldId', [(int) $dao->id]);
+        break;
+      case "nvi1_claim_received":
+        $definition->addMethodCall('setClaimReceivedDateCustomFieldId', [(int) $dao->id]);
+        break;
+      case "nvi1_claim_submitted":
+        $definition->addMethodCall('setClaimSubmittedDateCustomFieldId', [(int) $dao->id]);
+        break;
+      case "nvi1_collected_by":
+        $definition->addMethodCall('setCollectedByCustomFieldId', [(int) $dao->id]);
+        break;
+      case "nvi1_mileage":
+        $definition->addMethodCall('setMileageCustomFieldId', [(int) $dao->id]);
+        break;
+      case "nvi1_other_expenses":
+        $definition->addMethodCall('setOtherExpensesCustomFieldId', [(int) $dao->id]);
+        break;
+      case "nvi1_parking_fee":
+        $definition->addMethodCall('setParkingFeeCustomFieldId', [(int) $dao->id]);
+        break;
+      case "nvi1_to_lab_date":
+        $definition->addMethodCall('setToLabDateCustomFieldId', [(int) $dao->id]);
+        break;
+      case "nvi1_visit_expenses_notes":
+        $definition->addMethodCall('setExpensesNotesCustomFieldId', [(int) $dao->id]);
+        break;
+    }
+  }
+
 
   /**
    * Method to set the custom group ids
    *
    * @param $definition
    */
-  private function setCustomGroupIds(&$definition) {
-    $query = "SELECT id FROM civicrm_custom_group WHERE name = %1";
-    $id = \CRM_Core_DAO::singleValueQuery($query, [1 =>["contact_id_history", "String"]]);
-    if ($id) {
-      $definition->addMethodCall('setContactIdentityCustomGroupId', [(int) $id]);
+  private function setCustomGroups(&$definition) {
+    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4)";
+    $queryParams = [
+      1 => ["contact_id_history", "String"],
+      2 => ["nihr_visit_data", "String"],
+      3 => ["nihr_visit_data_stage2", "String"],
+      4 => ["nihr_volunteer_consent_stage2", "String"],
+    ];
+    $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
+    while ($dao->fetch()) {
+      switch ($dao->name) {
+        case "contact_id_history":
+          $definition->addMethodCall('setContactIdentityCustomGroupId', [(int) $dao->id]);
+          break;
+
+        case "nihr_visit_data":
+          $definition->addMethodCall('setVisitTableName', [$dao->table_name]);
+          break;
+
+        case "nihr_visit_data_stage2":
+          $definition->addMethodCall('setVisitStage2TableName', [$dao->table_name]);
+          break;
+
+        case "nihr_volunteer_consent_stage2":
+          $definition->addMethodCall('setConsentStage2TableName', [$dao->table_name]);
+          break;
+      }
+      $this->setCustomFields($dao->id, $dao->name, $definition);
     }
   }
 
@@ -87,7 +280,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
   private function setActivityTypes(&$definition) {
     $query = "SELECT cov.value, cov.name FROM civicrm_option_group AS cog
         JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
-        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8)";
+        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11)";
     $dao = \CRM_Core_DAO::executeQuery($query, [
       1 => ["activity_type", "String"],
       2 => ["nihr_consent", "String"],
@@ -97,6 +290,9 @@ class NbrBackboneContainer implements CompilerPassInterface {
       6 => ["Phone Call", "String"],
       7 => ["Print PDF Letter", "String"],
       8 => ["SMS", "String"],
+      9 => ["nbr_sample_received", "String"],
+      10 => ["nihr_visit_stage1", "String"],
+      11 => ["nihr_visit_stage2", "String"],
     ]);
     while ($dao->fetch()) {
       switch ($dao->name) {
@@ -114,6 +310,18 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
         case "nihr_consent":
           $definition->addMethodCall('setConsentActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nihr_sample_received":
+          $definition->addMethodCall('setSampleReceivedActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nihr_visit_stage1":
+          $definition->addMethodCall('setVisitStage1ActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nihr_visit_stage2":
+          $definition->addMethodCall('setVisitStage2ActivityTypeId', [(int) $dao->value]);
           break;
 
         case "Phone Call":
@@ -166,6 +374,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
           $definition->addMethodCall('setAcceptedParticipationStatusValue', [$dao->value]);
           break;
 
+        case "study_participation_status_declined":
+          $definition->addMethodCall('setDeclinedParticipationStatusValue', [$dao->value]);
+          break;
+
         case "study_participation_status_excluded":
           $definition->addMethodCall('setExcludedParticipationStatusValue', [$dao->value]);
           break;
@@ -188,10 +400,6 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
         case "study_participation_status_participated":
           $definition->addMethodCall('setParticipatedParticipationStatusValue', [$dao->value]);
-          break;
-
-        case "study_participation_status_refused":
-          $definition->addMethodCall('setRefusedParticipationStatusValue', [$dao->value]);
           break;
 
         case "study_participation_status_reneged":

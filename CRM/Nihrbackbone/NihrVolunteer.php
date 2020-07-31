@@ -768,7 +768,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
             LEFT JOIN " . $studyTable . " AS e ON b.id = e.entity_id
         WHERE a." . $inviteColumn . " >= %1 AND a." . $inviteColumn . " IS NOT NULL
           AND b.status_id IN (%2, %3, %4) AND c.is_deleted = %5 AND c.case_type_id = %6 AND d.contact_id = %7
-          AND a." . $partStatusColumn. " IN(%8, %9, %10, %11, %12, %13, %14, %15, %16)  AND ";
+          AND a." . $partStatusColumn. " IN(%8, %9, %10, %11, %12, %13, %14, %15, %16, %17)  AND ";
     $queryParams = [
       1 => [$checkDate->format("Y-m-d"), "String"],
       2 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), "Integer"],
@@ -786,17 +786,18 @@ class CRM_Nihrbackbone_NihrVolunteer {
       14 => [Civi::service('nbrBackbone')->getWithdrawnParticipationStatusValue(), "String"],
       15 => [Civi::service('nbrBackbone')->getNoResponseParticipationStatusValue(), "String"],
       16 => [Civi::service('nbrBackbone')->getNotParticipatedParticipationStatusValue(), "String"],
-      17 => [1, "Integer"],
+      17 => [Civi::service('nbrBackbone')->getDeclinedParticipationStatusValue(), "String"],
+      18 => [1, "Integer"],
     ];
     switch ($type) {
       case "facetoface":
-        $query .= $faceToFaceColumn . " = %17";
+        $query .= $faceToFaceColumn . " = %18";
         break;
       case "online":
-        $query .= $onLineColumn . " = %13";
+        $query .= $onLineColumn . " = %18";
         break;
       case "total":
-        $query .= "(" . $faceToFaceColumn . " = %13 OR " . $onLineColumn . " = %13)";
+        $query .= "(" . $faceToFaceColumn . " = %18 OR " . $onLineColumn . " = %18)";
         break;
       default:
         Civi::log()->warning(E::ts("Invalid type " . $type . " in ") . __METHOD__);
