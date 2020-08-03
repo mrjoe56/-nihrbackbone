@@ -49,6 +49,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_activityTypeOptionGroupId = NULL;
   private $_emailActivityTypeId = NULL;
   private $_consentActivityTypeId = NULL;
+  private $_consentStage2ActivityTypeId = NULL;
   private $_incomingCommunicationActivityTypeId = NULL;
   private $_letterActivityTypeId = NULL;
   private $_meetingActivityTypeId = NULL;
@@ -96,10 +97,18 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_returnToSenderParticipationStatusValue = NULL;
   private $_selectedParticipationStatusValue = NULL;
   private $_withdrawnParticipationStatusValue = NULL;
+  // option group ids
+  private $_bleedDifficultiesOptionGroupId = NULL;
+  private $_consentVersionOptionGroupId = NULL;
+  private $_questionnaireOptionGroupId = NULL;
+  private $_sampleSiteOptionGroupId = NULL;
+  private $_studyPaymentOptionGroupId = NULL;
   // others
   private $_correctConsentStatusValue = NULL;
   private $_visitStage2Substring = NULL;
   private $_normalPriorityId = NULL;
+  private $_otherBleedDifficultiesValue = NULL;
+  private $_otherSampleSiteValue = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -636,6 +645,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getConsentActivityTypeId() {
     return $this->_consentActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setConsentStage2ActivityTypeId($id) {
+    $this->_consentStage2ActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getConsentStage2ActivityTypeId() {
+    return $this->_consentStage2ActivityTypeId;
   }
 
   /**
@@ -1196,6 +1219,104 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getStudyPaymentCustomFieldId() {
     return $this->_studyPaymentCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setBleedDifficultiesOptionGroupId($id) {
+    $this->_bleedDifficultiesOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getBleedDifficultiesOptionGroupId() {
+    return $this->_bleedDifficultiesOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setConsentVersionOptionGroupId($id) {
+    $this->_consentVersionOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getConsentVersionOptionGroupId() {
+    return $this->_consentVersionOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setQuestionnaireVersionOptionGroupId($id) {
+    $this->_questionnaireOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getQuestionnaireVersionOptionGroupId() {
+    return $this->_questionnaireOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setSampleSiteOptionGroupId($id) {
+    $this->_sampleSiteOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getSampleSiteOptionGroupId() {
+    return $this->_sampleSiteOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setStudyPaymentOptionGroupId($id) {
+    $this->_studyPaymentOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getStudyPaymentOptionGroupId() {
+    return $this->_studyPaymentOptionGroupId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setOtherBleedDifficultiesValue($value) {
+    $this->_otherBleedDifficultiesValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getOtherBleedDifficultiesValue() {
+    return $this->_otherBleedDifficultiesValue;
+  }
+
+  /**
+   * @param string
+   */
+  public function setOtherSampleSiteValue($value) {
+    $this->_otherSampleSiteValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getOtherSampleSiteValue() {
+    return $this->_otherSampleSiteValue;
   }
 
 }

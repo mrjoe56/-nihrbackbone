@@ -32,6 +32,8 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $this->setTags($definition);
     $this->setVolunteerStatus($definition);
     $definition->addMethodCall('setVisitStage2Substring', ["nihr_visit_stage2"]);
+    $definition->addMethodCall('setOtherBleedDifficultiesValue', ["bd_other"]);
+    $definition->addMethodCall('setOtherSampleSiteValue', ["visit_bleed_site_other"]);
     $container->setDefinition('nbrBackbone', $definition);
   }
 
@@ -265,10 +267,42 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setOptionGroups(&$definition) {
-    $query = "SELECT id FROM civicrm_option_group WHERE name = %1";
-    $id = \CRM_Core_DAO::singleValueQuery($query, [1 => ["activity_type", "String"]]);
-    if ($id) {
-      $definition->addMethodCall('setActivityTypeOptionGroupId', [(int) $id]);
+    $query = "SELECT id, name FROM civicrm_option_group WHERE name IN (%1, %2, %3, %4, %5, %6)";
+    $queryParams = [
+      1 => ["activity_type", "String"],
+      2 => ["nbr_bleed_difficulties", "String"],
+      3 => ["nbr_visit_bleed_site", "String"],
+      4 => ["nbr_visit_participation_consent_version", "String"],
+      5 => ["nbr_visit_participation_questionnaire_version", "String"],
+      6 => ["nbr_visit_participation_study_payment", "String"],
+    ];
+    $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
+    while ($dao->fetch()) {
+      switch($dao->name) {
+        case "activity_type":
+          $definition->addMethodCall('setActivityTypeOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_bleed_difficulties":
+          $definition->addMethodCall('setBleedDifficultiesOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_visit_bleed_site":
+          $definition->addMethodCall('setSampleSiteOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_visit_participation_consent_version":
+          $definition->addMethodCall('setConsentVersionOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_visit_participation_questionnaire_version":
+          $definition->addMethodCall('setQuestionnaireVersionOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_visit_participation_study_payment":
+          $definition->addMethodCall('setStudyPaymentOptionGroupId', [(int) $dao->id]);
+          break;
+      }
     }
   }
 
@@ -280,7 +314,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
   private function setActivityTypes(&$definition) {
     $query = "SELECT cov.value, cov.name FROM civicrm_option_group AS cog
         JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
-        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11)";
+        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12)";
     $dao = \CRM_Core_DAO::executeQuery($query, [
       1 => ["activity_type", "String"],
       2 => ["nihr_consent", "String"],
@@ -293,6 +327,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
       9 => ["nbr_sample_received", "String"],
       10 => ["nihr_visit_stage1", "String"],
       11 => ["nihr_visit_stage2", "String"],
+      12 => ["nihr_consent_stage2", "String"],
     ]);
     while ($dao->fetch()) {
       switch ($dao->name) {
@@ -312,7 +347,11 @@ class NbrBackboneContainer implements CompilerPassInterface {
           $definition->addMethodCall('setConsentActivityTypeId', [(int) $dao->value]);
           break;
 
-        case "nihr_sample_received":
+        case "nihr_consent_stage2":
+          $definition->addMethodCall('setConsentStage2ActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nbr_sample_received":
           $definition->addMethodCall('setSampleReceivedActivityTypeId', [(int) $dao->value]);
           break;
 
