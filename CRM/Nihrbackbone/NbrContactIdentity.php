@@ -65,7 +65,7 @@ class CRM_Nihrbackbone_NbrContactIdentity {
         }
         if ($duplicate_contact != 'none') {
           self::setContactTag($thisCiviID, $tagName, 'set');                                                           #   .. and for this contact
-          $msg = ts('This Contact Identity is already in use for Contact ID ' . $duplicate_contact . ' (' . $dao1->duplicate_contact_name . ')');
+          $msg = ts($tagName.' - this ID is already in use for Contact ID ' . $duplicate_contact . ' (' . $dao1->duplicate_contact_name . ')');
           CRM_Core_Session::setStatus($msg, ts('Notice'), 'alert');                                                    #    and post alert message
         }
         self::checkDuplicates($tagName, $this_ci_type);
