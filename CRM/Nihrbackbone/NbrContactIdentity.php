@@ -10,6 +10,121 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  */
 
 class CRM_Nihrbackbone_NbrContactIdentity {
+
+#jb new
+  /**
+   * method to check for duplicate contact identities -
+   * if a contact ID (CID) is added or modified :
+   *  a. check if the new CID is duplicated on another civi contact, and if so, warn the user, and add the relevent tags to the contacts
+   *  b. as the old CID may have been a duplicate, check all civi contacts with the relevent tag set, and delete the tag if CID is longer a duplicate
+   * if a CID is deleted, then for all civi contacts with ANY tag set (this::CID details are not known for deletes):
+   *  check if the CID value is still a duplicate and if not - delete the tag
+   */
+  public static function checkDuplicatContactIdentity($op, $groupID, $entityID, $params)  {
+
+    $thisCiviID = $entityID;
+    $tagNames = ['cih_type_packid'=>'Duplicate Pack ID','cih_type_nhs_number'=>'Duplicate NHS number'];                # Applicable tag IDs and names
+
+    if ($op=='delete') {
+      # no information in parameters for a delete so need to run checkDuplicates for each tag type
+      foreach ($tagNames as $tagType => $tagName) {
+        CRM_Nihrbackbone_NbrContactIdentity::checkDuplicates($tagName, $tagType);
+      }
+    }
+    else {
+      $duplicate_contact = 'none';
+      $query = "select id from civicrm_custom_field where name = 'id_history_entry_type'";                             # get this CI (contact identity) custom field IDs
+      $dao = CRM_Core_DAO::executeQuery($query);
+      if ($dao->fetch()) {
+        $alias_type_id = $dao->id;
+      };
+      $query = "select id from civicrm_custom_field where name = 'id_history_entry'"; # custom_13
+      $dao = CRM_Core_DAO::executeQuery($query);
+      if ($dao->fetch()) {
+        $alias_value_id = $dao->id;
+      };
+
+      foreach ($params as $key => $valuesarray) {                                                                      # get this CI type and value
+        if ($valuesarray['custom_field_id'] == $alias_type_id) {
+          $this_ci_type = $valuesarray['value'];
+        }
+        if ($valuesarray['custom_field_id'] == $alias_value_id) {
+          $this_ci_value = $valuesarray['value'];
+        }
+      }
+
+      if (array_key_exists($this_ci_type, $tagNames)) {                                                                # if duplicate checking is applicable to this CI type
+        $tagName = $tagNames[$this_ci_type];                                                                           #   get the tag name for this CI type
+        $sqlParams = [1 => [$this_ci_type, 'String'], 2 => [$this_ci_value, 'String'], 3 => [intval($thisCiviID), 'Integer'],];
+        $query1 = "select entity_id as duplicate_contact_id, c.sort_name as duplicate_contact_name from civicrm_value_contact_id_history ch, civicrm_contact c
+                   where c.id = ch.entity_id and identifier_type = %1 and identifier = %2 and entity_id != %3";
+        $dao1 = CRM_Core_DAO::executeQuery($query1, $sqlParams);                                                       #   if there are other contacts with the same
+        while ($dao1->fetch()) {                                                                                       #   CI type and value
+          $duplicate_contact = $dao1->duplicate_contact_id;
+           self::setContactTag($dao1->duplicate_contact_id, $tagName, 'set');                                          #   set the appropriate tag for the other contacts ..
+        }
+        if ($duplicate_contact != 'none') {
+          self::setContactTag($thisCiviID, $tagName, 'set');                                                           #   .. and for this contact
+          $msg = ts($tagName.' - this ID is already in use for Contact ID ' . $duplicate_contact . ' (' . $dao1->duplicate_contact_name . ')');
+          CRM_Core_Session::setStatus($msg, ts('Notice'), 'alert');                                                    #    and post alert message
+        }
+        self::checkDuplicates($tagName, $this_ci_type);
+      }
+    }
+  }
+
+  /**
+   * method to check
+   * IF:
+   * A contact ID is modified or deleted, and it's original value was a duplicate - tags will be set against one or more contacts -
+   * THEN:
+   * For all contacts with the relevant tag set, check if the CI value is still a duplicate and if not - remove the tag(s)
+   */
+  public static function checkDuplicates($tagName, $this_ci_type) {
+    $sqlParams = [1 => [$tagName, 'String'],];
+    $query = "select et.entity_id as civi_id from civicrm_tag t, civicrm_entity_tag et where t.id = et.tag_id and t.name = %1";
+    $dao = CRM_Core_DAO::executeQuery($query, $sqlParams);
+    while ($dao->fetch()) {                                                                                            # for each contact with a tag set for this CI type
+      $duplicates = 'N';
+      $other_civi_id = $dao->civi_id;
+      $sqlParams = [1 => [$this_ci_type, 'String'], 2 => [intval($other_civi_id), 'Integer'],];
+      $query1 = "select identifier from civicrm_value_contact_id_history where identifier_type = %1 and entity_id = %2";
+      $dao1 = CRM_Core_DAO::executeQuery($query1, $sqlParams);                                                         #  get CI's for the contact and type
+      while ($dao1->fetch()) {
+        $sqlParams = [1 => [$this_ci_type, 'String'], 2 => [$dao1->identifier, 'String'], 3 => [$other_civi_id, 'String'],];    #  and check if CID is unique to the contact
+        $query2 = "select count(*) from civicrm_value_contact_id_history where identifier_type = %1 and identifier = %2 and entity_id != %3";
+        $duplicate_count = CRM_Core_DAO::singleValueQuery($query2, $sqlParams);
+        if ($duplicate_count > 0) {                                                                                    #  if duplicate found elswhere
+          $duplicates = 'Y';
+        }
+      }
+      if ($duplicates == 'N') {
+        self::setContactTag($dao->civi_id, $tagName, 'unset');
+      }
+    }
+  }
+
+  /**
+   * method to add or remove a tag to/from contact
+   */
+  public static function setContactTag($contact_id, $tagName, $action) {
+    $params = ['entity_table' => 'civicrm_contact', 'entity_id' => $contact_id, 'tag_id' => $tagName, 'check_permissions' => 0, ];
+    $getcount = civicrm_api3('EntityTag', 'getcount', $params);                                                        # check if tag exists for contact
+    if ($action=='set'&&$getcount==0) {                                                                                # if tag does not exist and action is 'set'
+      $result = civicrm_api3('EntityTag', 'create', $params);                                                          #   then add tag
+    }
+    if ($action=='unset'&&$getcount>0) {                                                                               # if tag exists and action is 'unset'
+      $params = ['name' => $tagName, 'return' => $entityTagId, 'sequential' => 1, ];
+      $getTag = civicrm_api3('Tag', 'get', $params);
+      $entityTagId = $getTag['values'][0]['id'];
+      $params = ['entity_id' => $contact_id, 'tag_id' => $entityTagId, 'check_permissions' => 0, ];
+      $result = civicrm_api3('EntityTag', 'delete', $params);                                                          #   then delete tag
+    }
+  }
+
+
+  # /jb  new
+
   /**
    * Method to process validateForm hook for contact identity
    * - do not allow edit or add when contact identifier is protected
