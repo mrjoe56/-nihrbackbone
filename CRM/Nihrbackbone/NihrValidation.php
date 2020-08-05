@@ -30,7 +30,7 @@ class CRM_Nihrbackbone_NihrValidation {
     if ($duplicateCount>0) {$errors[$errorField] = $msg."This identity already exists or has not been updated - please cancel or update";}
 
     if ($alias_type == 'cih_type_packid') {                                                                            # pack ID validation
-      $msg = 'Error in K Pack ID - ';
+      $msg = 'Error in Pack ID - ';
       $first = $alias_value[0];                                                                                        #  get first character
       $last = substr($alias_value, -1);                                                                                #  last character
       $n_string = substr($alias_value, 1, 6);                                                                          #  numeric part
