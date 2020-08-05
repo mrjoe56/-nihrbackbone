@@ -37,30 +37,78 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_panelEligibilityStatusValue = NULL;
   private $_recallableEligibilityStatusValue = NULL;
   private $_travelEligibilityStatusValue = NULL;
+  // encounter medium
+  private $_emailMediumId = NULL;
+  private $_inPersonMediumId = NULL;
+  private $_letterMediumId = NULL;
+  private $_phoneMediumId = NULL;
+  private $_smsMediumId = NULL;
   // tags
   private $_tempNonRecallTagId = NULL;
   // activity types
   private $_activityTypeOptionGroupId = NULL;
+  private $_emailActivityTypeId = NULL;
   private $_consentActivityTypeId = NULL;
-  // custom group and field ids
+  private $_consentStage2ActivityTypeId = NULL;
+  private $_incomingCommunicationActivityTypeId = NULL;
+  private $_letterActivityTypeId = NULL;
+  private $_meetingActivityTypeId = NULL;
+  private $_phoneActivityTypeId = NULL;
+  private $_smsActivityTypeId = NULL;
+  private $_sampleReceivedActivityTypeId = NULL;
+  private $_visitStage1ActivityTypeId = NULL;
+  private $_visitStage2ActivityTypeId = NULL;
+  // activity status
+  private $_completedActivityStatusId = NULL;
+  private $_returnToSenderActivityStatusId = NULL;
+  private $_scheduledActivityStatusId = NULL;
+  // custom groups
   private $_contactIdentityCustomGroupId = NULL;
+  private $_consentStage2TableName = NULL;
+  private $_visitTableName = NULL;
+  private $_visitStage2TableName = NULL;
+  // custom fields
   private $_identifierTypeCustomFieldId = NULL;
+  private $_collectedByCustomFieldId = NULL;
+  private $_sampleSiteCustomFieldId = NULL;
+  private $_attemptsCustomFieldId = NULL;
+  private $_bleedDifficultiesCustomFieldId = NULL;
+  private $_consentVersionStage2CustomFieldId = NULL;
+  private $_questionnaireVersionStage2CustomFieldId = NULL;
+  private $_studyPaymentCustomFieldId = NULL;
+  private $_incidentFormCustomFieldId = NULL;
+  private $_mileageCustomFieldId =  NULL;
+  private $_parkingFeeCustomFieldId = NULL;
+  private $_otherExpensesCustomFieldId = NULL;
+  private $_claimReceivedDateCustomFieldId = NULL;
+  private $_claimSubmittedDateCustomFieldId = NULL;
+  private $_expensesNotesCustomFieldId = NULL;
+  private $_toLabDateCustomFieldId = NULL;
   // study participation status
   private $_acceptedParticipationStatusValue = NULL;
+  private $_declinedParticipationStatusValue = NULL;
   private $_excludedParticipationStatusValue = NULL;
   private $_invitationPendingParticipationStatusValue = NULL;
   private $_invitedParticipationStatusValue = NULL;
   private $_noResponseParticipationStatusValue = NULL;
   private $_notParticipatedParticipationStatusValue = NULL;
   private $_participatedParticipationStatusValue = NULL;
-  private $_refusedParticipationStatusValue = NULL;
   private $_renegedParticipationStatusValue = NULL;
   private $_returnToSenderParticipationStatusValue = NULL;
   private $_selectedParticipationStatusValue = NULL;
   private $_withdrawnParticipationStatusValue = NULL;
+  // option group ids
+  private $_bleedDifficultiesOptionGroupId = NULL;
+  private $_consentVersionOptionGroupId = NULL;
+  private $_questionnaireOptionGroupId = NULL;
+  private $_sampleSiteOptionGroupId = NULL;
+  private $_studyPaymentOptionGroupId = NULL;
   // others
   private $_correctConsentStatusValue = NULL;
   private $_visitStage2Substring = NULL;
+  private $_normalPriorityId = NULL;
+  private $_otherBleedDifficultiesValue = NULL;
+  private $_otherSampleSiteValue = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -420,6 +468,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string $value
    */
+  public function setDeclinedParticipationStatusValue($value) {
+    $this->_declinedParticipationStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getDeclinedParticipationStatusValue() {
+    return $this->_declinedParticipationStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
   public function setExcludedParticipationStatusValue($value) {
     $this->_excludedParticipationStatusValue = $value;
   }
@@ -499,20 +561,6 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getParticipatedParticipationStatusValue() {
     return $this->_participatedParticipationStatusValue;
-  }
-
-  /**
-   * @param string $value
-   */
-  public function setRefusedParticipationStatusValue($value) {
-    $this->_refusedParticipationStatusValue = $value;
-  }
-
-  /**
-   * @return string
-   */
-  public function getRefusedParticipationStatusValue() {
-    return $this->_refusedParticipationStatusValue;
   }
 
   /**
@@ -600,6 +648,104 @@ class CRM_Nihrbackbone_NbrConfig {
   }
 
   /**
+   * @param int $id
+   */
+  public function setConsentStage2ActivityTypeId($id) {
+    $this->_consentStage2ActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getConsentStage2ActivityTypeId() {
+    return $this->_consentStage2ActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setEmailActivityTypeId($id) {
+    $this->_emailActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getEmailActivityTypeId() {
+    return $this->_emailActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setIncomingCommunicationActivityTypeId($id) {
+    $this->_incomingCommunicationActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getIncomingCommunicationActivityTypeId() {
+    return $this->_incomingCommunicationActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setLetterActivityTypeId($id) {
+    $this->_letterActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getLetterActivityTypeId() {
+    return $this->_letterActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setMeetingActivityTypeId($id) {
+    $this->_meetingActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getMeetingActivityTypeId() {
+    return $this->_meetingActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setPhoneActivityTypeId($id) {
+    $this->_phoneActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getPhoneActivityTypeId() {
+    return $this->_phoneActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setSmsActivityTypeId($id) {
+    $this->_smsActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getSmsActivityTypeId() {
+    return $this->_smsActivityTypeId;
+  }
+
+  /**
    * @param string
    */
   public function setVisitStage2Substring($string) {
@@ -653,6 +799,524 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getIdentifierTypeCustomFieldId() {
     return $this->_identifierTypeCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setCompletedActivityStatusId($id) {
+    $this->_completedActivityStatusId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getCompletedActivityStatusId() {
+    return $this->_completedActivityStatusId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setReturnToSenderActivityStatusId($id) {
+    $this->_returnToSenderParticipationStatusValue = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getReturnToSenderActivityStatusId() {
+    return $this->_returnToSenderParticipationStatusValue;
+  }
+
+  /**
+   * @param int
+   */
+  public function setScheduledActivityStatusId($id) {
+    $this->_scheduledActivityStatusId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getScheduledActivityStatusId() {
+    return $this->_scheduledActivityStatusId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setNormalPriorityId($id) {
+    $this->_normalPriorityId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getNormalPriorityId() {
+    return $this->_normalPriorityId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setEmailMediumId($id) {
+    $this->_emailMediumId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getEmailMediumId() {
+    return $this->_emailMediumId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setInPersonMediumId($id) {
+    $this->_inPersonMediumId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getInPersonMediumId() {
+    return $this->_inPersonMediumId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setLetterMediumId($id) {
+    $this->_letterMediumId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getLetterMediumId() {
+    return $this->_letterMediumId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setPhoneMediumId($id) {
+    $this->_phoneMediumId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getPhoneMediumId() {
+    return $this->_phoneMediumId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setSmsMediumId($id) {
+    $this->_smsMediumId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getSmsMediumId() {
+    return $this->_smsMediumId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setSampleReceivedActivityTypeId($id) {
+    $this->_sampleReceivedActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getSampleReceivedActivityTypeId() {
+    return $this->_sampleReceivedActivityTypeId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setVisitStage1ActivityTypeId($id) {
+    $this->_visitStage1ActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getVisitStage1ActivityTypeId() {
+    return $this->_visitStage1ActivityTypeId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setVisitStage2ActivityTypeId($id) {
+    $this->_visitStage2ActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getVisitStage2ActivityTypeId() {
+    return $this->_visitStage2ActivityTypeId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVisitTableName($name) {
+    $this->_visitTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVisitTableName() {
+    return $this->_visitTableName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVisitStage2TableName($name) {
+    $this->_visitStage2TableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVisitStage2TableName() {
+    return $this->_visitStage2TableName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setConsentStage2TableName($name) {
+    $this->_consentStage2TableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getConsentStage2TableName() {
+    return $this->_consentStage2TableName;
+  }
+
+  /**
+   * @param int
+   */
+  public function setAttemptsCustomFieldId($id) {
+    $this->_attemptsCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getAttemptsCustomFieldId() {
+    return $this->_attemptsCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setBleedDifficultiesCustomFieldId($id) {
+    $this->_bleedDifficultiesCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getBleedDifficultiesCustomFieldId() {
+    return $this->_bleedDifficultiesCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setClaimReceivedDateCustomFieldId($id) {
+    $this->_claimReceivedDateCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getClaimReceivedDateCustomFieldId() {
+    return $this->_claimReceivedDateCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setClaimSubmittedDateCustomFieldId($id) {
+    $this->_claimSubmittedDateCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getClaimSubmittedDateCustomFieldId() {
+    return $this->_claimSubmittedDateCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setCollectedByCustomFieldId($id) {
+    $this->_collectedByCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getCollectedByCustomFieldId() {
+    return $this->_collectedByCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setExpensesNotesCustomFieldId($id) {
+    $this->_expensesNotesCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getExpensesNotesCustomFieldId() {
+    return $this->_expensesNotesCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setIncidentFormCustomFieldId($id) {
+    $this->_incidentFormCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getIncidentFormCustomFieldId() {
+    return $this->_incidentFormCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setMileageCustomFieldId($id) {
+    $this->_mileageCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getMileageCustomFieldId() {
+    return $this->_mileageCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setOtherExpensesCustomFieldId($id) {
+    $this->_otherExpensesCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getOtherExpensesCustomFieldId() {
+    return $this->_otherExpensesCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setParkingFeeCustomFieldId($id) {
+    $this->_parkingFeeCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getParkingFeeCustomFieldId() {
+    return $this->_parkingFeeCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setSampleSiteCustomFieldId($id) {
+    $this->_sampleSiteCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getSampleSiteCustomFieldId() {
+    return $this->_sampleSiteCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setToLabDateCustomFieldId($id) {
+    $this->_toLabDateCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getToLabDateCustomFieldId() {
+    return $this->_toLabDateCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setConsentVersionStage2CustomFieldId($id) {
+    $this->_consentVersionStage2CustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getConsentVersionStage2CustomFieldId() {
+    return $this->_consentVersionStage2CustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setQuestionnaireVersionStage2CustomFieldId($id) {
+    $this->_questionnaireVersionStage2CustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getQuestionnaireVersionStage2CustomFieldId() {
+    return $this->_questionnaireVersionStage2CustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setStudyPaymentCustomFieldId($id) {
+    $this->_studyPaymentCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getStudyPaymentCustomFieldId() {
+    return $this->_studyPaymentCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setBleedDifficultiesOptionGroupId($id) {
+    $this->_bleedDifficultiesOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getBleedDifficultiesOptionGroupId() {
+    return $this->_bleedDifficultiesOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setConsentVersionOptionGroupId($id) {
+    $this->_consentVersionOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getConsentVersionOptionGroupId() {
+    return $this->_consentVersionOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setQuestionnaireVersionOptionGroupId($id) {
+    $this->_questionnaireOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getQuestionnaireVersionOptionGroupId() {
+    return $this->_questionnaireOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setSampleSiteOptionGroupId($id) {
+    $this->_sampleSiteOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getSampleSiteOptionGroupId() {
+    return $this->_sampleSiteOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setStudyPaymentOptionGroupId($id) {
+    $this->_studyPaymentOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getStudyPaymentOptionGroupId() {
+    return $this->_studyPaymentOptionGroupId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setOtherBleedDifficultiesValue($value) {
+    $this->_otherBleedDifficultiesValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getOtherBleedDifficultiesValue() {
+    return $this->_otherBleedDifficultiesValue;
+  }
+
+  /**
+   * @param string
+   */
+  public function setOtherSampleSiteValue($value) {
+    $this->_otherSampleSiteValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getOtherSampleSiteValue() {
+    return $this->_otherSampleSiteValue;
   }
 
 }

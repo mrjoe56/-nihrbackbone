@@ -3,54 +3,61 @@ class CRM_Nihrbackbone_NihrValidation {
 
   public static function validateAlias($formName, &$fields, &$files, &$form, &$errors) {
 
+    $contact_id = CRM_Utils_Request::retrieve('entityID', 'String');
+
     # get contact id history custom field IDs
-    $query = "select id from civicrm_custom_field where name = 'id_history_entry_type'";  # custom_7
+    $query = "select id from civicrm_custom_field where name = 'id_history_entry_type'";  #
     $dao  = CRM_Core_DAO::executeQuery($query);
     if ($dao->fetch()) {$alias_type_id = 'custom_'.$dao->id;};
 
-    $query = "select id from civicrm_custom_field where name = 'id_history_entry'"; # custom_8
+    $query = "select id from civicrm_custom_field where name = 'id_history_entry'"; #
     $dao  = CRM_Core_DAO::executeQuery($query);
     if ($dao->fetch()) {$alias_value_id = 'custom_'.$dao->id;};
 
     foreach($fields as $key => $value) {
-      if (strpos($key,$alias_type_id) !== false) {                   # contact id history custom field found
-        $alias_type = $value;                                        #  get custom field value
-        $errorField = $key;                                          #  and field name - for error logging
+      if (strpos($key,$alias_type_id) !== false) {                                                                     # contact id hist custom field found
+        $alias_type = $value;                                                                                          #  get custom field value
+        $errorField = $key;                                                                                            #  and field name - for error logging
       }
       if (strpos($key,$alias_value_id) !== false) {
         $alias_value= $value;
       }
     }
 
-    if ($alias_type == 'cih_type_packid') {                          # pack ID validation
-      $msg = 'Error in K Pack ID - ';
-      $first = $alias_value[0];                                      #  get first character
-      $last = substr($alias_value, -1);                         #  last character
-      $n_string = substr($alias_value, 1, 6);             #  numeric part
-      $mod = $n_string % 23;                                         #  and modulus
+    $sqlParams = [1 => [$alias_type, 'String'], 2 => [intval($contact_id), 'Integer'], 3 => [$alias_value, 'String'], ];
+    $query = "select count(*) as dup from civicrm_value_contact_id_history where identifier_type = %1 and entity_id = %2 and identifier = %3";
+    $duplicateCount = CRM_Core_DAO::singleValueQuery($query, $sqlParams);                                                                  #
+    if ($duplicateCount>0) {$errors[$errorField] = $msg."This identity already exists or has not been updated - please cancel or update";}
+
+    if ($alias_type == 'cih_type_packid') {                                                                            # pack ID validation
+      $msg = 'Error in Pack ID - ';
+      $first = $alias_value[0];                                                                                        #  get first character
+      $last = substr($alias_value, -1);                                                                                #  last character
+      $n_string = substr($alias_value, 1, 6);                                                                          #  numeric part
+      $mod = $n_string % 23;                                                                                           #  and modulus
       $mod2chk = ['0' => 'Z','1' => 'A','2' => 'B','3' => 'C','4' => 'D','5' => 'E','6' => 'F',
         '7' => 'G','8' => 'H','9' => 'J','10' => 'K','11' => 'L','12' => 'M','13' => 'N','14' => 'P',
         '15' => 'Q','16' => 'R','17' => 'S','18' => 'T','19' => 'V','20' => 'W','21' => 'X','22' => 'Y'];
-      $chk_chr = $mod2chk[$mod];                                     # VALIDATION:
-      if (! preg_match( '/[A-Z]/', $first)) {                 #  first char is alpha
+      $chk_chr = $mod2chk[$mod];                                                                                       # VALIDATION:
+      if (! preg_match( '/[A-Z]/', $first)) {                                                                          #  first char is alpha
         $errors[$errorField] = $msg."first character must be 'A' to 'Z'";
       }
-      elseif (strlen($alias_value) != 8) {                           #  length of input is 8
+      elseif (strlen($alias_value) != 8) {                                                                             #  length of input is 8
         $errors[$errorField] = $msg."must be 8 characters long";
       }
-      elseif (! preg_match( '/[0-9]{6}/', $n_string)) {       #  chars 2-7 are numeric
+      elseif (! preg_match( '/[0-9]{6}/', $n_string)) {                                                                # chars 2-7 are numeric
         $errors[$errorField] = $msg."2nd to 7th characters must be numeric";
       }
-      elseif ($chk_chr != $last) {                                   # check digit is correct
+      elseif ($chk_chr != $last) {                                                                                     # check digit is correct
         $errors[$errorField] = $msg."Check character incorrect (".$chk_chr.")";
       }
     }
 
-    if ($alias_type == 'cih_type_nhs_number') {                      # NHS number validation
+    if ($alias_type == 'cih_type_nhs_number') {                                                                        # NHS number validation
 
       $msg = 'Error in NHS Number - ';
-      $cd = intval(substr($alias_value, 9, 1));           #  get check digit
-      $sum =                                                         #  and weighted sum of first 9 digits
+      $cd = intval(substr($alias_value, 9, 1));                                                                        #   get check digit
+      $sum =                                                                                                           #   + weighted sum of first 9 digits
         intval(substr($alias_value, 0, 1)) * 10 +
         intval(substr($alias_value, 1, 1)) * 9 +
         intval(substr($alias_value, 2, 1)) * 8 +
@@ -60,20 +67,20 @@ class CRM_Nihrbackbone_NihrValidation {
         intval(substr($alias_value, 6, 1)) * 4 +
         intval(substr($alias_value, 7, 1)) * 3 +
         intval(substr($alias_value, 8, 1)) * 2;
-      $calc_cd = 11 - ($sum % 11);                                   # calc check digit :
+      $calc_cd = 11 - ($sum % 11);                                                                                     # calc check digit :
       # 11 - modulus 11 of weighted sum
-      if ($calc_cd == 11) {$calc_cd = 0;}                            # map 11 > 0
+      if ($calc_cd == 11) {$calc_cd = 0;}                                                                              # map 11 > 0
 
-      if (strlen($alias_value) != 10) {                              # VALIDATION:
-        $errors[$errorField] = $msg."must be 10 characters long";    #  length of input is 10
+      if (strlen($alias_value) != 10) {                                                                                # VALIDATION:
+        $errors[$errorField] = $msg."must be 10 characters long";                                                      #  length of input is 10
       }
-      elseif (! preg_match( '/[0-9]{10}/', $alias_value)) {   #  all chars are numeric
+      elseif (! preg_match( '/[0-9]{10}/', $alias_value)) {                                                            #  all chars are numeric
         $errors[$errorField] = $msg."all characters must be numeric";
       }
-      elseif ($calc_cd == 10) {                                      #  invalid check digit
+      elseif ($calc_cd == 10) {                                                                                        #  invalid check digit
         $errors[$errorField] = $msg."Check digit cannot be calculated";
       }
-      elseif ($cd !== $calc_cd) {                                    # check digit is correct
+      elseif ($cd !== $calc_cd) {                                                                                      # check digit is correct
         $errors[$errorField] = $msg."Check digit incorrect (".strval($calc_cd).")";
       }
 
@@ -86,9 +93,13 @@ class CRM_Nihrbackbone_NihrValidation {
     $contactId = CRM_Utils_Request::retrieve('cid', 'Positive');
 
     # get general observations custom group ID
-    $query = "select id from civicrm_custom_group where name = 'nihr_volunteer_general_observations'";  # custom_14
+    $query = "select id from civicrm_custom_group where name = 'nihr_volunteer_general_observations'";                 #
     $dao  = CRM_Core_DAO::executeQuery($query);
     if ($dao->fetch()) {$gen_obvs_group_id = $dao->id;};
+    # get general observations custom group ID
+    $query = "select id from civicrm_custom_group where name = 'contact_id_history'";                                  #
+    $dao  = CRM_Core_DAO::executeQuery($query);
+    if ($dao->fetch()) {$contact_hist_group_id = $dao->id;};
 
     # For gen observations form - allow input of ht/wt as feet/inches/lbs
     if ($formName == 'CRM_Contact_Form_CustomData' && $form->getVar('_groupID') == $gen_obvs_group_id) {
@@ -120,8 +131,7 @@ class CRM_Nihrbackbone_NihrValidation {
       $defaults['nvgo_val_ht_in'] = $ht_in;
       $form->setDefaults($defaults);
 
-      // add template to form
-      CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_general_observations.tpl',]);
+      CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_general_observations.tpl',]);   # add template to form
     }
   }
 }

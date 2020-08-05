@@ -901,10 +901,43 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Method to check if change study status activity exists and create if not
+   */
+  private function checkChangeStudyStatus() {
+    try {
+      $checkCount = civicrm_api3('OptionValue', 'getcount', [
+        'option_group_id' => 'activity_type',
+        'name' => 'nbr_change_study_status',
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->error("Unexpected error in " . __METHOD__ . ", error message from API OptionValue getcount: " . $ex->getMessage());
+    }
+    if ($checkCount == 0) {
+      try {
+        civicrm_api3('OptionValue', 'create', [
+          'option_group_id' => 'activity_type',
+          'name' => 'nbr_change_study_status',
+          'label' => 'Change Study Status',
+          'component' => 'CiviCase',
+          'is_active' => 1,
+          'is_reserved' => 1,
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+        throw new API_Exception('Could not create required activity type Change Study Status in '
+          . __METHOD__ . ', contact system administration citing error message: ' . $ex->getMessage());
+      }
+    }
+  }
+
+  /**
    * Method to set the relevant activity type ids
    */
   private function setActivityTypes() {
-    $validTypes = ['nbr_change_project_status', 'nbr_change_study_status', 'nbr_project_invite', 'nbr_export_external'];
+    // double check - if change study status does not exist, create
+    $this->checkChangeStudyStatus();
+    $validTypes = ['nbr_change_study_status', 'nbr_project_invite', 'nbr_export_external'];
     try {
       $apiTypes = civicrm_api3('OptionValue', 'get', [
         'options' => ['limit' => 0],
@@ -914,9 +947,6 @@ class CRM_Nihrbackbone_BackboneConfig {
       ]);
       foreach ($apiTypes['values'] as $apiType) {
         switch ($apiType['name']) {
-          case 'nbr_change_project_status':
-            $this->_changeProjectStatusActivityTypeId = $apiType['value'];
-            break;
           case 'nbr_change_study_status':
             $this->_changeStudyStatusActivityTypeId = $apiType['value'];
             break;
