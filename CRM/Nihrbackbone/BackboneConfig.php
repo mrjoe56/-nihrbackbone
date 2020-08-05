@@ -557,6 +557,20 @@ class CRM_Nihrbackbone_BackboneConfig {
     return FALSE;
   }
 
+  public function getVolunteerSelectionEligibilityCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_volunteerSelectionEligibilityCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
   /**
    * Getter for site alias data custom field
    *

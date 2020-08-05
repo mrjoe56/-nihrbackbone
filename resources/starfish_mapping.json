@@ -81,5 +81,9 @@
   "sp_date_invited": "sp_date_invited",
   "sp_recall_group": "sp_recall_group",
 
-  "unable_to_travel": "unable_to_travel"
+  "unable_to_travel": "unable_to_travel",
+  "exclude_from_blood_studies": "exclude_from_blood_studies",
+  "exclude_from_commercial_studies": "exclude_from_commercial_studies",
+  "exclude_from_drug_studies": "exclude_from_drug_studies",
+  "exclude_from_studies_with_mri": "exclude_from_studies_with_mri"
 }
