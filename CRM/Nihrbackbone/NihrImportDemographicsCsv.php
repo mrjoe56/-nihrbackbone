@@ -283,9 +283,13 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           $nbrConsent->addConsent($contactId, $caseID, 'consent_form_status_not_valid', $data, $this->_logger);
         }
 
-        // *** migration - consents all migrated into one recruitment case
+        // *** Starfish migration only
         if ($this->_dataSource == 'starfish' && $data['consent_version'] <> '') {
+          // consents all migrated into one recruitment case
           $this->migrationAddConsent($contactId, $data);
+
+          // migrate volunteer status and fields linked to the status
+          $this->migrationVolunteerStatus($contactId, $data);
         }
       }
     }
