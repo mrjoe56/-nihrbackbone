@@ -85,5 +85,18 @@
   "exclude_from_blood_studies": "exclude_from_blood_studies",
   "exclude_from_commercial_studies": "exclude_from_commercial_studies",
   "exclude_from_drug_studies": "exclude_from_drug_studies",
-  "exclude_from_studies_with_mri": "exclude_from_studies_with_mri"
+  "exclude_from_studies_with_mri": "exclude_from_studies_with_mri",
+
+  "volunteer_status": "volunteer_status",
+  "not_recruited_by": "not_recruited_by",
+  "not_recruited_reason": "not_recruited_reason",
+  "not_recruited_date": "not_recruited_date",
+  "withdrawn_by": "withdrawn_by",
+  "withdrawn_reason": "withdrawn_reason",
+  "withdrawn_date": "withdrawn_date",
+  "redundant_by": "redundant_by",
+  "redundant_reason": "redundant_reason",
+  "redundant_date": "redundant_reason",
+  "death_reported_by": "death_reported_by",
+  "death_reported_date": "death_reported_date"
 }

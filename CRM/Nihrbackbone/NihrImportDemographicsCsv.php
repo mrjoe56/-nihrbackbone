@@ -1025,6 +1025,13 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
     $nbrConsent->addConsent($contactId, $caseId, $data['consent_status'], $data, $this->_logger);
   }
+
+  private function migrationVolunteerStatus($contactId, $data)
+  {
+    // only to be used for starfish data migration:
+
+  }
+
   /*
     private function addGeneralObservations($contactID, $data)
     {
