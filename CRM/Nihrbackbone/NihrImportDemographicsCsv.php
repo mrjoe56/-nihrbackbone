@@ -185,6 +185,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $this->addPhone($contactId, $data, 'phone_home', 'Home', 'Phone');
         $this->addPhone($contactId, $data, 'phone_work', 'Work', 'Phone');
         $this->addPhone($contactId, $data, 'phone_mobile', 'Home', 'Mobile');
+        $this->addNote($contactId, $data['notes']);
+
         if ($data['panel'] <> '' || $data['site'] <> '' || $data['centre'] <> '') {
           $this->addPanel($contactId, $this->_dataSource, $data['panel'], $data['site'], $data['centre'], $data['source']);
         }
@@ -280,7 +282,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           // TODO     CONSENT ALREADY EXISTS AND IF NOT ADD (TO NEW CASE? TO ACTIVITIES?)
           // add consent to recruitment case
           $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
-          $nbrConsent->addConsent($contactId, $caseID, 'consent_form_status_not_valid', $data, $this->_logger);
+          $nbrConsent->addConsent($contactId, $caseID, 'consent_form_status_not_valid', 'Consent', $data, $this->_logger);
         }
 
         // *** Starfish migration only
@@ -290,6 +292,19 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
           // migrate volunteer status and fields linked to the status
           $this->migrationVolunteerStatus($contactId, $data);
+
+          // migrate paper questionnaire flag
+          if (isset($data['nihr_paper_questionnaire']) && $data['nihr_paper_questionnaire'] == 'yes') {
+            $this->addActivity($contactId, 'nihr_paper_questionnaire', '');
+          }
+        }
+
+        // gdpr request - very likely only used for migration
+        if (isset($data['gdpr_request_received']) && $data['gdpr_request_received'] <> '') {
+          $this->addActivity($contactId, 'nihr_gdpr_request_received', $data['gdpr_request_received']);
+        }
+        if (isset($data['gdpr_sent_to_nbr']) && $data['gdpr_sent_to_nbr'] <> '') {
+          $this->addActivity($contactId, 'nihr_gdpr_sent_to_nbr', $data['gdpr_sent_to_nbr']);
         }
       }
     }
@@ -539,7 +554,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     try {
       // create/update volunteer record
       $result = civicrm_api3("Contact", "create", $data);
-      $this->_logger->logMessage('Volunteer '.(int)$result['id'].' succesfully loaded/updated. New volunteer: '. $new_volunteer);
+      $this->_logger->logMessage('Volunteer ' . $data['participant_id'] . ' ' .(int)$result['id'].' successfully loaded/updated. New volunteer: '. $new_volunteer);
       return array((int)$result['id'], $new_volunteer);
     } catch (CiviCRM_API3_Exception $ex) {
       $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . " " . $ex->getMessage() . 'error');
@@ -586,7 +601,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
               'contact_id' => $contactID,
               'email' => $data['email'],
             ]);
-            $this->_logger->logMessage('Volunteer email succesfully loaded/updated');
+
           } catch (CiviCRM_API3_Exception $ex) {
             $this->_logger->logMessage('Error message when adding volunteer email ' . $contactID . $ex->getMessage(), 'error');
           }
@@ -646,8 +661,6 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           try {
             $result = civicrm_api3('Address', 'create', $fields);
 
-            //$this->_logger->logMessage('Volunteer ' . $data["last_name"] . ' ' . $data["first_name"] . ' succesfully loaded');
-            $this->_logger->logMessage('Volunteer address succesfully loaded/updated');
           } catch (CiviCRM_API3_Exception $ex) {
             $this->_logger->logMessage('Error message when adding volunteer address ' . $contactID . $ex->getMessage(), 'error');
           }
@@ -697,11 +710,25 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
               'location_type_id' => $phoneLocation,
               'phone_type_id' => $phoneType,
             ]);
-            $this->_logger->logMessage('Volunteer phone succesfully loaded/updated');
+
           } catch (CiviCRM_API3_Exception $ex) {
             $this->_logger->logMessage('Error message when adding volunteer phone ' . $contactID . $ex->getMessage(), 'error');
           }
         }
+      }
+    }
+  }
+
+  private function addNote($contactID, $note)
+  {
+    if (isset($note) && $note <> '') {
+      try {
+        civicrm_api3('Note', 'create', [
+          'entity_id' => $contactID,
+          'note' => $note,
+        ]);
+      } catch (CiviCRM_API3_Exception $ex) {
+        $this->_logger->logMessage('Error message when adding volunteer notes ' . $contactID . $ex->getMessage(), 'error');
       }
     }
   }
@@ -983,6 +1010,19 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     }
   }
 
+  private function addActivity ($contactId, $activityType, $dateTime)
+  {
+    // &&& todo: only insert if not already in place
+    try {
+      $result = civicrm_api3('Activity', 'create', [
+        'activity_type_id' => $activityType,
+        'activity_date_time' => $dateTime,
+        'target_id' => $contactId,
+      ]);
+    } catch (CiviCRM_API3_Exception $ex) {
+      $this->_logger->logMessage('Error inserting $activityType activity for volunteer ' . $contactId . ': ' . $ex->getMessage(), 'error');
+    }
+  }
 
   private function migrationAddConsent($contactId, $data)
   {
@@ -1023,7 +1063,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     }
     // add consent information
     $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
-    $nbrConsent->addConsent($contactId, $caseId, $data['consent_status'], $data, $this->_logger);
+    $nbrConsent->addConsent($contactId, $caseId, $data['consent_status'], 'Consent (Starfish migration)', $data, $this->_logger);
   }
 
   private function migrationVolunteerStatus($contactId, $data)
@@ -1031,48 +1071,5 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     // only to be used for starfish data migration:
 
   }
-
-  /*
-    private function addGeneralObservations($contactID, $data)
-    {
-      // *** add or update volunteer questionnaire data
-
-      if ((isset ($data['weight']) && $data['weight'] <> '') {
-
-      $table = 'civicrm_value_nihr_general_observations';
-      $xdata = [];
-      $xdata['id'] = $contactID;
-
-      // *** check if panel exists and if so, select ID
-      if (isset($panel)) {
-        try {
-          $result = civicrm_api3('Contact', 'get', [
-            'contact_sub_type' => "nbr_panel",
-            'display_name' => $panel,
-          ]);
-        } catch (CiviCRM_API3_Exception $ex) {
-          $this->_logger->logMessage('Error selecting panel ' . $panel . ': ' . $ex->getMessage(), 'error');
-        }
-
-        if ($result['count'] <> 1) {
-          // error, panel does not exist, exit
-          $this->_logger->logMessage('Panel does not exist on database: ' . $panel, 'error');
-          return;
-        } else {
-          $xdata[$volunteerPanelCustomField] = $result['id'];
-          //  &&& $panelID = $result['id'];
-        }
-      }
-
-
-
-
-        try {
-          $result = civicrm_api3("Contact", "create", $xdata);
-        } catch (CiviCRM_API3_Exception $ex) {
-          $this->_logger->logMessage('Error inserting panel for volunteer ' . $contactID . ': '. $ex->getMessage(), 'error');
-        }
-      }
-    } */
 }
 

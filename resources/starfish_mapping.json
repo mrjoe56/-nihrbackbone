@@ -38,6 +38,7 @@
   "information_leaflet_version": "information_leaflet_version",
   "genetic_feedback": "genetic_feedback",
   "ibdgc_no": "nva_ibdgc_number",
+  "invite_type": "invite_type",
   "ethnicity": "ethnicity",
   "cohort": "cohort",
   "diagnosis": "diagnosis",
@@ -53,6 +54,7 @@
   "hand_preference": "hand_preference",
   "abo_group": "abo_group",
   "rhesus_factor": "rhesus_factor",
+  "notes": "notes",
 
   "disease": "disease",
   "disease_family_member": "family_member",
@@ -98,5 +100,9 @@
   "redundant_reason": "redundant_reason",
   "redundant_date": "redundant_reason",
   "death_reported_by": "death_reported_by",
-  "death_reported_date": "death_reported_date"
+  "death_reported_date": "death_reported_date",
+
+  "gdpr_request_received": "gdpr_request_received",
+  "gdpr_sent_to_nbr": "gdpr_sent_to_nbr"
+
 }

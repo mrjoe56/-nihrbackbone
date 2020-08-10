@@ -11,7 +11,7 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
 
 class CRM_Nihrbackbone_NbrConsent
 {
-  public function addConsent($contactId, $caseID, $consent_status, $data, $logger)
+  public function addConsent($contactId, $caseID, $consent_status, $subject, $data, $logger)
   {
     // caseID cannot be empty, a consent is always linked to a case
     if ($caseID == '') {
@@ -22,6 +22,7 @@ class CRM_Nihrbackbone_NbrConsent
       $consentStatus = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_consent_status', 'id');
       $consentedBy = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_consented_by', 'id');
       $geneticFeedback = 'custom_ ' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_genetic_feedback', 'id');
+      $inviteType = 'custom_ ' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_invite_type', 'id');
       $consentDate = date('Y-m-d', strtotime($data['consent_date']));
 
       $testParams = [
@@ -81,12 +82,13 @@ class CRM_Nihrbackbone_NbrConsent
             $consentedBy => $consented_by,
             'details' => $details,
             $geneticFeedback => $data['genetic_feedback'],
-            'subject' => "Consent"  // todo add type of consent to subject line
+            $inviteType => $data['invite_type'],
+            'subject' => $subject,
           ]);
 
           //
 
-          $logger->logMessage('Volunteer consent succesfully loaded/updated');
+
         } catch (CiviCRM_API3_Exception $ex) {
           $logger->logMessage('Error message when adding volunteer consent ' . $contactId . ' ' . $ex->getMessage(), 'error');
         }
