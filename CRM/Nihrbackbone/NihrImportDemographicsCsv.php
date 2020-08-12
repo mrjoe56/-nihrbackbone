@@ -551,17 +551,22 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       $data[$volunteerStatusCustomField] = 'volunteer_status_pending';
     }
 
+    foreach ($data as $key => $value) {
+      if (!empty($value)) {
+        $params[$key] = $value;
+      }
+    }
+
     try {
       // create/update volunteer record
-      $result = civicrm_api3("Contact", "create", $data);
+      $result = civicrm_api3("Contact", "create", $params);
       $this->_logger->logMessage('Volunteer ' . $data['participant_id'] . ' ' .(int)$result['id'].' successfully loaded/updated. New volunteer: '. $new_volunteer);
       return array((int)$result['id'], $new_volunteer);
     } catch (CiviCRM_API3_Exception $ex) {
       $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . " " . $ex->getMessage() . 'error');
     }
 
-    // **** if no name is available ('x' inserted) - use participant ID instead
-    // &&&
+    // **** if no name is available ('x' inserted) - TODO: use participant ID instead
   }
 
 
