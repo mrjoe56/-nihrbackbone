@@ -47,17 +47,20 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_tempNonRecallTagId = NULL;
   // activity types
   private $_activityTypeOptionGroupId = NULL;
-  private $_emailActivityTypeId = NULL;
   private $_consentActivityTypeId = NULL;
   private $_consentStage2ActivityTypeId = NULL;
+  private $_emailActivityTypeId = NULL;
   private $_incomingCommunicationActivityTypeId = NULL;
   private $_letterActivityTypeId = NULL;
   private $_meetingActivityTypeId = NULL;
+  private $_notRecruitedActivityTypeId = NULL;
   private $_phoneActivityTypeId = NULL;
+  private $_redundantActivityTypeId = NULL;
   private $_smsActivityTypeId = NULL;
   private $_sampleReceivedActivityTypeId = NULL;
   private $_visitStage1ActivityTypeId = NULL;
   private $_visitStage2ActivityTypeId = NULL;
+  private $_withdrawnActivityTypeId = NULL;
   // activity status
   private $_completedActivityStatusId = NULL;
   private $_returnToSenderActivityStatusId = NULL;
@@ -67,24 +70,33 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_consentStage2TableName = NULL;
   private $_visitTableName = NULL;
   private $_visitStage2TableName = NULL;
+  private $_volunteerStatusTableName = NULL;
   // custom fields
-  private $_identifierTypeCustomFieldId = NULL;
-  private $_collectedByCustomFieldId = NULL;
-  private $_sampleSiteCustomFieldId = NULL;
   private $_attemptsCustomFieldId = NULL;
   private $_bleedDifficultiesCustomFieldId = NULL;
-  private $_consentVersionStage2CustomFieldId = NULL;
-  private $_questionnaireVersionStage2CustomFieldId = NULL;
-  private $_studyPaymentCustomFieldId = NULL;
-  private $_incidentFormCustomFieldId = NULL;
-  private $_mileageCustomFieldId =  NULL;
-  private $_parkingFeeCustomFieldId = NULL;
-  private $_otherExpensesCustomFieldId = NULL;
   private $_claimReceivedDateCustomFieldId = NULL;
   private $_claimSubmittedDateCustomFieldId = NULL;
+  private $_collectedByCustomFieldId = NULL;
+  private $_consentVersionStage2CustomFieldId = NULL;
   private $_expensesNotesCustomFieldId = NULL;
+  private $_identifierTypeCustomFieldId = NULL;
+  private $_incidentFormCustomFieldId = NULL;
+  private $_mileageCustomFieldId =  NULL;
+  private $_notRecruitedReasonCustomFieldId = NULL;
+  private $_otherExpensesCustomFieldId = NULL;
+  private $_parkingFeeCustomFieldId = NULL;
+  private $_questionnaireVersionStage2CustomFieldId = NULL;
+  private $_redundantReasonCustomFieldId = NULL;
+  private $_redundantDestroySamplesCustomFieldId = NULL;
+  private $_redundantDestroyDataCustomFieldId = NULL;
+  private $_sampleSiteCustomFieldId = NULL;
+  private $_studyPaymentCustomFieldId = NULL;
   private $_toLabDateCustomFieldId = NULL;
-  // study participation status
+  private $_withdrawnReasonCustomFieldId = NULL;
+  private $_withdrawnDestroySamplesCustomFieldId = NULL;
+  private $_withdrawnDestroyDataCustomFieldId = NULL;
+  private $_volunteerStatusColumnName = NULL;
+   // study participation status
   private $_acceptedParticipationStatusValue = NULL;
   private $_declinedParticipationStatusValue = NULL;
   private $_excludedParticipationStatusValue = NULL;
@@ -100,9 +112,13 @@ class CRM_Nihrbackbone_NbrConfig {
   // option group ids
   private $_bleedDifficultiesOptionGroupId = NULL;
   private $_consentVersionOptionGroupId = NULL;
+  private $_notRecruitedReasonOptionGroupId = NULL;
   private $_questionnaireOptionGroupId = NULL;
+  private $_redundantReasonOptionGroupId = NULL;
   private $_sampleSiteOptionGroupId = NULL;
   private $_studyPaymentOptionGroupId = NULL;
+  private $_volunteerStatusOptionGroupId = NULL;
+  private $_withdrawnReasonOptionGroupId = NULL;
   // others
   private $_correctConsentStatusValue = NULL;
   private $_visitStage2Substring = NULL;
@@ -720,6 +736,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param int $id
    */
+  public function setNotRecruitedActivityTypeId($id) {
+    $this->_notRecruitedActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getNotRecruitedActivityTypeId() {
+    return $this->_notRecruitedActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
   public function setPhoneActivityTypeId($id) {
     $this->_phoneActivityTypeId = $id;
   }
@@ -729,6 +759,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getPhoneActivityTypeId() {
     return $this->_phoneActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setRedundantActivityTypeId($id) {
+    $this->_redundantActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getRedundantActivityTypeId() {
+    return $this->_redundantActivityTypeId;
   }
 
   /**
@@ -757,6 +801,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getVisitStage2Substring() {
     return $this->_visitStage2Substring;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setWithdrawnActivityTypeId($id) {
+    $this->_withdrawnActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getWithdrawnActivityTypeId() {
+    return $this->_withdrawnActivityTypeId;
   }
 
   /**
@@ -1012,6 +1070,34 @@ class CRM_Nihrbackbone_NbrConfig {
   }
 
   /**
+   * @param string
+   */
+  public function setVolunteerStatusTableName($name) {
+    $this->_volunteerStatusTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerStatusTableName() {
+    return $this->_volunteerStatusTableName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVolunteerStatusColumnName($name) {
+    $this->_volunteerStatusColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerStatusColumnName() {
+    return $this->_volunteerStatusColumnName;
+  }
+
+  /**
    * @param int
    */
   public function setAttemptsCustomFieldId($id) {
@@ -1126,6 +1212,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param int
    */
+  public function setNotRecruitedReasonCustomFieldId($id) {
+    $this->_notRecruitedReasonCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getNotRecruitedReasonCustomFieldId() {
+    return $this->_notRecruitedReasonCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
   public function setOtherExpensesCustomFieldId($id) {
     $this->_otherExpensesCustomFieldId = $id;
   }
@@ -1149,6 +1249,90 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getParkingFeeCustomFieldId() {
     return $this->_parkingFeeCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setRedundantReasonCustomFieldId($id) {
+    $this->_redundantReasonCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getRedundantReasonCustomFieldId() {
+    return $this->_redundantReasonCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setRedundantDestroyDataCustomFieldId($id) {
+    $this->_redundantDestroyDataCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getRedundantDestroyDataCustomFieldId() {
+    return $this->_redundantDestroyDataCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setRedundantDestroySamplesCustomFieldId($id) {
+    $this->_redundantDestroySamplesCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getRedundantDestroySamplesCustomFieldId() {
+    return $this->_redundantDestroySamplesCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setWithdrawnReasonCustomFieldId($id) {
+    $this->_withdrawnReasonCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getWithdrawnReasonCustomFieldId() {
+    return $this->_withdrawnReasonCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setWithdrawnDestroyDataCustomFieldId($id) {
+    $this->_withdrawnDestroyDataCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getWithdrawnDestroyDataCustomFieldId() {
+    return $this->_withdrawnDestroyDataCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setWithdrawnDestroySamplesCustomFieldId($id) {
+    $this->_withdrawnDestroySamplesCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getWithdrawnDestroySamplesCustomFieldId() {
+    return $this->_withdrawnDestroySamplesCustomFieldId;
   }
 
   /**
@@ -1252,6 +1436,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param int
    */
+  public function setNotRecruitedReasonOptionGroupId($id) {
+    $this->_notRecruitedReasonOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getNotRecruitedReasonOptionGroupId() {
+    return $this->_notRecruitedReasonOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
   public function setQuestionnaireVersionOptionGroupId($id) {
     $this->_questionnaireOptionGroupId = $id;
   }
@@ -1261,6 +1459,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getQuestionnaireVersionOptionGroupId() {
     return $this->_questionnaireOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setRedundantReasonOptionGroupId($id) {
+    $this->_redundantReasonOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getRedundantReasonOptionGroupId() {
+    return $this->_redundantReasonOptionGroupId;
   }
 
   /**
@@ -1292,6 +1504,34 @@ class CRM_Nihrbackbone_NbrConfig {
   }
 
   /**
+   * @param int
+   */
+  public function setVolunteerStatusOptionGroupId($id) {
+    $this->_volunteerStatusOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getVolunteerStatusOptionGroupId() {
+    return $this->_volunteerStatusOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setWithdrawnReasonOptionGroupId($id) {
+    $this->_withdrawnReasonOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getWithdrawnReasonOptionGroupId() {
+    return $this->_withdrawnReasonOptionGroupId;
+  }
+
+  /**
    * @param string
    */
   public function setOtherBleedDifficultiesValue($value) {
@@ -1317,6 +1557,22 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getOtherSampleSiteValue() {
     return $this->_otherSampleSiteValue;
+  }
+
+  /**
+   * Method to retreive a label from a value (explode on "_" and " ", uppercase first letter of each element
+   * and implode with " "
+   *
+   * @param $value
+   */
+  public function generateLabelFromValue($value) {
+    $result = [];
+    $value = str_replace(" ", "_", $value);
+    $parts = explode("_", $value);
+    foreach ($parts as $part) {
+      $result[] = ucfirst(strtolower($part));
+    }
+    return implode(" ", $result);
   }
 
 }
