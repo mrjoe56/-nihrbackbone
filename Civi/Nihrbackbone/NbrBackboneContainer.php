@@ -67,6 +67,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
           break;
       }
     }
+    $dao->free();
   }
 
   /**
@@ -119,6 +120,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
           break;
       }
     }
+    $dao->free();
   }
 
   /**
@@ -154,8 +156,29 @@ class NbrBackboneContainer implements CompilerPassInterface {
         case "nihr_volunteer_consent_stage2":
           $this->setConsentStage2CustomFields($dao, $definition);
           break;
+
+        case "nihr_volunteer_not_recruited":
+          if ($dao->name == "avnr_not_recruited_reason") {
+            $definition->addMethodCall('setNotRecruitedReasonCustomFieldId', [(int) $dao->id]);
+          }
+          break;
+
+        case "nihr_volunteer_redundant":
+          $this->setRedundantCustomFields($dao, $definition);
+          break;
+
+        case "nihr_volunteer_status":
+          if ($dao->name == "nvs_volunteer_status") {
+            $definition->addMethodCall('setVolunteerStatusColumnName', [$dao->column_name]);
+          }
+          break;
+
+        case "nihr_volunteer_withdrawn":
+          $this->setWithdrawnCustomFields($dao, $definition);
+          break;
       }
     }
+    $dao->free();
     return $result;
   }
 
@@ -173,6 +196,50 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
       case "nvc2_questionnaire_version":
         $definition->addMethodCall('setQuestionnaireVersionStage2CustomFieldId', [(int) $dao->id]);
+        break;
+    }
+  }
+
+  /**
+   * Method to set the custom field properties for redundant activity data
+   *
+   * @param $dao
+   * @param $definition
+   */
+  private function setRedundantCustomFields($dao, &$definition) {
+    switch ($dao->name) {
+      case "avr_redundant_reason":
+        $definition->addMethodCall('setRedundantReasonCustomFieldId', [(int) $dao->id]);
+        break;
+
+      case "avr_request_to_destroy_data":
+        $definition->addMethodCall('setRedundantDestroyDataCustomFieldId', [(int) $dao->id]);
+        break;
+
+      case "avr_request_to_destroy_samples":
+        $definition->addMethodCall('setRedundantDestroySamplesCustomFieldId', [(int) $dao->id]);
+        break;
+    }
+  }
+
+  /**
+   * Method to set the custom field properties for withdrawn activity data
+   *
+   * @param $dao
+   * @param $definition
+   */
+  private function setWithdrawnCustomFields($dao, &$definition) {
+    switch ($dao->name) {
+      case "avw_withdrawn_reason":
+        $definition->addMethodCall('setWithdrawnReasonCustomFieldId', [(int) $dao->id]);
+        break;
+
+      case "avw_request_to_destroy_data":
+        $definition->addMethodCall('setWithdrawnDestroyDataCustomFieldId', [(int) $dao->id]);
+        break;
+
+      case "avw_request_to_destroy_samples":
+        $definition->addMethodCall('setWithdrawnDestroySamplesCustomFieldId', [(int) $dao->id]);
         break;
     }
   }
@@ -231,12 +298,16 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setCustomGroups(&$definition) {
-    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4)";
+    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4, %5, %6, %7, %8)";
     $queryParams = [
       1 => ["contact_id_history", "String"],
       2 => ["nihr_visit_data", "String"],
       3 => ["nihr_visit_data_stage2", "String"],
       4 => ["nihr_volunteer_consent_stage2", "String"],
+      5 => ["nihr_volunteer_not_recruited", "String"],
+      6 => ["nihr_volunteer_redundant", "String"],
+      7 => ["nihr_volunteer_withdrawn", "String"],
+      8 => ["nihr_volunteer_status", "String"]
     ];
     $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($dao->fetch()) {
@@ -256,9 +327,15 @@ class NbrBackboneContainer implements CompilerPassInterface {
         case "nihr_volunteer_consent_stage2":
           $definition->addMethodCall('setConsentStage2TableName', [$dao->table_name]);
           break;
+
+        case "nihr_volunteer_status":
+          $definition->addMethodCall('setVolunteerStatusTableName', [$dao->table_name]);
+          break;
+
       }
       $this->setCustomFields($dao->id, $dao->name, $definition);
     }
+    $dao->free();
   }
 
   /**
@@ -267,7 +344,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setOptionGroups(&$definition) {
-    $query = "SELECT id, name FROM civicrm_option_group WHERE name IN (%1, %2, %3, %4, %5, %6)";
+    $query = "SELECT id, name FROM civicrm_option_group WHERE name IN (%1, %2, %3, %4, %5, %6, %7, %8, %9, %10)";
     $queryParams = [
       1 => ["activity_type", "String"],
       2 => ["nbr_bleed_difficulties", "String"],
@@ -275,6 +352,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
       4 => ["nbr_visit_participation_consent_version", "String"],
       5 => ["nbr_visit_participation_questionnaire_version", "String"],
       6 => ["nbr_visit_participation_study_payment", "String"],
+      7 => ["nbr_not_recruited_reason", "String"],
+      8 => ["nbr_redundant_reason", "String"],
+      9 => ["nbr_withdrawn_reason", "String"],
+      10 => ["nbr_volunteer_status", "String"],
     ];
     $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($dao->fetch()) {
@@ -285,6 +366,14 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
         case "nbr_bleed_difficulties":
           $definition->addMethodCall('setBleedDifficultiesOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_not_recruited_reason":
+          $definition->addMethodCall('setNotRecruitedReasonOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_redundant_reason":
+          $definition->addMethodCall('setRedundantReasonOptionGroupId', [(int) $dao->id]);
           break;
 
         case "nbr_visit_bleed_site":
@@ -302,8 +391,17 @@ class NbrBackboneContainer implements CompilerPassInterface {
         case "nbr_visit_participation_study_payment":
           $definition->addMethodCall('setStudyPaymentOptionGroupId', [(int) $dao->id]);
           break;
+
+        case "nbr_volunteer_status":
+          $definition->addMethodCall('setVolunteerStatusOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_withdrawn_reason":
+          $definition->addMethodCall('setWithdrawnReasonOptionGroupId', [(int) $dao->id]);
+          break;
       }
     }
+    $dao->free();
   }
 
   /**
@@ -314,7 +412,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
   private function setActivityTypes(&$definition) {
     $query = "SELECT cov.value, cov.name FROM civicrm_option_group AS cog
         JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
-        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12)";
+        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15)";
     $dao = \CRM_Core_DAO::executeQuery($query, [
       1 => ["activity_type", "String"],
       2 => ["nihr_consent", "String"],
@@ -328,6 +426,9 @@ class NbrBackboneContainer implements CompilerPassInterface {
       10 => ["nihr_visit_stage1", "String"],
       11 => ["nihr_visit_stage2", "String"],
       12 => ["nihr_consent_stage2", "String"],
+      13 => ["nihr_volunteer_not_recruited", "String"],
+      14 => ["nihr_volunteer_redundant", "String"],
+      15 => ["nihr_volunteer_withdrawn", "String"],
     ]);
     while ($dao->fetch()) {
       switch ($dao->name) {
@@ -343,6 +444,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
           $definition->addMethodCall('setIncomingCommunicationActivityTypeId', [(int) $dao->value]);
           break;
 
+        case "nbr_sample_received":
+          $definition->addMethodCall('setSampleReceivedActivityTypeId', [(int) $dao->value]);
+          break;
+
         case "nihr_consent":
           $definition->addMethodCall('setConsentActivityTypeId', [(int) $dao->value]);
           break;
@@ -351,16 +456,24 @@ class NbrBackboneContainer implements CompilerPassInterface {
           $definition->addMethodCall('setConsentStage2ActivityTypeId', [(int) $dao->value]);
           break;
 
-        case "nbr_sample_received":
-          $definition->addMethodCall('setSampleReceivedActivityTypeId', [(int) $dao->value]);
-          break;
-
         case "nihr_visit_stage1":
           $definition->addMethodCall('setVisitStage1ActivityTypeId', [(int) $dao->value]);
           break;
 
         case "nihr_visit_stage2":
           $definition->addMethodCall('setVisitStage2ActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nihr_volunteer_not_recruited":
+          $definition->addMethodCall('setNotRecruitedActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nihr_volunteer_redundant":
+          $definition->addMethodCall('setRedundantActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nihr_volunteer_withdrawn":
+          $definition->addMethodCall('setWithdrawnActivityTypeId', [(int) $dao->value]);
           break;
 
         case "Phone Call":
@@ -376,6 +489,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
           break;
       }
     }
+    $dao->free();
   }
 
   /**
@@ -458,6 +572,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
           break;
       }
     }
+    $dao->free();
   }
 
   /**
@@ -522,6 +637,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
           break;
       }
     }
+    $dao->free();
   }
 
   /**
@@ -580,6 +696,7 @@ WHERE cog.name = %1";
           break;
       }
     }
+    $dao->free();
   }
 
 }

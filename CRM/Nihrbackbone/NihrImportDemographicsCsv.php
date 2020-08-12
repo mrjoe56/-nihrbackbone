@@ -284,10 +284,11 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         }
 
         // *** Starfish migration only
-        if ($this->_dataSource == 'starfish' && $data['consent_version'] <> '') {
-          // consents all migrated into one recruitment case
-          $this->migrationAddConsent($contactId, $data);
-
+        if ($this->_dataSource == 'starfish') {
+          if ($data['consent_version'] <> '') {
+            // consents all migrated into one recruitment case
+            $this->migrationAddConsent($contactId, $data);
+          }
           // migrate volunteer status and fields linked to the status
           $this->migrationVolunteerStatus($contactId, $data);
         }
@@ -1026,10 +1027,150 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     $nbrConsent->addConsent($contactId, $caseId, $data['consent_status'], $data, $this->_logger);
   }
 
+  /**
+   * Method to migrate the volunteer status, add activities for not recruited, redundant
+   * and withdrawn if required and process death information
+   *
+   * @param $contactId
+   * @param $data
+   * @throws Exception
+   */
   private function migrationVolunteerStatus($contactId, $data)
   {
     // only to be used for starfish data migration:
+    if ($this->_dataSource == "starfish") {
+      // only if contactId
+      if ($contactId) {
+        // first set the volunteer status
+        $status = CRM_Nihrbackbone_NihrVolunteer::setVolunteerStatus($contactId, $data['volunteer_status']);
+        if (!$status) {
+          $message = "Invalid status " . $data['volunteer_status'] . ", default status pending used.";
+          CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'warning');
+        }
+        // process not recruited, redundant or withdrawn if required
+        if (!empty($data['not_recruited_date']) || !empty($data['not_recruited_reason'])) {
+          $this->migrateStatusActivity('not_recruited', $contactId, $data['not_recruited_date'], $data['not_recruited_reason'], $data['not_recruited_by']);
+        }
+        if (!empty($data['redundant_date']) || !empty($data['redundant_reason'])) {
+          $this->migrateStatusActivity('redundant', $contactId, $data['redundant_date'], $data['redundant_reason'], $data['redundant_by'], $data['request_to_destroy']);
+        }
+        if (!empty($data['withdrawn_date']) || !empty($data['withdrawn_reason'])) {
+          $this->migrateStatusActivity('withdrawn', $contactId, $data['withdrawn_date'], $data['withdrawn_reason'], $data['withdrawn_by'], $data['request_to_destroy']);
+        }
+        // process deceased if required
+        if (!empty($data['death_reported_date'])) {
+          $deceased = CRM_Nihrbackbone_NihrVolunteer::processDeceased($contactId, $data['death_reported_date']);
+          if (!$deceased) {
+            $message = "Error trying to set contact ID " . $contactId . " to deceased with deceased date: " . $data['death_reported_date'] . ". Migrated but no deceased processing.";
+            CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'warning');
+          }
+        }
+      }
+    }
+    else {
+      $message = "Call to method migrationVolunteerStatus with invalid datasource " . $this->_dataSource . ", method skipped.";
+      CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'warning');
+    }
+  }
 
+  /**
+   * Method to create activity for not recruited, redundant or withdrawn
+   *
+   * @param $type
+   * @param $contactId
+   * @param $sourceDate
+   * @param $sourceReason
+   * @param $sourceBy
+   * @param $sourceDestroy
+   */
+  private function migrateStatusActivity($type, $contactId, $sourceDate, $sourceReason, $sourceBy, $sourceDestroy = "") {
+    $activity = new CRM_Nihrbackbone_NbrActivity();
+    $activityParams = ['target_contact_id' => $contactId];
+    switch ($type) {
+      case "not_recruited":
+        $activityParams['activity_type_id'] = Civi::service('nbrBackbone')->getNotRecruitedActivityTypeId();
+        $reasonCustomField = "custom_" . Civi::service('nbrBackbone')->getNotRecruitedReasonCustomFieldId();
+        if (!empty($sourceReason)) {
+          $activityParams[$reasonCustomField] = $activity->findOrCreateStatusReasonValue("not_recruited", $sourceReason);
+        }
+        break;
+      case "redundant":
+        $activityParams['activity_type_id'] = Civi::service('nbrBackbone')->getRedundantActivityTypeId();
+        $reasonCustomField = "custom_" . Civi::service('nbrBackbone')->getRedundantReasonCustomFieldId();
+        $destroyDataCustomField = "custom_" . Civi::service('nbrBackbone')->getRedundantDestroyDataCustomFieldId();
+        $destroySamplesCustomField = "custom_" . Civi::service('nbrBackbone')->getRedundantDestroySamplesCustomFieldId();
+        if (!empty($sourceReason)) {
+          $activityParams[$reasonCustomField] = $activity->findOrCreateStatusReasonValue("redundant", $sourceReason);
+        }
+        $activityParams[$destroyDataCustomField] = 0;
+        $activityParams[$destroySamplesCustomField] = 0;
+        if ($sourceDestroy == TRUE) {
+          $activityParams[$destroyDataCustomField] = 1;
+          $activityParams[$destroySamplesCustomField] = 1;
+        }
+        break;
+      case "withdrawn":
+        $activityParams['activity_type_id'] = Civi::service('nbrBackbone')->getWithdrawnActivityTypeId();
+        $reasonCustomField = "custom_" . Civi::service('nbrBackbone')->getWithdrawnReasonCustomFieldId();
+        $destroyDataCustomField = "custom_" . Civi::service('nbrBackbone')->getWithdrawnDestroyDataCustomFieldId();
+        $destroySamplesCustomField = "custom_" . Civi::service('nbrBackbone')->getWithdrawnDestroySamplesCustomFieldId();
+        if (!empty($sourceReason)) {
+          $activityParams[$reasonCustomField] = $activity->findOrCreateStatusReasonValue("withdrawn", $sourceReason);
+        }
+        if ($sourceDestroy == '') {
+          $message = "No request to destroy flag found for volunteer " . $contactId . ", assumed FALSE.";
+          CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'warning');
+        }
+        $activityParams[$destroyDataCustomField] = 0;
+        $activityParams[$destroySamplesCustomField] = 0;
+        if ($sourceDestroy == TRUE) {
+          $activityParams[$destroyDataCustomField] = 1;
+          $activityParams[$destroySamplesCustomField] = 1;
+        }
+        break;
+      default:
+        return FALSE;
+    }
+    $activityParams['activity_date_time'] = $this->formatMigrateActivityDate($sourceDate);
+    if (!empty($sourceBy)) {
+      $resourcer = new CRM_Nihrbackbone_NbrResourcer();
+      $sourceContactId = $resourcer->findWithName($sourceBy);
+      if ($sourceContactId) {
+        $activityParams['source_contact_id'] = $sourceContactId;
+      }
+      else {
+        $activityParams['details'] = "By: " . $sourceBy;
+      }
+    }
+    if (!empty($activityParams)) {
+      $activityParams['priority_id'] = Civi::service('nbrBackbone')->getNormalPriorityId();
+      $activityParams['subject'] = Civi::service('nbrBackbone')->generateLabelFromValue($type) . " (Starfish migration)";
+      $new = $activity->createActivity($activityParams);
+      if ($new != TRUE) {
+        CRM_Nihrbackbone_Utils::logMessage($this->_importId, $new, $this->_originalFileName, 'warning');
+      }
+    }
+  }
+
+  /**
+   * Format migration activity date
+   *
+   * @param $sourceDate
+   * @return string
+   * @throws Exception
+   */
+  private function formatMigrateActivityDate($sourceDate) {
+    $activityDate = new DateTime();
+    if (!empty($sourceDate)) {
+      try {
+        $activityDate = new DateTime($sourceDate);
+      }
+      catch (Exception $ex) {
+        $message = "Could not transfer date " . $sourceDate . " to a valid DateTime in " . __METHOD__ . ", defaulted to today";
+        CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'warning');
+      }
+    }
+    return $activityDate->format("Y-m-d");
   }
 
   /*

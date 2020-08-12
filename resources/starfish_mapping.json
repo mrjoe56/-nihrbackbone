@@ -96,7 +96,8 @@
   "withdrawn_date": "withdrawn_date",
   "redundant_by": "redundant_by",
   "redundant_reason": "redundant_reason",
-  "redundant_date": "redundant_reason",
+  "redundant_date": "redundant_date",
+  "request_to_destroy": "request_to_destroy",
   "death_reported_by": "death_reported_by",
   "death_reported_date": "death_reported_date"
 }

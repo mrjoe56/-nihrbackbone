@@ -807,4 +807,72 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return (int) CRM_Core_DAO::singleValueQuery($query, $queryParams);
   }
 
+  /**
+   * Method to set the volunteer status of a volunteer
+   *
+   * @param $volunteerId
+   * @param $sourceStatus
+   * @return bool
+   */
+  public static function setVolunteerStatus($volunteerId, $sourceStatus) {
+    $sourceStatus = strtolower($sourceStatus);
+    // first check if status exists, use pending if not
+    try {
+      $count = civicrm_api3('OptionValue', 'getcount', [
+        'option_group_id' => Civi::service('nbrBackbone')->getVolunteerStatusOptionGroupId(),
+        'value' => $sourceStatus,
+      ]);
+      if ($count == 0) {
+        $sourceStatus = Civi::service('nbrBackbone')->getPendingVolunteerStatus();
+      }
+      $query = "UPDATE " . Civi::service('nbrBackbone')->getVolunteerStatusTableName() . " SET "
+        . Civi::service('nbrBackbone')->getVolunteerStatusColumnName() . " = %1 WHERE entity_id = %2";
+      $queryParams = [
+        1 => [$sourceStatus, "String"],
+        2 => [(int) $volunteerId, "Integer"],
+      ];
+      CRM_Core_DAO::executeQuery($query, $queryParams);
+      return TRUE;
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Method to set a volunteer to deceased
+   * - tick CiviCRM deceased box and set date if not empty
+   * - set volunteer status deceased
+   *
+   * @param $volunteerId
+   * @param $deceasedDate
+   * @throws Exception
+   * @return bool
+   */
+  public static function processDeceased($volunteerId, $deceasedDate) {
+    if (empty($volunteerId)) {
+      return FALSE;
+    }
+    if (!$deceasedDate instanceof DateTime && !empty($deceasedDate)) {
+      $deceasedDate = new DateTime($deceasedDate);
+    }
+    // tick the deceased box in CiviCRM and set deceased date if applicable
+    try {
+      $deceasedParams = [
+        'id' => (int) $volunteerId,
+        'is_deceased' => 1,
+      ];
+      if (!empty($deceasedDate)) {
+        $deceasedParams['deceased_date'] = $deceasedDate->format("Y-m-d");
+      }
+      civicrm_api3('Contact', 'create', $deceasedParams);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      return FALSE;
+    }
+    // set volunteer status to deceased
+    self::setVolunteerStatus($volunteerId, Civi::service('nbrBackbone')->getDeceasedVolunteerStatus());
+    return TRUE;
+  }
+
 }
