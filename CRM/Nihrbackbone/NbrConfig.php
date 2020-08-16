@@ -877,14 +877,14 @@ class CRM_Nihrbackbone_NbrConfig {
    * @param int
    */
   public function setReturnToSenderActivityStatusId($id) {
-    $this->_returnToSenderParticipationStatusValue = $id;
+    $this->_returnToSenderActivityStatusId = $id;
   }
 
   /**
    * @return int
    */
   public function getReturnToSenderActivityStatusId() {
-    return $this->_returnToSenderParticipationStatusValue;
+    return $this->_returnToSenderActivityStatusId;
   }
 
   /**

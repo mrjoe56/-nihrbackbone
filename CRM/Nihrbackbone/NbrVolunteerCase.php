@@ -204,10 +204,10 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $recallGroupCustomFieldId = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'id');
     $studyNumber = CRM_Nihrbackbone_NbrStudy::getStudyNumberWithId($this->_apiParams['study_id']);
     if ($studyNumber) {
-      $subject = E::ts("Selected for study ") . $studyNumber;
+      $subject = E::ts("Study ") . $studyNumber;
     }
     else {
-      $subject = E::ts("Selected for study ") . $this->_apiParams['study_id'];
+      $subject = E::ts("Study ") . $this->_apiParams['study_id'];
     }
     $caseCreateData =  [
       'contact_id' => $contactId,
