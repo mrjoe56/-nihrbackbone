@@ -857,21 +857,13 @@ class CRM_Nihrbackbone_NihrVolunteer {
       $deceasedDate = new DateTime($deceasedDate);
     }
     // tick the deceased box in CiviCRM and set deceased date if applicable
-    try {
-      $deceasedParams = [
-        'id' => (int) $volunteerId,
-        'is_deceased' => 1,
-      ];
-      if (!empty($deceasedDate)) {
-        $deceasedParams['deceased_date'] = $deceasedDate->format("Y-m-d");
-      }
-      civicrm_api3('Contact', 'create', $deceasedParams);
-    }
-    catch (CiviCRM_API3_Exception $ex) {
-      return FALSE;
-    }
-    // set volunteer status to deceased
-    self::setVolunteerStatus($volunteerId, Civi::service('nbrBackbone')->getDeceasedVolunteerStatus());
+    $query = "UPDATE civicrm_contact SET is_deceased = %1, deceased_date = %2 WHERE id = %3";
+    $queryParams = [
+      1 => [1, "Integer"],
+      2 => [$deceasedDate->format("Y-m-d"), "String"],
+      3 => [(int) $volunteerId, "Integer"],
+    ];
+    CRM_Core_DAO::executeQuery($query, $queryParams);
     return TRUE;
   }
 

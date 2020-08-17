@@ -1044,9 +1044,12 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             and cct.name = 'nihr_recruitment'
             and contact_id = %1";
 
+    // note erik hommel: catching a CiviCRM API3 Exception does not make sense if not around a call to civicrm_api3.
+    // That is the only place where CiviCRM API3 Exceptions are thrown.
     try {
       $caseId = CRM_Core_DAO::singleValueQuery($sql, $params);
-    } catch (CiviCRM_API3_Exception $ex) {
+    //} catch (CiviCRM_API3_Exception $ex) {
+    } catch (Exception $ex) {
     }
 
     if (!isset($caseId)) {
@@ -1105,6 +1108,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         // process deceased if required
         if (!empty($data['death_reported_date'])) {
           $deceased = CRM_Nihrbackbone_NihrVolunteer::processDeceased($contactId, $data['death_reported_date']);
+          // set volunteer status to deceased
+          $this->setVolunteerStatus($contactId, Civi::service('nbrBackbone')->getDeceasedVolunteerStatus());
           if (!$deceased) {
             $message = "Error trying to set contact ID " . $contactId . " to deceased with deceased date: " . $data['death_reported_date'] . ". Migrated but no deceased processing.";
             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'warning');
@@ -1117,6 +1122,36 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'warning');
     }
   }
+
+  /**
+   * Method to set the volunteer status of a volunteer
+   *
+   * @param $volunteerId
+   * @param $sourceStatus
+   * @return bool
+   */
+  private function setVolunteerStatus($volunteerId, $sourceStatus) {
+    $sourceStatus = strtolower($sourceStatus);
+    // first check if status exists, use pending if not
+    $query = "SELECT COUNT(*) FROM civicrm_option_value WHERE option_group_id = %1 AND value = %2";
+    $queryParams = [
+      1 => [Civi::service('nbrBackbone')->getVolunteerStatusOptionGroupId(), "Integer"],
+      2 => [$sourceStatus, "String"],
+    ];
+    $count = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($count == 0) {
+      $sourceStatus = Civi::service('nbrBackbone')->getPendingVolunteerStatus();
+    }
+    $update = "UPDATE " . Civi::service('nbrBackbone')->getVolunteerStatusTableName() . " SET "
+      . Civi::service('nbrBackbone')->getVolunteerStatusColumnName() . " = %1 WHERE entity_id = %2";
+    $updateParams = [
+      1 => [$sourceStatus, "String"],
+      2 => [(int) $volunteerId, "Integer"],
+    ];
+    CRM_Core_DAO::executeQuery($update, $updateParams);
+    return TRUE;
+  }
+
 
   /**
    * Method to create activity for not recruited, redundant or withdrawn

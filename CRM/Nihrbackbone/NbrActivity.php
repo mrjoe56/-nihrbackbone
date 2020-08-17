@@ -65,24 +65,25 @@ class CRM_Nihrbackbone_NbrActivity {
       default:
         return FALSE;
     }
-    try {
-      $foundValue = civicrm_api3('OptionValue', 'getcount', [
-        'option_group_id' => $optionGroupId,
-        'value' => strtolower($sourceValue),
-      ]);
-      if ($foundValue == 0) {
-        civicrm_api3('OptionValue', 'create', [
-          'option_group_id' => $optionGroupId,
-          'value' => strtolower($sourceValue),
-          'name' => strtolower($sourceValue),
-          'label' =>  Civi::service('nbrBackbone')->generateLabelFromValue($sourceValue),
-          'is_active' => 1,
-          'is_reserved' => 1,
-        ]);
-      }
-    }
-    catch (CiviCRM_API3_Exception $ex) {
-      Civi::log()->error('Error from API OptionValue getcount or create in ' . __METHOD__ . ', error message: ' . $ex->getMessage());
+    $count = "SELECT COUNT(*) FROM civicrm_option_value WHERE option_group_id = %1 AND value = %2";
+    $countParams = [
+      1 => [$optionGroupId, "Integer"],
+      2 => [strtolower($sourceValue), "String"],
+    ];
+  $foundValue = CRM_Core_DAO::singleValueQuery($count, $countParams);
+    if ($foundValue == 0) {
+      $query = "SELECT MAX(weight) FROM civicrm_option_value WHERE option_group_id = %1";
+      $newWeight = CRM_Core_DAO::singleValueQuery($query, [1 => [$optionGroupId, "Integer"]]);
+      $insert = "INSERT INTO civicrm_option_value (option_group_id, name, value, label, is_active, is_reserved, weight)
+        VALUES(%1, %2, %2, %3, %4, %5)";
+      $insertParams = [
+        1 => [$optionGroupId, "Integer"],
+        2 => [strtolower($sourceValue), "String"],
+        3 => [Civi::service('nbrBackbone')->generateLabelFromValue($sourceValue), "String"],
+        4 =>[1, "Integer"],
+        5 => [$newWeight++, "Integer"],
+      ];
+      CRM_Core_DAO::executeQuery($insert, $insertParams);
     }
     return strtolower($sourceValue);
   }
