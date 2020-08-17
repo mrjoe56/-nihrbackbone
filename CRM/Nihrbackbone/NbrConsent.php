@@ -68,6 +68,7 @@ class CRM_Nihrbackbone_NbrConsent
         }
 
         // **** --- add consent to case
+        $consentDate = new DateTime($data['consent_date']);
         try {
           $result2 = civicrm_api3('Activity', 'create', [
             'source_contact_id' => "user_contact_id",
@@ -76,7 +77,7 @@ class CRM_Nihrbackbone_NbrConsent
             'status_id' => "Completed",
             $consentVersion => $data['consent_version'],
             $informationLeafletVersion => $data['information_leaflet_version'],
-            'activity_date_time' => $data['consent_date'],
+            'activity_date_time' => $consentDate->format('Y-m-d'),
             $consentStatus => $consent_status,
             'case_id' => (int)$caseID,
             $consentedBy => $consented_by,
