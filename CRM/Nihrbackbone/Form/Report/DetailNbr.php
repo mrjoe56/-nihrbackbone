@@ -182,6 +182,7 @@ class CRM_Nihrbackbone_Form_Report_DetailNbr extends CRM_Report_Form {
           ],
         ],
       ],
+      /*
       'civicrm_contribution' => [
         'dao' => 'CRM_Contribute_DAO_Contribution',
         'fields' => [
@@ -225,6 +226,7 @@ class CRM_Nihrbackbone_Form_Report_DetailNbr extends CRM_Report_Form {
           ],
         ],
       ],
+
       'civicrm_membership' => [
         'dao' => 'CRM_Member_DAO_Membership',
         'fields' => [
@@ -258,6 +260,7 @@ class CRM_Nihrbackbone_Form_Report_DetailNbr extends CRM_Report_Form {
           'source' => ['title' => ts(' Membership Source')],
         ],
       ],
+
       'civicrm_participant' => [
         'dao' => 'CRM_Event_DAO_Participant',
         'fields' => [
@@ -294,6 +297,7 @@ class CRM_Nihrbackbone_Form_Report_DetailNbr extends CRM_Report_Form {
           ],
         ],
       ],
+      */
       'civicrm_relationship' => [
         'dao' => 'CRM_Contact_DAO_Relationship',
         'fields' => [
