@@ -368,12 +368,12 @@ class CRM_Nihrbackbone_Form_Report_SummaryNbr extends CRM_Report_Form {
         'is_group_bys' => TRUE,
       ],
       $options['prefix'] . 'supplemental_address_1' => [
-        'title' => $options['prefix_label'] . ts(' upplementary Address Field 1'),
+        'title' => $options['prefix_label'] . ts(' Supplementary Address Field 1'),
         'name' => 'supplemental_address_1',
         'is_fields' => TRUE,
       ],
       $options['prefix'] . 'supplemental_address_2' => [
-        'title' => $options['prefix_label'] . ts(' upplementary Address Field 2'),
+        'title' => $options['prefix_label'] . ts(' Supplementary Address Field 2'),
         'name' => 'supplemental_address_2',
         'is_fields' => TRUE,
       ],
