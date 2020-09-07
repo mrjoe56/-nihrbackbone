@@ -196,7 +196,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           $this->addAlias($contactId, 'cih_type_nhs_number', $data['nhs_number'], 1);
         }
         if (!empty($data['pack_id'])) {
-          $this->addAlias($contactId, 'cih_type_pack_id_din', $data['pack_id'], 0);
+          $this->addAlias($contactId, 'cih_type_pack_id', $data['pack_id'], 0);
         }
         if (!empty($data['ibd_id'])) {
           $this->addAlias($contactId, 'cih_type_ibd_id', $data['ibd_id'], 0);
@@ -205,6 +205,18 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         if (isset($data['alias_type_former_surname']) && !empty($data['alias_type_former_surname'])) {
           $this->addAlias($contactId, 'cih_type_former_surname', $data['alias_type_former_surname'], 1);
         }
+
+        // ^^^ starfish migration
+        /* $aliases = array(
+            'cih_type_anon_project_id',
+            'cih_type_blood_donor_id',
+            'cih_type_cardio_id');
+
+        foreach ($aliases as &$alias) {
+          if (isset($data[$alias]) && !empty($data[$alias])) {
+            $this->addAlias($contactId, $alias, $data[$alias], 1);
+          }
+        } */
 
 
         // *** Diseases ***
@@ -287,7 +299,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
         // *** Starfish migration only
         if ($this->_dataSource == 'starfish') {
-          if ($data['consent_version'] <> '') {
+          if ($new_volunteer or $data['consent_version'] <> '') {
             // consents all migrated into one recruitment case
             $this->migrationAddConsent($contactId, $data);
           }
@@ -1036,7 +1048,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     $caseId = '';
     // check if recruitment case already exists
-    $params = [1 => [$contactId, 'Integer'], ];
+    $params = [1 => [$contactId, 'Integer'],];
     $sql = "select cc.case_id
             from civicrm_case_contact cc, civicrm_case cas, civicrm_case_type cct
             where cc.case_id = cas.id
@@ -1044,11 +1056,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             and cct.name = 'nihr_recruitment'
             and contact_id = %1";
 
-    // note erik hommel: catching a CiviCRM API3 Exception does not make sense if not around a call to civicrm_api3.
-    // That is the only place where CiviCRM API3 Exceptions are thrown.
     try {
       $caseId = CRM_Core_DAO::singleValueQuery($sql, $params);
-    //} catch (CiviCRM_API3_Exception $ex) {
     } catch (Exception $ex) {
     }
 
@@ -1071,8 +1080,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       }
     }
     // add consent information
-    $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
-    $nbrConsent->addConsent($contactId, $caseId, $data['consent_status'], 'Consent (Starfish migration)', $data, $this->_logger);
+    if ($data['consent_version'] <> '' or $data['consent_date'] <> '') {
+      $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
+      $nbrConsent->addConsent($contactId, $caseId, $data['consent_status'], 'Consent (Starfish migration)', $data, $this->_logger);
+    }
   }
 
   /**
