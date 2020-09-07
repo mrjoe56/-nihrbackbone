@@ -705,6 +705,13 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     // add template to remove merge case and reassign case links from form
     CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_case_links.tpl',]);
     $caseId = $form->getVar('_caseID');
+    $studyNumber = CRM_Nihrbackbone_NbrVolunteerCase::getStudyNumberWithCaseId($caseId);
+    if ($studyNumber) {
+      $form->addElement('text', 'study_number', "Study Number", ['readonly' => 'readonly']);
+      $form->setDefaults(['study_number' => $studyNumber]);
+      CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_study_number.tpl',]);
+    }
+    CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_case_links.tpl',]);
     // if volunteer on case is not eligible, do not allow the invite activity
     if (!CRM_Nihrbackbone_NbrVolunteerCase::isEligible($caseId)) {
       $activityElement = $form->getElement('add_activity_type_id');
@@ -725,7 +732,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   public static function buildFormCustomData(&$form) {
     $groupId = $form->getVar("_groupID");
     // if it is participation data
-    if ($groupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('id')) {
+    if ($groupId == CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('id')) {
       // if volunteer is not eligible, remove the invited study statuses from options
       $caseId = (int) $form->getVar("_entityID");
       if (!CRM_Nihrbackbone_NbrVolunteerCase::isEligible($caseId)) {
@@ -969,6 +976,28 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       }
     }
     return "";
+  }
+
+  /**
+   * Method to get the study number with case ID
+   *
+   * @param $caseId
+   * @return false|string
+   */
+  public static function getStudyNumberWithCaseId($caseId) {
+    $participationTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+    $studyTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyDataCustomGroup('table_name');
+    $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+    $studyNumberColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_study_number', 'column_name');
+    $query = "SELECT cvnsd." . $studyNumberColumn .
+      " FROM " . $participationTable . " AS cvnpd
+      JOIN ". $studyTable . " AS cvnsd ON cvnpd. " . $studyIdColumn . " = cvnsd.entity_id
+      WHERE cvnpd.entity_id = %1  ";
+    $studyNumber = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $caseId, "Integer"]]);
+    if ($studyNumber) {
+      return $studyNumber;
+    }
+    return FALSE;
   }
 
 }
