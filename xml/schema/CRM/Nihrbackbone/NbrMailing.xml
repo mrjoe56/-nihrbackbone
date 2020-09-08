@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Nihrbackbone</base>
+  <class>NbrMailing</class>
+  <name>civicrm_nbr_mailing</name>
+  <comment>Mailing data specific for NIHR BioResource</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique NbrMailing ID</comment>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>mailing_id</name>
+    <type>int unsigned</type>
+    <comment>FK to Mailing</comment>
+  </field>
+  <foreignKey>
+    <name>mailing_id</name>
+    <table>civicrm_mailing</table>
+    <key>id</key>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>group_id</name>
+    <type>int unsigned</type>
+    <comment>FK to Group</comment>
+  </field>
+  <foreignKey>
+    <name>group_id</name>
+    <table>civicrm_group</table>
+    <key>id</key>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>nbr_mailing_type</name>
+    <type>varchar</type>
+    <length>32</length>
+    <comment>Type of Mailing (invite initially)</comment>
+  </field>
+
+</table>

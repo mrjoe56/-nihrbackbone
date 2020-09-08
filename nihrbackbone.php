@@ -4,8 +4,8 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
 use \Symfony\Component\DependencyInjection\ContainerBuilder;
 use \Symfony\Component\DependencyInjection\Definition;
 
-function nihrbackbone_civicrm_mailingGroups(&$form, &$groups, &$mailings) {
-  Civi::log()->debug('en nu in de groups met groups: ' . json_encode($groups));
+function nihrbackbone_civicrm_postMailing($mailingId) {
+  Civi::log()->debug('de mailing id is: ' . $mailingId);
 }
 
 function nihrbackbone_civicrm_alterAngular(\Civi\Angular\Manager $angular) {

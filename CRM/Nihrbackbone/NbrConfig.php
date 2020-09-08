@@ -125,6 +125,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_normalPriorityId = NULL;
   private $_otherBleedDifficultiesValue = NULL;
   private $_otherSampleSiteValue = NULL;
+  private $_defaultNbrMailingType = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -1557,6 +1558,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getOtherSampleSiteValue() {
     return $this->_otherSampleSiteValue;
+  }
+
+  /**
+   * @param string
+   */
+  public function setDefaultNbrMailingType($type) {
+    $this->_defaultNbrMailingType = $type;
+  }
+
+  /**
+   * @return string
+   */
+  public function getDefaultNbrMailingType() {
+    return $this->_defaultNbrMailingType;
   }
 
   /**
