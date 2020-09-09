@@ -207,17 +207,51 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         }
 
         // ^^^ starfish migration
-        /* $aliases = array(
+        $aliases = array(
             'cih_type_anon_project_id',
             'cih_type_blood_donor_id',
-            'cih_type_cardio_id');
+            'cih_type_cardio_id',
+            'cih_type_cbr',
+            'cih_type_duplicate_invalid',
+            'cih_type_cbr_withdrawal_form_id',
+            'cih_type_cdb_id',
+            'cih_type_interval_id',
+            'cih_type_nhs_number',
+            'cih_type_pack_id_din',
+            'cih_type_strides_pid',
+            'cih_type_sample_destruction_form_id',
+            'cih_type_duplicate_live_entry',
+            'cih_type_compare_id',
+            'cih_type_retired_national_id',
+            'cih_type_duplicate_deleted',
+            'cih_type_nb_id',
+            'cih_type_gstt',
+            'cih_type_imperial',
+            'cih_type_oxford',
+            'cih_type_leicester',
+            'cih_type_newcastle',
+            'cih_type_ucl',
+            'cih_type_ucl_local',
+            'cih_type_ibd_id',
+            'cih_type_ibdgc_number',
+            'cih_type_nbr_withdrawal_form_id',
+            'cih_type_slam',
+            'cih_type_packid',
+            'cih_type_glad_id',
+            'cih_type_nafld_br',
+            'cih_type_covid_id',
+            'cih_type_hospital_number',
+            'cih_type_nspn_id',
+            'cih_type_rare_diseases_id',
+            'cih_type_dil_withdrawal_form_id',
+            'cih_type_replaced_sid'
+        );
 
         foreach ($aliases as &$alias) {
           if (isset($data[$alias]) && !empty($data[$alias])) {
             $this->addAlias($contactId, $alias, $data[$alias], 1);
           }
-        } */
-
+        }
 
         // *** Diseases ***
         $this->addDisease($contactId, $data['family_member'], $data['disease'], $data['diagnosis_year'], $data['diagnosis_age'], $data['disease_notes'], $data['taking_medication']);
@@ -755,22 +789,22 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   {
     // *** add alias aka contact_id_history_type
 
-    // todo for different alias types allow multiples/updates etc...
+    // *** update=0 - do not update if alias already set
+    // *** update=1 - update, if alias exists
+    // *** update=2 - multiple aliases of this type possible, always add
 
     if (isset($aliasType) && $aliasType <> '')
-      // todo and check if aliasType exists
+      // todo add check if aliasType exists
     {
       if (isset($externalID) && $externalID <> '') {
-        // &&&& $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomGroup('table_name');
         $table = 'civicrm_value_contact_id_history';
 
         // --- check if alias already exists ---------------------------------------------------------------------
-
         // todo compare on strings removing blanks and special chars
         /* $query = "SELECT nva_external_id
                     from $table
                     where entity_id = %1
-                    and nva_alias_type = %2";
+                     and nva_alias_type = %2";
         $queryParams = [
           1 => [$contactID, "Integer"],
           2 => [$aliasType, "String"],
@@ -905,8 +939,6 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
   private function addPanel($contactID, $dataSource, $panel, $site, $centre, $source)
   {
-    // TODO &&& for the time being, the IBD site code is in 'nickname' this is going to change
-
     // TODO $dataSource is ignored at the moment as IBD now split in 2 panels
 
     // TODO add centre
