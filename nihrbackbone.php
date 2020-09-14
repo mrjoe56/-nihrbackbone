@@ -5,7 +5,10 @@ use \Symfony\Component\DependencyInjection\ContainerBuilder;
 use \Symfony\Component\DependencyInjection\Definition;
 
 function nihrbackbone_civicrm_postMailing($mailingId) {
-  Civi::log()->debug('de mailing id is: ' . $mailingId);
+  // check if mailing exists in NbrMailing and process if so
+  if (CRM_Nihrbackbone_BAO_NbrMailing::isNbrMailing($mailingId)) {
+    CRM_Nihrbackbone_BAO_NbrMailing::postMailing($mailingId);
+  }
 }
 
 /**
