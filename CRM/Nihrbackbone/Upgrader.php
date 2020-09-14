@@ -69,7 +69,9 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     return TRUE;
   }
 
-    /** Upgrade 1060 (add views for CPMS report - see https://issues.civicoop.org/issues/4925)*/
+    /**
+     * Upgrade 1060 (add views for CPMS report - see https://issues.civicoop.org/issues/4925)
+     */
     public function upgrade_1060() {
         $this->ctx->log->info(E::ts('Applying update 1060 - add view vw_valid_consent'));
         if (!CRM_Core_DAO::checkTableExists('vw_valid_consent')) {
@@ -109,6 +111,19 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
         }
         return TRUE;
     }
+
+  /**
+   * Upgrade 1070 (create table civicrm_nbr_mailing if not exists)
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1070() {
+    $this->ctx->log->info(E::ts('Applying update 1070 - create table civicrm_nbr_mailing if not exist'));
+    $this->executeSqlFile('sql/createNbrMailing.sql');
+    return TRUE;
+  }
+
 
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).

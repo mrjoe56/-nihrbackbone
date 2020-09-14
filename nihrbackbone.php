@@ -8,24 +8,6 @@ function nihrbackbone_civicrm_postMailing($mailingId) {
   Civi::log()->debug('de mailing id is: ' . $mailingId);
 }
 
-function nihrbackbone_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
-  $changeSet = \Civi\Angular\ChangeSet::create('inject_mailwords')
-    // ->requires('crmMailing', 'mailwords')
-    ->alterHtml('~/crmMailing/BlockSummary.html',
-      function (phpQueryObject $doc) {
-        $doc->find('.crm-group')->append('
-        <div crm-ui-field="{name: \'subform.ehtest\', title: ts(\'Add activities to cases of type:\')}">
-          <select
-          crm-ui-id="subform.ehtest"
-          class="huge"
-          name="ehtest"
-          ui-jq="select2"
-          ng-model="mailing.template_options.ehtest">
-        </div>
-      ');
-      });
-  $angular->add($changeSet);
-}
 /**
  * Implements hook_civicrm_links()
  *
