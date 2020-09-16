@@ -29,10 +29,10 @@ class CRM_Nihrbackbone_NbrConsent
         'sequential' => 1,
         'target_contact_id' => $contactId,
         'is_current_revision' => 1,
+        'is_deleted' => 0,
         'activity_type_id' => "nihr_consent",
         $consentVersion => $data['consent_version'],
         $informationLeafletVersion => $data['information_leaflet_version'],
-
         'activity_date_time' => $consentDate,
       ];
 
