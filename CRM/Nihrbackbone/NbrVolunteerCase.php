@@ -231,7 +231,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $caseCreateData =  [
       'contact_id' => $contactId,
       'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitmentCaseTypeId(),
-      'subject' => "Recruited",
+      'subject' => "Recruitment",
       'status_id' => "Open",
     ];
     return $caseCreateData;
