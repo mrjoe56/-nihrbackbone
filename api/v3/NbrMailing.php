@@ -52,5 +52,5 @@ function civicrm_api3_nbr_mailing_delete($params) {
  * @throws API_Exception
  */
 function civicrm_api3_nbr_mailing_get($params) {
-  return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params, FALSE, NbrMailing);
+  return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params, FALSE, "NbrMailing");
 }
