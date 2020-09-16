@@ -801,15 +801,6 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
         // --- check if alias already exists ---------------------------------------------------------------------
         // todo compare on strings removing blanks and special chars
-        /* $query = "SELECT nva_external_id
-                    from $table
-                    where entity_id = %1
-                     and nva_alias_type = %2";
-        $queryParams = [
-          1 => [$contactID, "Integer"],
-          2 => [$aliasType, "String"],
-        ]; */
-
         $query = "SELECT identifier
                     FROM $table
                     where entity_id = %1
@@ -819,25 +810,15 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           2 => [$aliasType, "String"],
         ];
 
-
         $dbExternalID = CRM_Core_DAO::singleValueQuery($query, $queryParams);
 
-        if (!isset($dbExternalID)) {
-          // --- insert --------------------------------------------------------------------------------------------
+        if (!isset($dbExternalID)
+        || update==2 and different) {
+          // --- no alias of this type exists, insert -------------------------------------------
 
           if ($aliasType == 'cih_type_nhs_number') {
             // todo check if nhs number format is correct (subroutine to be written by JB)
           }
-
-
-          /* $query = "insert into $table (entity_id,nva_alias_type, nva_external_id)
-                            values (%1,%2,%3)";
-          $queryParams = [
-            1 => [$contactID, "Integer"],
-            2 => [$aliasType, "String"],
-            3 => [$externalID, "String"],
-          ];
-          CRM_Core_DAO::executeQuery($query, $queryParams); */
 
           $query = "insert into $table (entity_id, identifier_type, identifier)
                             values (%1,%2,%3)";
@@ -847,13 +828,25 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             3 => [$externalID, "String"],
           ];
           CRM_Core_DAO::executeQuery($query, $queryParams);
-
         }
         else {
-          // only update if update flag is set
-          if($dbExternalID <> $externalID and $update == 1)
+
+          if($dbExternalID)
           {
-            // todo update alias
+            if($update == 0) {
+              $this->_logger->logMessage('different identifier for ' .$aliasType . ' provided, not updated: ' . $contactID . $ex->getMessage(), 'warning');
+            }
+            elseif ($update == 1) {
+              $query = "update $table set %1 
+                        where entity_id = %1
+                        and identifier_type = %2";
+              $queryParams = [
+                1 => [$contactID, "Integer"],
+                2 => [$aliasType, "String"],
+              ];
+              CRM_Core_DAO::executeQuery($query, $queryParams);
+            }
+
           }
         }
       }
@@ -987,19 +980,34 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     }
 
     // *** check if site exists and if so, select ID
-    // (site name selected over acronym; todo STRIDES and IBD only at the moment)
+    // (site code can be sic code or site alias (IBD and STRIDES at the moment)
     if (isset($site) && $site <> '') {
       try {
+        // sic code first
         $result = civicrm_api3('Contact', 'get', [
           'sequential' => 1,
           'contact_type' => "Organization",
           'contact_sub_type' => "nbr_site",
-          $siteAliasTypeCustomField => $siteAliasTypeValue,
-          $siteAliasCustomField => $site,
+          'sic_code' => $site,
         ]);
       } catch (CiviCRM_API3_Exception $ex) {
         $this->_logger->logMessage('Error selecting site ' . $site . ': ' . $ex->getMessage(), 'error');
       }
+
+      if ($result['count'] == 0) {
+        try {
+          // site alias (STRIDES and IBD)
+          $result = civicrm_api3('Contact', 'get', [
+            'sequential' => 1,
+            'contact_type' => "Organization",
+            'contact_sub_type' => "nbr_site",
+            $siteAliasTypeCustomField => $siteAliasTypeValue,
+            $siteAliasCustomField => $site,
+          ]);
+          } catch (CiviCRM_API3_Exception $ex) {
+            $this->_logger->logMessage('Error selecting site(2) ' . $site . ': ' . $ex->getMessage(), 'error');
+          }
+       }
 
       if ($result['count'] <> 1) {
         // error, site does not exist, exit
