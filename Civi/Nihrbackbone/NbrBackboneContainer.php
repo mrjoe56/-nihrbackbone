@@ -26,6 +26,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $this->setCustomGroups($definition);
     $this->setEligibilityStatus($definition);
     $this->setEncounterMedium($definition);
+    $this->setMailingDefaultIds($definition);
     $this->setOptionGroups($definition);
     $this->setParticipationStatus($definition);
     $this->setPriority($definition);
@@ -38,6 +39,43 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $container->setDefinition('nbrBackbone', $definition);
   }
 
+  /**
+   * Method to set the default mailing component ids
+   *
+   * @param $definition
+   */
+  private function setMailingDefaultIds(&$definition) {
+    $query = "SELECT id, component_type FROM civicrm_mailing_component WHERE is_default = %1";
+    $dao = \CRM_Core_DAO::executeQuery($query, [1 => [1, "Integer"]]);
+    while ($dao->fetch()) {
+      switch ($dao->component_type) {
+        case "Footer":
+          $definition->addMethodCall('setMailingFooterId', [(int) $dao->id]);
+          break;
+        case "Header":
+          $definition->addMethodCall('setMailingHeaderId', [(int) $dao->id]);
+          break;
+        case "OptOut":
+          $definition->addMethodCall('setOptOutId', [(int) $dao->id]);
+          break;
+        case "Reply":
+          $definition->addMethodCall('setAutoResponderId', [(int) $dao->id]);
+          break;
+        case "Resubscribe":
+          $definition->addMethodCall('setResubscribeId', [(int) $dao->id]);
+          break;
+        case "Subscribe":
+          $definition->addMethodCall('setSubscribeId', [(int) $dao->id]);
+          break;
+        case "Unsubscribe":
+          $definition->addMethodCall('setUnsubscribeId', [(int) $dao->id]);
+          break;
+        case "Welcome":
+          $definition->addMethodCall('setWelcomeId', [(int) $dao->id]);
+          break;
+      }
+    }
+  }
   /**
    * Method to set the encounter medium ids
    *

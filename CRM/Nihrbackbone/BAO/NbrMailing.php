@@ -75,5 +75,12 @@ class CRM_Nihrbackbone_BAO_NbrMailing extends CRM_Nihrbackbone_DAO_NbrMailing {
       // add invite activity to all recipients
       CRM_Nihrbackbone_NbrInvitation::addInviteActivity($recipient->case_id, $recipient->contact_id, $nbrMailing['study_id'], "bulk invite");
     }
+    try {
+      // finally delete mailing so it can not be re-used (and then not create activities, set invite dates or update status)
+      civicrm_api3('Mailing', 'delete', ['id' => $mailingId]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->error('Could not delete mailing with ID ' . $mailingId . ', please delete manually. Error from API Mailing delete: ' . $ex->getMessage());
+    }
   }
 }

@@ -119,7 +119,16 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_studyPaymentOptionGroupId = NULL;
   private $_volunteerStatusOptionGroupId = NULL;
   private $_withdrawnReasonOptionGroupId = NULL;
-  // others
+  // default mailing parameters
+  private $_autoResponderId = NULL;
+  private $_mailingFooterId = NULL;
+  private $_mailingHeaderId = NULL;
+  private $_optOutId = NULL;
+  private $_resubscribeId = NULL;
+  private $_subscribeId = NULL;
+  private $_unsubscribeId = NULL;
+  private $_welcomeId = NULL;
+    // others
   private $_correctConsentStatusValue = NULL;
   private $_visitStage2Substring = NULL;
   private $_normalPriorityId = NULL;
@@ -1575,10 +1584,123 @@ class CRM_Nihrbackbone_NbrConfig {
   }
 
   /**
+   * @param int
+   */
+  public function setAutoResponderId($id) {
+    $this->_autoResponderId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getAutoResponderId() {
+    return $this->_autoResponderId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setMailingFooterId($id) {
+    $this->_mailingFooterId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getMailingFooterId() {
+    return $this->_mailingFooterId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setMailingHeaderId($id) {
+    $this->_mailingHeaderId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getMailingHeaderId() {
+    return $this->_mailingHeaderId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setOptOutId($id) {
+    $this->_optOutId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getOptOutId() {
+    return $this->_optOutId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setResubscribeId($id) {
+    $this->_resubscribeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getResubscribeId() {
+    return $this->_resubscribeId  ;
+  }
+
+  /**
+   * @param int
+   */
+  public function setSubscribeId($id) {
+    $this->_subscribeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getSubscribeId() {
+    return $this->_subscribeId  ;
+  }
+
+  /**
+   * @param int
+   */
+  public function setUnsubscribeId($id) {
+    $this->_unsubscribeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getUnsubscribeId() {
+    return $this->_unsubscribeId  ;
+  }
+
+  /**
+   * @param int
+   */
+  public function setWelcomeId($id) {
+    $this->_welcomeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getWelcomeId() {
+    return $this->_welcomeId  ;
+  }
+
+  /**
    * Method to retreive a label from a value (explode on "_" and " ", uppercase first letter of each element
    * and implode with " "
    *
    * @param $value
+   * @return string
    */
   public function generateLabelFromValue($value) {
     $result = [];
