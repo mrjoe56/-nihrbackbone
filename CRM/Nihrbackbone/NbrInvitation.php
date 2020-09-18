@@ -42,6 +42,7 @@ class CRM_Nihrbackbone_NbrInvitation {
 
   /**
    * Method to process the custom hook for study status invite change
+   *
    * @param $op
    * @param $caseId
    * @param $customData

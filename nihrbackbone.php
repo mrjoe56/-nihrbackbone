@@ -4,6 +4,13 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
 use \Symfony\Component\DependencyInjection\ContainerBuilder;
 use \Symfony\Component\DependencyInjection\Definition;
 
+function nihrbackbone_civicrm_postMailing($mailingId) {
+  // check if mailing exists in NbrMailing and process if so
+  if (CRM_Nihrbackbone_BAO_NbrMailing::isNbrMailing($mailingId)) {
+    CRM_Nihrbackbone_BAO_NbrMailing::postMailing($mailingId);
+  }
+}
+
 /**
  * Implements hook_civicrm_links()
  *
