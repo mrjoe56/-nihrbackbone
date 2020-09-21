@@ -867,4 +867,42 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return TRUE;
   }
 
+  /**
+   * Method to determine if volunteer has a valid and correct consent
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function hasValidCorrectConsent($volunteerId) {
+    $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomGroup('table_name');
+    $consentVersionColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_consent_version', 'column_name');
+    $consentStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_consent_status', 'column_name');
+    if (!empty($volunteerId)) {
+      $query = "SELECT c." . $consentVersionColumn ."
+        FROM civicrm_activity_contact AS a
+        JOIN civicrm_activity AS b ON a.activity_id = b.id AND b.is_current_revision = %1 AND b.is_deleted = %2 AND b.is_test = %2
+        JOIN " . $table . " AS c on b.id = c.entity_id
+        WHERE a.contact_id = %3 AND c." . $consentStatusColumn . " = %4";
+      $queryParams = [
+        1 => [1, "Integer"],
+        2 => [0, "Integer"],
+        3 => [(int) $volunteerId, "Integer"],
+        4 => [Civi::service('nbrBackbone')->getCorrectConsentStatusValue(), "String"],
+      ];
+      $dao = CRM_Core_DAO::executeQuery($query, $queryParams);
+      // if volunteer has no consents with status correct, false
+      if ($dao->N == 0) {
+        return FALSE;
+      }
+      // for each correct consent status, check if the version is valid. If so, true
+      $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
+      while ($dao->fetch()) {
+        $version = $dao->$consentVersionColumn;
+        if ($nbrConsent->isValidConsentVersion($version)) {
+          return TRUE;
+        }
+      }
+    }
+    return FALSE;
+  }
 }

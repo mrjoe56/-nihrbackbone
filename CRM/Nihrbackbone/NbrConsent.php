@@ -96,7 +96,19 @@ class CRM_Nihrbackbone_NbrConsent
       }
     }
   }
-}
 
-?>
+  /**
+   * Method to check if consent version is a valid one
+   *
+   * @param $consentVersion
+   * @return bool
+   */
+  public function isValidConsentVersion($consentVersion) {
+    $validVersions = Civi::settings()->get('nbr_considered_consent_versions');
+    if (in_array($consentVersion, $validVersions)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+}
 
