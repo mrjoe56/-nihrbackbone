@@ -196,14 +196,14 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           $this->addAlias($contactId, 'cih_type_nhs_number', $data['nhs_number'], 1);
         }
         if (!empty($data['pack_id'])) {
-          $this->addAlias($contactId, 'cih_type_pack_id', $data['pack_id'], 0);
+          $this->addAlias($contactId, 'cih_type_pack_id', $data['pack_id'], 2);
         }
         if (!empty($data['ibd_id'])) {
-          $this->addAlias($contactId, 'cih_type_ibd_id', $data['ibd_id'], 0);
+          $this->addAlias($contactId, 'cih_type_ibd_id', $data['ibd_id'], 2);
         }
 
         if (isset($data['alias_type_former_surname']) && !empty($data['alias_type_former_surname'])) {
-          $this->addAlias($contactId, 'cih_type_former_surname', $data['alias_type_former_surname'], 1);
+          $this->addAlias($contactId, 'cih_type_former_surname', $data['alias_type_former_surname'], 2);
         }
 
         // ^^^ starfish migration
@@ -249,7 +249,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
         foreach ($aliases as &$alias) {
           if (isset($data[$alias]) && !empty($data[$alias])) {
-            $this->addAlias($contactId, $alias, $data[$alias], 1);
+            $this->addAlias($contactId, $alias, $data[$alias], 2);
           }
         }
 
@@ -810,48 +810,53 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           2 => [$aliasType, "String"],
         ];
 
+        // todo: &&& need to check for multiple results
         $dbExternalID = CRM_Core_DAO::singleValueQuery($query, $queryParams);
 
-        if (!isset($dbExternalID)
-        || update==2 and different) {
+        if (!isset($dbExternalID) || ($update == 2 and $dbExternalID <> $externalID)) {
           // --- no alias of this type exists, insert -------------------------------------------
+          // --- OR update
 
           if ($aliasType == 'cih_type_nhs_number') {
             // todo check if nhs number format is correct (subroutine to be written by JB)
           }
-
-          $query = "insert into $table (entity_id, identifier_type, identifier)
-                            values (%1,%2,%3)";
-          $queryParams = [
-            1 => [$contactID, "Integer"],
-            2 => [$aliasType, "String"],
-            3 => [$externalID, "String"],
-          ];
-          CRM_Core_DAO::executeQuery($query, $queryParams);
+          try {
+            $query = "insert into $table (entity_id, identifier_type, identifier)
+                              values (%1,%2,%3)";
+            $queryParams = [
+              1 => [$contactID, "Integer"],
+              2 => [$aliasType, "String"],
+              3 => [$externalID, "String"],
+            ];
+            CRM_Core_DAO::executeQuery($query, $queryParams);
+          }
+          catch (Exception $ex) {}
         }
-        else {
-
-          if($dbExternalID)
+        elseif (isset($dbExternalID) && $dbExternalID <> $externalID)
           {
             if($update == 0) {
-              $this->_logger->logMessage('different identifier for ' .$aliasType . ' provided, not updated: ' . $contactID . $ex->getMessage(), 'warning');
+              $this->_logger->logMessage("Contact ID $contactID: different identifier for $aliasType provided, not updated.", 'warning');
             }
             elseif ($update == 1) {
-              $query = "update $table set %1 
-                        where entity_id = %1
-                        and identifier_type = %2";
-              $queryParams = [
-                1 => [$contactID, "Integer"],
-                2 => [$aliasType, "String"],
-              ];
-              CRM_Core_DAO::executeQuery($query, $queryParams);
+              try {
+                $query = "update $table
+                        set identifier = %1
+                        where entity_id = %2
+                        and identifier_type = %3";
+                $queryParams = [
+                  1 => [$externalID, "String"],
+                  2 => [$contactID, "Integer"],
+                  3 => [$aliasType, "String"],
+                ];
+                CRM_Core_DAO::executeQuery($query, $queryParams);
+              }
+              catch (Exception $ex) {}
             }
-
           }
         }
       }
     }
-  }
+
 
 
   private function addDisease($contactID, $familyMember, $disease, $diagnosisYear, $diagnosisAge, $diseaseNotes, $takingMedication)
@@ -948,6 +953,15 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     $siteAliasCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getSiteAliasCustomField('nsa_alias', 'id');
     $siteAliasTypeValue = "nbr_site_alias_type_".strtolower($dataSource);
 
+    // migration
+    if ($dataSource == 'starfish') {
+      if ($panel == 'IBD Main' || $panel == 'Inception') {
+        $siteAliasTypeValue = "nbr_site_alias_type_ibd";
+      }
+      elseif ($panel == 'STRIDES') {
+        $siteAliasTypeValue = "nbr_site_alias_type_strides";
+      }
+    }
 
     // *** centre/panel/site: usually two of each are set per record, all of them are contact organisation
     // *** records; check if given values are on the - if any is missing do not insert any 'panel' data
@@ -1007,7 +1021,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           } catch (CiviCRM_API3_Exception $ex) {
             $this->_logger->logMessage('Error selecting site(2) ' . $site . ': ' . $ex->getMessage(), 'error');
           }
-       }
+      }
 
       if ($result['count'] <> 1) {
         // error, site does not exist, exit
