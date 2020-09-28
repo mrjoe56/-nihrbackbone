@@ -20,6 +20,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
   public function process(ContainerBuilder $container) {
     $definition = new Definition('CRM_Nihrbackbone_NbrConfig');
     $definition->setFactory(['CRM_Nihrbackbone_NbrConfig', 'getInstance']);
+    $this->setActivityContactRecordTypeIds($definition);
     $this->setActivityStatus($definition);
     $this->setActivityTypes($definition);
     $this->setConsentStatus($definition);
@@ -39,6 +40,30 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $container->setDefinition('nbrBackbone', $definition);
   }
 
+  /**
+   * Method to set the activity contact record type ids
+   *
+   * @param $definition
+   */
+  private function setActivityContactRecordTypeIds(&$definition) {
+    $query = "SELECT cov.value, cov.name
+        FROM civicrm_option_group AS cog JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
+        WHERE cog.name = %1";
+    $dao = \CRM_Core_DAO::executeQuery($query, [1 => ["activity_contacts", "String"]]);
+    while ($dao->fetch()) {
+      switch($dao->name) {
+        case "Activity Assignees":
+          $definition->addMethodCall('setAssigneeRecordTypeId', [(int) $dao->value]);
+          break;
+        case "Activity Source":
+          $definition->addMethodCall('setSourceRecordTypeId', [(int) $dao->value]);
+          break;
+        case "Activity Targets":
+          $definition->addMethodCall('setTargetRecordTypeId', [(int) $dao->value]);
+          break;
+      }
+    }
+  }
   /**
    * Method to set the default mailing component ids
    *

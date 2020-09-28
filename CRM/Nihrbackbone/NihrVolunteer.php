@@ -905,4 +905,34 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     return FALSE;
   }
+
+  /**
+   * Method to check if the volunteer is pending
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function isPending($volunteerId) {
+    if (empty($volunteerId)) {
+      return FALSE;
+    }
+    $customFieldId = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerStatusCustomField('nvs_volunteer_status', 'id');
+    try {
+      $result = (string) civicrm_api3('Contact', 'getvalue', [
+        'id' => $volunteerId,
+        'return' => $customFieldId,
+      ]);
+      if ($result == Civi::service('nbrBackbone')->getPendingVolunteerStatus()) {
+        return TRUE;
+      }
+      else {
+        return FALSE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      Civi::log()->warning(E::ts('Could not retrieve volunteer status for contactID ') . $volunteerId . E::ts(' in ') . __METHOD__);
+      return FALSE;
+    }
+  }
+
 }
