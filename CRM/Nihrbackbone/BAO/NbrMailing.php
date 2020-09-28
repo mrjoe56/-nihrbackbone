@@ -73,7 +73,16 @@ class CRM_Nihrbackbone_BAO_NbrMailing extends CRM_Nihrbackbone_DAO_NbrMailing {
     $recipient = CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($recipient->fetch()) {
       // add invite activity to all recipients
-      CRM_Nihrbackbone_NbrInvitation::addInviteActivity($recipient->case_id, $recipient->contact_id, $nbrMailing['study_id'], "bulk invite");
+      $mailingSubject = "";
+      try {
+        $mailingSubject = civicrm_api3('Mailing', 'getvalue' , [
+          'id' => $mailingId,
+          'return' => 'subject'
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+      }
+      CRM_Nihrbackbone_NbrInvitation::addInviteActivity($recipient->case_id, $recipient->contact_id, $nbrMailing['study_id'], "bulk invite (" . $mailingSubject . ")");
     }
   }
 }
