@@ -135,6 +135,9 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_otherBleedDifficultiesValue = NULL;
   private $_otherSampleSiteValue = NULL;
   private $_defaultNbrMailingType = NULL;
+  private $_assigneeRecordTypeId = NULL;
+  private $_sourceRecordTypeId = NULL;
+  private $_targetRecordTypeId = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -1693,6 +1696,48 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getWelcomeId() {
     return $this->_welcomeId  ;
+  }
+
+  /**
+   * @param int
+   */
+  public function setAssigneeRecordTypeId($id) {
+    $this->_assigneeRecordTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getAssigneeRecordTypeId() {
+    return $this->_assigneeRecordTypeId  ;
+  }
+
+  /**
+   * @param int
+   */
+  public function setSourceRecordTypeId($id) {
+    $this->_sourceRecordTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getSourceRecordTypeId() {
+    return $this->_sourceRecordTypeId  ;
+  }
+
+  /**
+   * @param int
+   */
+  public function setTargetRecordTypeId($id) {
+    $this->_targetRecordTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getTargetRecordTypeId() {
+    return $this->_targetRecordTypeId  ;
   }
 
   /**
