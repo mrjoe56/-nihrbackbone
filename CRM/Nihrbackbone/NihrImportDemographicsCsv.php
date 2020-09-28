@@ -185,6 +185,12 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $this->addPhone($contactId, $data, 'phone_home', 'Home', 'Phone');
         $this->addPhone($contactId, $data, 'phone_work', 'Work', 'Phone');
         $this->addPhone($contactId, $data, 'phone_mobile', 'Home', 'Mobile');
+        // Starfish migration
+        if (isset($data['contact_category']) && $data['contact_category'] == 'Phone') {
+          //$this->addPhone($contactId, $data, 'phone', $data['contact_location'], $data['contact_type'], $data['is_primary']);
+          // &&& starfish data dump needs to be fixed, reported to Julie
+          $this->addPhone($contactId, $data, 'phone', $data['contact_location'], 'Phone', $data['is_primary']);
+        }
         $this->addNote($contactId, $data['notes']);
 
         if ($data['panel'] <> '' || $data['site'] <> '' || $data['centre'] <> '') {
@@ -721,7 +727,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     }
   }
 
-  private function addPhone($contactID, $data, $fieldName, $phoneLocation, $phoneType)
+  private function addPhone($contactID, $data, $fieldName, $phoneLocation, $phoneType, $isPrimary = 0)
   {
     // *** add or update volunteer phone
 
@@ -761,6 +767,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
               'phone' => $phoneNumber,
               'location_type_id' => $phoneLocation,
               'phone_type_id' => $phoneType,
+              'is_primary' => $isPrimary
             ]);
 
           } catch (CiviCRM_API3_Exception $ex) {
@@ -955,7 +962,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     // migration
     if ($dataSource == 'starfish') {
-      if ($panel == 'IBD Main' || $panel == 'Inception') {
+      if ($panel == 'IBD Main' || $panel == 'IBD Inception') {
         $siteAliasTypeValue = "nbr_site_alias_type_ibd";
       }
       elseif ($panel == 'STRIDES') {
