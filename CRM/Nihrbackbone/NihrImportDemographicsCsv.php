@@ -654,11 +654,24 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         }
 
         if ($count == 0) {
+          $fields = [
+            'contact_id' => $contactID,
+            'email' => $data['email'],
+            'is_billing' => 0,
+            'on_hold' => 0,
+          ];
+          if (isset($data['is_primary']) && $data['is_primary'] == 1) {
+            $fields['is_primary'] = 1;
+          }
+          if (isset($data['location_type_id']) && $data['location_type_id'] <> '') {
+            $fields['location_type_id'] = $data['location_type_id'];
+          }
+          else {
+            $fields['location_type_id'] = "Home";
+          }
+
           try {
-            $result = civicrm_api3('Email', 'create', [
-              'contact_id' => $contactID,
-              'email' => $data['email'],
-            ]);
+            $result = civicrm_api3('Email', 'create', $fields);
 
           } catch (CiviCRM_API3_Exception $ex) {
             $this->_logger->logMessage('Error message when adding volunteer email ' . $contactID . $ex->getMessage(), 'error');
@@ -703,17 +716,27 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         if ($count == 0) {
           $fields = [
             'contact_id' => $contactID,
-            'location_type_id' => "Home",
             'street_address' => $data['address_1'],
             'city' => $data['address_4'],
             'postal_code' => $data['postcode'],
+            'is_billing' => 0,
           ];
+
           // optional fields, only add if there is data
           if ($data['address_2'] <> '') {
             $fields['supplemental_address_1'] = $data['address_2'];
           }
           if ($data['address_3'] <> '') {
             $fields['supplemental_address_2'] = $data['address_3'];
+          }
+          if (isset($data['is_primary']) && $data['is_primary'] == 1) {
+            $fields['is_primary'] = 1;
+          }
+          if (isset($data['location_type_id']) && $data['location_type_id'] <> '') {
+            $fields['location_type_id'] = $data['location_type_id'];
+          }
+          else {
+            $fields['location_type_id'] = "Home";
           }
 
           try {

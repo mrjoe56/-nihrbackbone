@@ -185,7 +185,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
           return ['case_id' => $case['id']];
         }
         catch (CiviCRM_API3_Exception $ex) {
-          throw new API_Exception('Could not create a Participation case for contact ID ' . $contactId
+          throw new API_Exception('Could not create a Recruitment case for contact ID ' . $contactId
             . ' in ' . __METHOD__ . ', error code from API Case create:'  . $ex->getMessage(), 3004);
         }
       }
