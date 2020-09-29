@@ -17,6 +17,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_activeVolunteerStatus = NULL;
   private $_deceasedVolunteerStatus = NULL;
   private $_notRecruitedVolunteerStatus = NULL;
+  private $_outdatedVolunteerStatus = NULL;
   private $_pendingVolunteerStatus = NULL;
   private $_redundantVolunteerStatus = NULL;
   private $_withdrawnVolunteerStatus = NULL;
@@ -198,6 +199,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getNotRecruitedVolunteerStatus() {
     return $this->_notRecruitedVolunteerStatus;
+  }
+
+  /**
+   * @param string $status
+   */
+  public function setOutdatedVolunteerStatus($status) {
+    $this->_outdatedVolunteerStatus = $status;
+  }
+
+  /**
+   * @return string
+   */
+  public function getOutdatedVolunteerStatus() {
+    return $this->_outdatedVolunteerStatus;
   }
 
   /**

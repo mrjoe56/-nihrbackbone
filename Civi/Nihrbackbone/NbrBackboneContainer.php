@@ -747,6 +747,10 @@ WHERE cog.name = %1";
           $definition->addMethodCall('setNotRecruitedVolunteerStatus', [$dao->value]);
           break;
 
+        case "volunteer_status_consent_outdated":
+          $definition->addMethodCall('setOutdatedVolunteerStatus', [$dao->value]);
+          break;
+
         case "volunteer_status_pending":
           $definition->addMethodCall('setPendingVolunteerStatus', [$dao->value]);
           break;
