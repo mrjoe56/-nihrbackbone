@@ -636,7 +636,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       $dao = CRM_Core_DAO::executeQuery($query, [
         1 => [(int) $contactID, "Integer"],
         2 => ["email", "String"],
-        3 => ["%" . $data['email']."%", "String"],
+        3 => ["%" . $data['email'] . "%", "String"],
         4 => [$data['email'], "String"],
       ]);
       if ($dao->fetch()) {
@@ -647,7 +647,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           }
           $location = CRM_Nihrbackbone_BackboneConfig::singleton()->getHomeLocationTypeId();
           if (isset($data['location_type_id']) && $data['location_type_id'] <> '') {
-            $fields['location_type_id'] = $data['location_type_id'];
+            $location = $data['location_type_id'];
           }
           $insert = "INSERT INTO civicrm_email (contact_id, location_type_id, email, is_primary, is_billing, is_bulkmail, on_hold)
             VALUES(%1, %2, %3, %4, %5, %5, %5)";
@@ -666,67 +666,59 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   private function addAddress($contactID, $data)
   {
     // *** add or update volunteer home address
-
     if ($data['address_1'] <> '' && $data['postcode'] <> '') {
 
-      // --- only add if not already on database
-      $result = civicrm_api3('Address', 'get', [
-        'sequential' => 1,
-        'contact_id' => $contactID,
-        'street_address' => $data['address_1'],
-        'postal_code' => $data['postcode'],
+      // --- only add if not already on database as address or former communication data
+      $query = "SELECT COUNT(*) as addressCount, (SELECT COUNT(*) FROM civicrm_value_fcd_former_comm_data
+        WHERE entity_id = %1 AND fcd_communication_type = %2 AND (fcd_details LIKE %3 AND fcd_details LIKE %4))
+            AS fcdCount
+        FROM civicrm_address WHERE contact_id = %1 and street_address = %5 AND postal_code = %6";
+      $dao = CRM_Core_DAO::executeQuery($query, [
+        1 => [(int) $contactID, "Integer"],
+        2 => ["address", "String"],
+        3 => ["%" . $data['address_1'] . "%", "String"],
+        4 => ["%" . $data['postcode'] . "%", "String"],
+        5 => [$data['address_1'], "String"],
+        6 => [$data['postcode'], "String"],
       ]);
-      if ($result['count'] == 0) {
-
-        // --- only add if not former address either
-        $sql = "select count(*)
-          from civicrm_value_fcd_former_comm_data
-          where entity_id = %1
-          and fcd_communication_type = 'address'
-          and fcd_details like %2";
-
-        $queryParams = [
-          1 => [$contactID, 'Integer'],
-          2 => ['%' . $data['address_1'] . '%' . $data['postcode'] . '%', 'String'],
-        ];
-
-        try {
-          $count = CRM_Core_DAO::singleValueQuery($sql, $queryParams);
-        } catch (CiviCRM_API3_Exception $ex) {
-        }
-
-        if ($count == 0) {
-          $fields = [
-            'contact_id' => $contactID,
-            'street_address' => $data['address_1'],
-            'city' => $data['address_4'],
-            'postal_code' => $data['postcode'],
-            'is_billing' => 0,
+      if ($dao->fetch()) {
+        if ($dao->addressCount == 0 && $dao->fcdCount == 0) {
+          $primary = 0;
+          if (isset($data['is_primary']) && $data['is_primary'] == 1) {
+            $primary = 1;
+          }
+          $location = CRM_Nihrbackbone_BackboneConfig::singleton()->getHomeLocationTypeId();
+          if (isset($data['location_type_id']) && $data['location_type_id'] <> '') {
+            $location = $data['location_type_id'];
+          }
+          $columns = ['%1', '%2', '%3', '%4', '%5', '%6', '%7'];
+          $insertParams = [
+            1 => [(int) $contactID, "Integer"],
+            2 => [(int) $location, "Integer"],
+            3 => [(int) $primary, "Integer"],
+            4 => [$data['address_1'], "String"],
+            5 => [$data['address_4'], "String"],
+            6 => [$data['postcode'], "String"],
+            7 => [0, "Integer"],
           ];
-
+          $index = 7;
+          $insert = "INSERT INTO civicrm_address (contact_id, location_type_id, is_primary, street_address,
+            city, postal_code, is_billing";
           // optional fields, only add if there is data
           if ($data['address_2'] <> '') {
-            $fields['supplemental_address_1'] = $data['address_2'];
+            $index++;
+            $insertParams[$index] = [$data['address_2'], "String"];
+            $insert .= ", supplemental_address_1";
+            $columns[] = "%" . $index;
           }
           if ($data['address_3'] <> '') {
-            $fields['supplemental_address_2'] = $data['address_3'];
+            $index++;
+            $insertParams[$index] = [$data['address_3'], "String"];
+            $insert .= ", supplemental_address_2";
+            $columns[] = "%" . $index;
           }
-          if (isset($data['is_primary']) && $data['is_primary'] == 1) {
-            $fields['is_primary'] = 1;
-          }
-          if (isset($data['location_type_id']) && $data['location_type_id'] <> '') {
-            $fields['location_type_id'] = $data['location_type_id'];
-          }
-          else {
-            $fields['location_type_id'] = "Home";
-          }
-
-          try {
-            $result = civicrm_api3('Address', 'create', $fields);
-
-          } catch (CiviCRM_API3_Exception $ex) {
-            $this->_logger->logMessage('Error message when adding volunteer address ' . $contactID . $ex->getMessage(), 'error');
-          }
+          $insert .= ") VALUES(" . implode(", ", $columns) . ")";
+          CRM_Core_DAO::executeQuery($insert, $insertParams);
         }
       }
     }
