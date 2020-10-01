@@ -74,14 +74,15 @@ class CRM_Nihrbackbone_NbrActivity {
     if ($foundValue == 0) {
       $query = "SELECT MAX(weight) FROM civicrm_option_value WHERE option_group_id = %1";
       $newWeight = CRM_Core_DAO::singleValueQuery($query, [1 => [$optionGroupId, "Integer"]]);
+      $newWeight++;
       $insert = "INSERT INTO civicrm_option_value (option_group_id, name, value, label, is_active, is_reserved, weight)
-        VALUES(%1, %2, %2, %3, %4, %5)";
+        VALUES(%1, %2, %2, %3, %4, %4, %5)";
       $insertParams = [
         1 => [$optionGroupId, "Integer"],
         2 => [strtolower($sourceValue), "String"],
         3 => [Civi::service('nbrBackbone')->generateLabelFromValue($sourceValue), "String"],
         4 =>[1, "Integer"],
-        5 => [$newWeight++, "Integer"],
+        5 => [$newWeight, "Integer"],
       ];
       CRM_Core_DAO::executeQuery($insert, $insertParams);
     }
