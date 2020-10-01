@@ -124,49 +124,44 @@ class CRM_Nihrbackbone_NihrVolunteer {
   public function findVolunteerByAlias($identifier, $alias_type)
   {
 
-    try {
-      // for participant ID: $xID = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomField('nva_participant_id', 'id');
+    // for participant ID: $xID = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomField('nva_participant_id', 'id');
 
-      $id = '';
+    $id = '';
 
-      $sql = "
-        SELECT count(*) as cnt, entity_id
-        FROM civicrm_value_contact_id_history
-        where identifier_type = %1
-        and identifier = %2";
+    $sql = "
+      SELECT count(*) as cnt, entity_id
+      FROM civicrm_value_contact_id_history
+      where identifier_type = %1
+      and identifier = %2";
 
-      $queryParams = [
-        1 => [$alias_type, 'String'],
-        2 => [$identifier, 'String'],
-      ];
+    $queryParams = [
+      1 => [$alias_type, 'String'],
+      2 => [$identifier, 'String'],
+    ];
 
-      $data = CRM_Core_DAO::executeQuery($sql, $queryParams);
-      if ($data->fetch()) {
-        $count = $data->cnt;
-        $id = $data->entity_id;
-      }
+    $data = CRM_Core_DAO::executeQuery($sql, $queryParams);
+    if ($data->fetch()) {
+      $count = $data->cnt;
+      $id = $data->entity_id;
+    }
 
 /*
-      $sql = "
-        SELECT count(*) as cnt, entity_id
-        FROM civicrm_value_nihr_volunteer_alias
-        where nva_alias_type = %1
-        and nva_external_id = %2";
+    $sql = "
+      SELECT count(*) as cnt, entity_id
+      FROM civicrm_value_nihr_volunteer_alias
+      where nva_alias_type = %1
+      and nva_external_id = %2";
 
-      $queryParams = [
-        1 => [$alias_type, 'String'],
-        2 => [$identifier, 'String'],
-      ];
+    $queryParams = [
+      1 => [$alias_type, 'String'],
+      2 => [$identifier, 'String'],
+    ];
 
-      $data = CRM_Core_DAO::executeQuery($sql, $queryParams);
-      if ($data->fetch()) {
-        $count = $data->cnt;
-        $id = $data->entity_id;
-      } */
-    }
-    catch (CiviCRM_API3_Exception $ex) {
-      // todo
-    }
+    $data = CRM_Core_DAO::executeQuery($sql, $queryParams);
+    if ($data->fetch()) {
+      $count = $data->cnt;
+      $id = $data->entity_id;
+    } */
 
     // TODO &&& cnt > 1 -> error, don't store data
     // TODO cnt = 0 -> check further (e.g. name and dob, nhs?)

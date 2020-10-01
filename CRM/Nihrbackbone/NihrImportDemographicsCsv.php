@@ -1,5 +1,6 @@
 <?php
 use CRM_Nihrbackbone_ExtensionUtil as E;
+set_time_limit(0);
 
 /**
  * Class for National BioResource CSV Importer, demographics import
@@ -626,56 +627,37 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   private function addEmail($contactID, $data)
   {
     // *** add or update volunteer email address
-
     if ($data['email'] <> '') {
-      // --- only add if not already on database
-      $result = civicrm_api3('Email', 'get', [
-        'sequential' => 1,
-        'email' => $data['email'],
-        'contact_id' => $contactID,
+      // --- only add if not already on database either as mail or as former communication data
+      $query = "SELECT COUNT(*) as emailCount,
+        (SELECT COUNT(*) FROM civicrm_value_fcd_former_comm_data
+        WHERE entity_id = %1 AND fcd_communication_type = %2 AND fcd_details LIKE %3) AS fcdCount
+        FROM civicrm_email WHERE contact_id = %1 and email = %4";
+      $dao = CRM_Core_DAO::executeQuery($query, [
+        1 => [(int) $contactID, "Integer"],
+        2 => ["email", "String"],
+        3 => ["%" . $data['email']."%", "String"],
+        4 => [$data['email'], "String"],
       ]);
-      if ($result['count'] == 0) {
-
-        // --- only add if not former email address either
-        $sql = "select count(*)
-          from civicrm_value_fcd_former_comm_data
-          where entity_id = %1
-          and fcd_communication_type = 'email'
-          and fcd_details like %2";
-
-        $queryParams = [
-          1 => [$contactID, 'Integer'],
-          2 => ['%' . $data['email'] . '%', 'String'],
-        ];
-
-        try {
-          $count = CRM_Core_DAO::singleValueQuery($sql, $queryParams);
-        } catch (CiviCRM_API3_Exception $ex) {
-        }
-
-        if ($count == 0) {
-          $fields = [
-            'contact_id' => $contactID,
-            'email' => $data['email'],
-            'is_billing' => 0,
-            'on_hold' => 0,
-          ];
+      if ($dao->fetch()) {
+        if ($dao->emailCount == 0 && $dao->fcdCount == 0) {
+          $primary = 0;
           if (isset($data['is_primary']) && $data['is_primary'] == 1) {
-            $fields['is_primary'] = 1;
+            $primary = 1;
           }
+          $location = CRM_Nihrbackbone_BackboneConfig::singleton()->getHomeLocationTypeId();
           if (isset($data['location_type_id']) && $data['location_type_id'] <> '') {
             $fields['location_type_id'] = $data['location_type_id'];
           }
-          else {
-            $fields['location_type_id'] = "Home";
-          }
-
-          try {
-            $result = civicrm_api3('Email', 'create', $fields);
-
-          } catch (CiviCRM_API3_Exception $ex) {
-            $this->_logger->logMessage('Error message when adding volunteer email ' . $contactID . $ex->getMessage(), 'error');
-          }
+          $insert = "INSERT INTO civicrm_email (contact_id, location_type_id, email, is_primary, is_billing, is_bulkmail, on_hold)
+            VALUES(%1, %2, %3, %4, %5, %5, %5)";
+          CRM_Core_DAO::executeQuery($query, [
+            1 => [(int) $contactID, "Integer"],
+            2 => [(int) $location, "Integer"],
+            3 => [$data['email'], "String"],
+            4 => [(int) $primary, "Integer"],
+            5 => [0, "Integer"],
+          ]);
         }
       }
     }
