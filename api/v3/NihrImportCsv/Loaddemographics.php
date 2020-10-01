@@ -12,6 +12,7 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  * @throws API_Exception
  */
 function civicrm_api3_nihr_import_csv_Loaddemographics($params) {
+  Civi::log()->debug('start tijd is: ' . date('d-m-Y H:i:s'));
   $returnValues = [];
   // get the csv import and processed folders
   $folder = 'nbr_folder_'.$params['dataSource'];
@@ -32,6 +33,7 @@ function civicrm_api3_nihr_import_csv_Loaddemographics($params) {
     $import = new CRM_Nihrbackbone_NihrImportDemographicsCsv($csvFile, $params);
     if ($import->validImportData()) {
       $returnValues = $import->processImport();
+      Civi::log()->debug('eind tijd is: ' . date('d-m-Y H:i:s'));
       return civicrm_api3_create_success($returnValues, $params, 'NihrImportCsv', 'loaddemographics');
     }
   }
