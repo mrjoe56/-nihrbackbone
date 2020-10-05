@@ -69,6 +69,7 @@ class CRM_Nihrbackbone_NbrConfig {
   // custom groups
   private $_contactIdentityCustomGroupId = NULL;
   private $_consentStage2TableName = NULL;
+  private $_consentTableName = NULL;
   private $_visitTableName = NULL;
   private $_visitStage2TableName = NULL;
   private $_volunteerStatusTableName = NULL;
@@ -78,10 +79,12 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_claimReceivedDateCustomFieldId = NULL;
   private $_claimSubmittedDateCustomFieldId = NULL;
   private $_collectedByCustomFieldId = NULL;
+  private $_consentVersionColumnName = NULL;
   private $_consentVersionStage2CustomFieldId = NULL;
   private $_expensesNotesCustomFieldId = NULL;
   private $_identifierTypeCustomFieldId = NULL;
   private $_incidentFormCustomFieldId = NULL;
+  private $_leafletVersionColumnName = NULL;
   private $_mileageCustomFieldId =  NULL;
   private $_notRecruitedReasonCustomFieldId = NULL;
   private $_otherExpensesCustomFieldId = NULL;
@@ -112,7 +115,9 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_withdrawnParticipationStatusValue = NULL;
   // option group ids
   private $_bleedDifficultiesOptionGroupId = NULL;
+  private $_participationConsentVersionOptionGroupId = NULL;
   private $_consentVersionOptionGroupId = NULL;
+  private $_leafletVersionOptionGroupId = NULL;
   private $_notRecruitedReasonOptionGroupId = NULL;
   private $_questionnaireOptionGroupId = NULL;
   private $_redundantReasonOptionGroupId = NULL;
@@ -141,6 +146,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_targetRecordTypeId = NULL;
   private $_homeLocationTypeId = NULL;
   private $_workLocationTypeId = NULL;
+  private $_bioResourcersGroupId = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -1452,6 +1458,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param int
    */
+  public function setParticipationConsentVersionOptionGroupId($id) {
+    $this->_participationConsentVersionOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getParticipationConsentVersionOptionGroupId() {
+    return $this->_participationConsentVersionOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
   public function setConsentVersionOptionGroupId($id) {
     $this->_consentVersionOptionGroupId = $id;
   }
@@ -1461,6 +1481,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getConsentVersionOptionGroupId() {
     return $this->_consentVersionOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setLeafletVersionOptionGroupId($id) {
+    $this->_leafletVersionOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getLeafletVersionOptionGroupId() {
+    return $this->_leafletVersionOptionGroupId;
   }
 
   /**
@@ -1786,6 +1820,62 @@ class CRM_Nihrbackbone_NbrConfig {
   }
 
   /**
+   * @param int
+   */
+  public function setBioResourcersGroupId($id) {
+    $this->_bioResourcersGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getBioResourcersGroupId() {
+    return $this->_bioResourcersGroupId  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setConsentTableName($name) {
+    $this->_consentTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getConsentTableName() {
+    return $this->_consentTableName  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setConsentVersionColumnName($name) {
+    $this->_consentVersionColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getConsentVersionColumnName() {
+    return $this->_consentVersionColumnName  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setLeafletVersionColumnName($name) {
+    $this->_leafletVersionColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getLeafletVersionColumnName() {
+    return $this->_leafletVersionColumnName  ;
+  }
+
+  /**
    * Method to retreive a label from a value (explode on "_" and " ", uppercase first letter of each element
    * and implode with " "
    *
@@ -1800,6 +1890,34 @@ class CRM_Nihrbackbone_NbrConfig {
       $result[] = ucfirst(strtolower($part));
     }
     return implode(" ", $result);
+  }
+
+  /**
+   * Method to get the id of a group member contact with first name and last name
+   *
+   * @param $groupId
+   * @param $firstName
+   * @param $lastName
+   * @return false|string
+   */
+  public function getGroupMemberContactIdWithName($groupId, $firstName, $lastName) {
+    if (empty($groupId) || empty($firstName) || empty($lastName)) {
+      return FALSE;
+    }
+    $query = "SELECT a.contact_id
+      FROM civicrm_group_contact AS a JOIN civicrm_contact AS b ON a.contact_id = b.id
+        WHERE a.group_id = %1 AND a.status = %2 AND b.first_name = %3 AND b.last_name = %4";
+    $queryParams = [
+      1 => [(int) $groupId, "Integer"],
+      2 => ["Added", "String"],
+      3 => [$firstName, "String"],
+      4 => [$lastName, "String"],
+    ];
+    $contactId = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($contactId) {
+      return $contactId;
+    }
+    return FALSE;
   }
 
 }

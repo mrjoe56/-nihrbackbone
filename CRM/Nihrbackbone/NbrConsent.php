@@ -17,84 +17,99 @@ class CRM_Nihrbackbone_NbrConsent
     if ($caseID == '') {
       Civi::log()->error("Case ID is missing in " . __METHOD__);
     } else {
-      $consentVersion = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_consent_version', 'id');
-      $informationLeafletVersion = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_information_leaflet_version', 'id');
-      $consentStatus = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_consent_status', 'id');
-      $consentedBy = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_consented_by', 'id');
-      $geneticFeedback = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_genetic_feedback', 'id');
-      $inviteType = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_invite_type', 'id');
-      $consentDate = date('Y-m-d', strtotime($data['consent_date']));
-
-      $testParams = [
-        'sequential' => 1,
-        'target_contact_id' => $contactId,
-        'is_current_revision' => 1,
-        'is_deleted' => 0,
-        'activity_type_id' => "nihr_consent",
-        $consentVersion => $data['consent_version'],
-        $informationLeafletVersion => $data['information_leaflet_version'],
-        'activity_date_time' => $consentDate,
-      ];
-
-      try {
-        $count = (int)civicrm_api3('Activity', 'getcount', $testParams);
-      } catch (CiviCRM_API3_Exception $ex) {
-        Civi::log()->debug('Error: ' . $ex->getMessage());
+      $existingLeafletVersion = $this->isExistingLeafletVersion($data['information_leaflet_version']);
+      $existingConsentVersion = $this->isExistingConsentVersion($data['consent_version']);
+      if (!$existingLeafletVersion) {
+        $logger->logMessage('Could not add consent for contact ID ' . $contactId . ' because leaflet version '
+          . $data['information_leaflet_version'] . ' does not exist.' ,'error');
       }
+      if (!$existingConsentVersion) {
+        $logger->logMessage('Could not add consent for contact ID ' . $contactId . ' because leaflet version '
+          . $data['information_leaflet_version'] . ' does not exist.' ,'error');
+      }
+      if ($existingLeafletVersion && $existingConsentVersion) {
+        $consentDate = date('Y-m-d', strtotime($data['consent_date']));
+        if ($this->countExistingConsent($contactId, $consentDate, $data['information_leaflet_version'], $data['consent_version']) == 0) {
+          $consentVersion = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_consent_version', 'id');
+          $informationLeafletVersion = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_information_leaflet_version', 'id');
+          $consentStatus = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_consent_status', 'id');
+          $consentedBy = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_consented_by', 'id');
+          $geneticFeedback = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_genetic_feedback', 'id');
+          $inviteType = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerConsentCustomField('nvc_invite_type', 'id');
+          // consent not yet on Civi - add
+          // *** check if 'consented by' has got a 'BioResourcer' record; if not, add name to details
+          $details = '';
+          $consented_by = '';
 
-
-      if ($count == 0) {
-        // consent not yet on Civi - add
-        // &&& todo check if information_leaflet_version and consent_version exist on database
-
-        // *** check if 'consented by' has got a 'BioResourcer' record; if not, add name to details
-        $details = '';
-        $consented_by = '';
-
-        $names = explode(' ', $data['consented_by']);
-        if ($names[0] <> '' && isset($names[1])) {
-          $result = civicrm_api3('Contact', 'get', [
-            'sequential' => 1,
-            'first_name' => $names[0],
-            'last_name' => $names[1],
-            'group' => "nbr_bioresourcers",
-          ]);
-
-          if ($result['count'] == 0) {
-            $details = 'consented by ' . $data['consented_by'];
-          } else {
-            $consented_by = $result['id'];
+          $names = explode(' ', $data['consented_by']);
+          if ($names[0] <> '' && isset($names[1])) {
+            $consentedById = Civi::service('nbrBackbone')->getGroupMemberContactIdWithName(Civi::service('nbrBackbone')->getBioResourcersGroupId(), $names[0], $names[1]);
+            if ($consentedById) {
+              $consented_by = $consentedById;
+            }
+            else {
+              $details = 'consented by ' . $data['consented_by'];
+            }
           }
-        }
 
-        // **** --- add consent to case
-        $consentDate = new DateTime($data['consent_date']);
-        try {
-          $result2 = civicrm_api3('Activity', 'create', [
-            'source_contact_id' => "user_contact_id",
-            'target_id' => $contactId,
-            'activity_type_id' => "nihr_consent",
-            'status_id' => "Completed",
-            $consentVersion => $data['consent_version'],
-            $informationLeafletVersion => $data['information_leaflet_version'],
-            'activity_date_time' => $consentDate->format('Y-m-d'),
-            $consentStatus => $consent_status,
-            'case_id' => (int)$caseID,
-            $consentedBy => $consented_by,
-            'details' => $details,
-            $geneticFeedback => $data['genetic_feedback'],
-            $inviteType => $data['invite_type'],
-            'subject' => $subject,
-          ]);
-
-          //
-
-
-        } catch (CiviCRM_API3_Exception $ex) {
-          $logger->logMessage('Error message when adding volunteer consent ' . $contactId . ' ' . $ex->getMessage(), 'error');
+          // **** --- add consent to case
+          $consentDate = new DateTime($data['consent_date']);
+          try {
+            $result2 = civicrm_api3('Activity', 'create', [
+              'source_contact_id' => "user_contact_id",
+              'target_id' => $contactId,
+              'activity_type_id' => "nihr_consent",
+              'status_id' => "Completed",
+              $consentVersion => $data['consent_version'],
+              $informationLeafletVersion => $data['information_leaflet_version'],
+              'activity_date_time' => $consentDate->format('Y-m-d'),
+              $consentStatus => $consent_status,
+              'case_id' => (int)$caseID,
+              $consentedBy => $consented_by,
+              'details' => $details,
+              $geneticFeedback => $data['genetic_feedback'],
+              $inviteType => $data['invite_type'],
+              'subject' => $subject,
+            ]);
+          } catch (CiviCRM_API3_Exception $ex) {
+            $logger->logMessage('Error message when adding volunteer consent ' . $contactId . ' ' . $ex->getMessage(), 'error');
+          }
         }
       }
     }
+  }
+
+  /**
+   * Count existing consents for contact, date, consent version and leaflet version
+   *
+   * @param $contactId
+   * @param $consentDate
+   * @param $leafletVersion
+   * @param $consentVersion
+   * @return string|null
+   */
+  public function countExistingConsent($contactId, $consentDate, $leafletVersion, $consentVersion) {
+    $tableName = Civi::service('nbrBackbone')->getConsentTableName();
+    $consentVersionColumn = Civi::service('nbrBackbone')->getConsentVersionColumnName();
+    $leafletVersionColumn = Civi::service('nbrBackbone')->getLeafletVersionColumnName();
+    $countQuery = "SELECT COUNT(*)
+            FROM civicrm_activity AS a
+                JOIN civicrm_activity_contact AS b ON a.id = b.activity_id AND b.record_type_id = %1
+                LEFT JOIN " . $tableName . " AS c ON a.id = c.entity_id
+            WHERE a.is_deleted = %2 AND a.is_current_revision = %3 AND a.is_test = %2
+              AND a.activity_type_id = %4 AND a.activity_date_time LIKE %5 AND b.contact_id = %6
+              AND c." . $leafletVersionColumn . " = %7 AND c." . $consentVersionColumn ." = %8";
+    $countParams = [
+      1 => [Civi::service('nbrBackbone')->getTargetRecordTypeId(), "Integer"],
+      2 => [0, "Integer"],
+      3 => [1, "Integer"],
+      4 => [Civi::service('nbrBackbone')->getConsentActivityTypeId(), "Integer"],
+      5 => [$consentDate . "%", "String"],
+      6 => [(int) $contactId, "Integer"],
+      7 => [$leafletVersion, "String"],
+      8 => [$consentVersion, "String"],
+    ];
+    return CRM_Core_DAO::singleValueQuery($countQuery, $countParams);
   }
 
   /**
@@ -106,6 +121,44 @@ class CRM_Nihrbackbone_NbrConsent
   public function isValidConsentVersion($consentVersion) {
     $validVersions = Civi::settings()->get('nbr_considered_consent_versions');
     if (in_array($consentVersion, $validVersions)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to check if information leaflet version exists
+   *
+   * @param $leafletVersion
+   * @return bool
+   */
+  public function isExistingLeafletVersion($leafletVersion) {
+    $query = "SELECT COUNT(*) FROM civicrm_option_value WHERE option_group_id = %1 AND value = %2";
+    $queryParams = [
+      1 => [Civi::service('nbrBackbone')->getLeafletVersionOptionGroupId(), "Integer"],
+      2 => [$leafletVersion, "String"],
+    ];
+    $count = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($count > 0) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to check if consent version exists
+   *
+   * @param $consentVersion
+   * @return bool
+   */
+  public function isExistingConsentVersion($consentVersion) {
+    $query = "SELECT COUNT(*) FROM civicrm_option_value WHERE option_group_id = %1 AND value = %2";
+    $queryParams = [
+      1 => [Civi::service('nbrBackbone')->getConsentVersionOptionGroupId(), "Integer"],
+      2 => [$consentVersion, "String"],
+    ];
+    $count = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($count > 0) {
       return TRUE;
     }
     return FALSE;
