@@ -183,9 +183,9 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         list($contactId, $new_volunteer) = $this->addContact($data);
         $this->addEmail($contactId, $data);
         $this->addAddress($contactId, $data);
-        $this->addPhone($contactId, $data, 'phone_home', 'Home', 'Phone');
-        $this->addPhone($contactId, $data, 'phone_work', 'Work', 'Phone');
-        $this->addPhone($contactId, $data, 'phone_mobile', 'Home', 'Mobile');
+        $this->addPhone($contactId, $data, 'phone_home', Civi::service('nbrBackbone')->getHomeLocationTypeId(), CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
+        $this->addPhone($contactId, $data, 'phone_work', Civi::service('nbrBackbone')->getWorkLocationTypeId() , CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
+        $this->addPhone($contactId, $data, 'phone_mobile', Civi::service('nbrBackbone')->getHomeLocationTypeId(), CRM_Nihrbackbone_BackboneConfig::singleton()->getMobilePhoneTypeId());
         // Starfish migration
         if (isset($data['contact_category']) && $data['contact_category'] == 'Phone') {
           //$this->addPhone($contactId, $data, 'phone', $data['contact_location'], $data['contact_type'], $data['is_primary']);
@@ -645,13 +645,13 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           if (isset($data['is_primary']) && $data['is_primary'] == 1) {
             $primary = 1;
           }
-          $location = CRM_Nihrbackbone_BackboneConfig::singleton()->getHomeLocationTypeId();
+          $location = Civi::service('nbrBackbone')->getHomeLocationTypeId();
           if (isset($data['location_type_id']) && $data['location_type_id'] <> '') {
             $location = $data['location_type_id'];
           }
           $insert = "INSERT INTO civicrm_email (contact_id, location_type_id, email, is_primary, is_billing, is_bulkmail, on_hold)
             VALUES(%1, %2, %3, %4, %5, %5, %5)";
-          CRM_Core_DAO::executeQuery($query, [
+          CRM_Core_DAO::executeQuery($insert, [
             1 => [(int) $contactID, "Integer"],
             2 => [(int) $location, "Integer"],
             3 => [$data['email'], "String"],
@@ -687,7 +687,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           if (isset($data['is_primary']) && $data['is_primary'] == 1) {
             $primary = 1;
           }
-          $location = CRM_Nihrbackbone_BackboneConfig::singleton()->getHomeLocationTypeId();
+          $location = Civi::service('nbrBackbone')->getHomeLocationTypeId();
           if (isset($data['location_type_id']) && $data['location_type_id'] <> '') {
             $location = $data['location_type_id'];
           }
@@ -730,46 +730,28 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     if ($data[$fieldName] <> '') {
       $phoneNumber = $data[$fieldName];
-
       // only add if not already on database (do ignore type and location)
-      $result = civicrm_api3('Phone', 'get', [
-        'sequential' => 1,
-        'contact_id' => $contactID,
-        'phone' => $phoneNumber,
-      ]);
-      if ($result['count'] == 0) {
-
-        // only add if not former phone number either (do ignore type and location)
-        // todo other phone types
-        $sql = "select count(*)
-          from civicrm_value_fcd_former_comm_data
-          where entity_id = %1
-          and fcd_communication_type = 'phone'
-          and fcd_details like %2";
-
-        $queryParams = [
-          1 => [$contactID, 'Integer'],
-          2 => ['%' . $phoneNumber . '%', 'String'],
-        ];
-
-        try {
-          $count = CRM_Core_DAO::singleValueQuery($sql, $queryParams);
-        } catch (CiviCRM_API3_Exception $ex) {
-        }
-
-        if ($count == 0) {
-          try {
-            $result = civicrm_api3('Phone', 'create', [
-              'contact_id' => $contactID,
-              'phone' => $phoneNumber,
-              'location_type_id' => $phoneLocation,
-              'phone_type_id' => $phoneType,
-              'is_primary' => $isPrimary
-            ]);
-
-          } catch (CiviCRM_API3_Exception $ex) {
-            $this->_logger->logMessage('Error message when adding volunteer phone ' . $contactID . $ex->getMessage(), 'error');
-          }
+      $query = "SELECT COUNT(*) as phoneCount, (SELECT COUNT(*) FROM civicrm_value_fcd_former_comm_data
+        WHERE entity_id = %1 AND fcd_communication_type = %2 AND fcd_details LIKE %3) AS fcdCount
+        FROM civicrm_phone WHERE contact_id = %1 and phone = %4";
+      $queryParams = [
+        1 => [(int) $contactID, "Integer"],
+        2 => ["phone", "String"],
+        3 => ["%" . $phoneNumber . "%", "String"],
+        4 => [$phoneNumber, "String"],
+      ];
+      $dao = CRM_Core_DAO::executeQuery($query, $queryParams);
+      if ($dao->fetch()) {
+        if ($dao->phoneCount == 0 && $dao->fcdCount == 0) {
+          $insert = "INSERT INTO civicrm_phone (contact_id, phone, location_type_id, phone_type_id, is_primary) VALUES(%1, %2, %3, %4, %5)";
+          $insertParams = [
+            1 => [(int) $contactID, "Integer"],
+            2 => [$phoneNumber, "String"],
+            3 => [(int) $phoneLocation, "Integer"],
+            4 => [(int) $phoneType, "Integer"],
+            5 => [(int) $isPrimary, "Integer"]
+          ];
+          CRM_Core_DAO::executeQuery($insert, $insertParams);
         }
       }
     }
@@ -778,14 +760,13 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   private function addNote($contactID, $note)
   {
     if (isset($note) && $note <> '') {
-      try {
-        civicrm_api3('Note', 'create', [
-          'entity_id' => $contactID,
-          'note' => $note,
-        ]);
-      } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error message when adding volunteer notes ' . $contactID . $ex->getMessage(), 'error');
-      }
+      $insert = "INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id) VALUES(%1, %2, %3, %2)";
+      $insertParams = [
+        1 => ["civicrm_contact", "String"],
+        2 => [(int) $contactID, "Integer"],
+        3 => [$note, "String"],
+      ];
+      CRM_Core_DAO::executeQuery($insert, $insertParams);
     }
   }
 

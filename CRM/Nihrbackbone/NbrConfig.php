@@ -139,6 +139,8 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_assigneeRecordTypeId = NULL;
   private $_sourceRecordTypeId = NULL;
   private $_targetRecordTypeId = NULL;
+  private $_homeLocationTypeId = NULL;
+  private $_workLocationTypeId = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -1753,6 +1755,34 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getTargetRecordTypeId() {
     return $this->_targetRecordTypeId  ;
+  }
+
+  /**
+   * @param int
+   */
+  public function setHomeLocationTypeId($id) {
+    $this->_homeLocationTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getHomeLocationTypeId() {
+    return $this->_homeLocationTypeId  ;
+  }
+
+  /**
+   * @param int
+   */
+  public function setWorkLocationTypeId($id) {
+    $this->_workLocationTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getWorkLocationTypeId() {
+    return $this->_workLocationTypeId  ;
   }
 
   /**

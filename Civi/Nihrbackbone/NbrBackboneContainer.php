@@ -27,6 +27,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $this->setCustomGroups($definition);
     $this->setEligibilityStatus($definition);
     $this->setEncounterMedium($definition);
+    $this->setLocationTypes($definition);
     $this->setMailingDefaultIds($definition);
     $this->setOptionGroups($definition);
     $this->setParticipationStatus($definition);
@@ -38,6 +39,25 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition->addMethodCall('setOtherSampleSiteValue', ["visit_bleed_site_other"]);
     $definition->addMethodCall('setDefaultNbrMailingType', ["invite"]);
     $container->setDefinition('nbrBackbone', $definition);
+  }
+
+  /**
+   * Method to set the location types
+   *
+   * @param $definition
+   */
+  private function setLocationTypes(&$definition) {
+    $dao = \CRM_Core_DAO::executeQuery("SELECT id, name FROM civicrm_location_type");
+    while ($dao->fetch()) {
+      switch($dao->name) {
+        case "Home":
+          $definition->addMethodCall('setHomeLocationTypeId', [(int) $dao->id]);
+          break;
+        case "Work":
+          $definition->addMethodCall('setWorkLocationTypeId', [(int) $dao->id]);
+          break;
+      }
+    }
   }
 
   /**
