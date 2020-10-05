@@ -230,4 +230,25 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     return TRUE;
   } // */
 
+  public function upgrade_1080() {
+    $this->ctx->log->info(E::ts('Applying update 1080 - add lay summary to study data'));
+    // only if custom group for study data is present
+    if (CRM_Core_DAO::checkTableExists("civicrm_value_nbr_study_data")) {
+      // add custom field scientific info
+      if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists("civicrm_value_nbr_study_data", "nsd_lay_summary")) {
+        civicrm_api3("CustomField", "create", [
+          'custom_group_id' => 'nbr_study_data',
+          'name' => 'nsd_lay_summary',
+          'column_name' => 'nsd_lay_summary',
+          'label' => 'Lay summary',
+          'data_type' => 'Memo',
+          'html_type' => 'RichTextEditor',
+          'is_active' => 1,
+          'is_searchable' => 0,
+          'weight' => '500',
+        ]);
+      }
+    }
+    return TRUE;
+  }
 }
