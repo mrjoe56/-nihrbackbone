@@ -1000,4 +1000,32 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     return FALSE;
   }
 
+  /**
+   * Method to get the case id (if found) of a participation case for a contact and study
+   *
+   * @param $studyId
+   * @param $contactId
+   * @return false|int
+   */
+  public static function getActiveParticipationCaseId($studyId, $contactId) {
+    if (empty($contactId) || empty($studyId)) {
+      return FALSE;
+    }
+    $query = "SELECT a.case_id
+        FROM civicrm_case_contact AS a JOIN civicrm_case AS b ON a.case_id = b.id
+            LEFT JOIN civicrm_value_nbr_participation_data AS c ON a.case_id = c.entity_id
+        WHERE b.case_type_id = %1 AND b.is_deleted = %2 AND a.contact_id = %3 AND c.nvpd_study_id = %4";
+    $queryParams = [
+      1 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+      2 => [0, "Integer"],
+      3 => [(int) $contactId, "Integer"],
+      4 => [(int) $studyId, "Integer"],
+    ];
+    $caseId = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($caseId) {
+      return (int) $caseId;
+    }
+    return FALSE;
+  }
+
 }
