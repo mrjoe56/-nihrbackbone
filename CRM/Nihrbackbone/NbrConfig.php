@@ -70,6 +70,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_contactIdentityCustomGroupId = NULL;
   private $_consentStage2TableName = NULL;
   private $_consentTableName = NULL;
+  private $_participationDataTableName = NULL;
   private $_visitTableName = NULL;
   private $_visitStage2TableName = NULL;
   private $_volunteerStatusTableName = NULL;
@@ -94,6 +95,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_redundantDestroySamplesCustomFieldId = NULL;
   private $_redundantDestroyDataCustomFieldId = NULL;
   private $_sampleSiteCustomFieldId = NULL;
+  private $_studyParticipationStatusColumnName = NULL;
   private $_studyPaymentCustomFieldId = NULL;
   private $_toLabDateCustomFieldId = NULL;
   private $_withdrawnReasonCustomFieldId = NULL;
@@ -1850,6 +1852,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string
    */
+  public function setParticipationDataTableName($name) {
+    $this->_participationDataTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getParticipationDataTableName() {
+    return $this->_participationDataTableName  ;
+  }
+
+  /**
+   * @param string
+   */
   public function setConsentVersionColumnName($name) {
     $this->_consentVersionColumnName = $name;
   }
@@ -1873,6 +1889,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getLeafletVersionColumnName() {
     return $this->_leafletVersionColumnName  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setStudyParticipationStatusColumnName($name) {
+    $this->_studyParticipationStatusColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getStudyParticipationStatusColumnName() {
+    return $this->_studyParticipationStatusColumnName  ;
   }
 
   /**

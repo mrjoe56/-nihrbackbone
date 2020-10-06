@@ -241,6 +241,12 @@ class NbrBackboneContainer implements CompilerPassInterface {
           }
           break;
 
+        case "nbr_participation_data":
+          if ($dao->name == "nvpd_study_participation_status") {
+            $definition->addMethodCall('setStudyParticipationStatusColumnName', [$dao->column_name]);
+          }
+          break;
+
         case "nihr_volunteer_consent":
           if ($dao->name == "nvc_consent_version") {
             $definition->addMethodCall('setConsentVersionColumnName', [$dao->column_name]);
@@ -405,23 +411,28 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setCustomGroups(&$definition) {
-    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4, %5, %6, %7, %8, %9)";
+    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10)";
     $queryParams = [
       1 => ["contact_id_history", "String"],
-      2 => ["nihr_volunteer_consent", "String"],
-      3 => ["nihr_visit_data", "String"],
-      4 => ["nihr_visit_data_stage2", "String"],
-      5 => ["nihr_volunteer_consent_stage2", "String"],
-      6 => ["nihr_volunteer_not_recruited", "String"],
-      7 => ["nihr_volunteer_redundant", "String"],
-      8 => ["nihr_volunteer_withdrawn", "String"],
-      9 => ["nihr_volunteer_status", "String"]
+      2 => ["nbr_participation_data", "String"],
+      3 => ["nihr_volunteer_consent", "String"],
+      4 => ["nihr_visit_data", "String"],
+      5 => ["nihr_visit_data_stage2", "String"],
+      6 => ["nihr_volunteer_consent_stage2", "String"],
+      7 => ["nihr_volunteer_not_recruited", "String"],
+      8 => ["nihr_volunteer_redundant", "String"],
+      9 => ["nihr_volunteer_withdrawn", "String"],
+      10 => ["nihr_volunteer_status", "String"]
     ];
     $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($dao->fetch()) {
       switch ($dao->name) {
         case "contact_id_history":
           $definition->addMethodCall('setContactIdentityCustomGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_participation_data":
+          $definition->addMethodCall('setParticipationDataTableName', [$dao->table_name]);
           break;
 
         case "nihr_volunteer_consent":

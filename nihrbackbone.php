@@ -4,6 +4,24 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
 use \Symfony\Component\DependencyInjection\ContainerBuilder;
 use \Symfony\Component\DependencyInjection\Definition;
 
+/**
+ * Implements hook_civicrm_pre
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_pre/
+ */
+function nihrbackbone_civicrm_pre($op, $objectName, $id, &$params) {
+  if ($objectName == "Mailing" && $op == "delete") {
+    // if mailing was not completed, reset volunteers with invitation pending
+    CRM_Nihrbackbone_BAO_NbrMailing::resetInvitationPending($id);
+  }
+
+}
+
+/**
+ * Implements hook_civicrm_postMailing
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postMailing/
+ */
 function nihrbackbone_civicrm_postMailing($mailingId) {
   // check if mailing exists in NbrMailing and process if so
   if (CRM_Nihrbackbone_BAO_NbrMailing::isNbrMailing($mailingId)) {
