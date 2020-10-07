@@ -56,8 +56,18 @@ function nihrbackbone_civicrm_container(ContainerBuilder $container) {
 
 /** Implements hook_civicrm_post 18/12/19 */
 function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
-  // if new invite activity, set status to invited and invite date to now
+
   if ($objectName == "Activity") {
+    // if new BulkMail, check if needs to be filed on case
+    if ($op == "create" && $objectRef->activity_type_id == Civi::service('nbrBackbone')->getBulkMailActivityTypeId()) {
+      if (CRM_Core_Transaction::isActive()) {
+        CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'CRM_Nihrbackbone_BAO_NbrMailing::fileBulkMailOnCase', [$objectID, $objectRef]);
+      }
+      else {
+        CRM_Nihrbackbone_BAO_NbrMailing::fileBulkMailOnCase($objectID, $objectRef);
+      }
+    }
+    // if new invite activity, set status to invited and invite date to now
     if (isset($objectRef->activity_type_id) && $objectRef->activity_type_id == CRM_Nihrbackbone_BackboneConfig::singleton()->getInviteProjectActivityTypeId()) {
       CRM_Nihrbackbone_NbrInvitation::postInviteHook($op, $objectID, $objectRef);
     }
@@ -67,9 +77,9 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
   if ($op == 'edit' && $objectName == 'Address' && $objectRef->is_primary == 1) {
     CRM_Nihrbackbone_NihrAddress::setDistanceToCentre($op,$objectName, $objectID,$objectRef);
   }
-  # if creating (opening) a case (activity type 13) :
+  # if creating (opening) a case :
   #  get PID and postcode, site ID and postcode, and set distance to centre for this case
-  if ($op == 'create' && $objectName == 'Activity' && $objectRef->activity_type_id == 13) {
+  if ($op == 'create' && $objectName == 'Activity' && $objectRef->activity_type_id == Civi::service('nbrBackbone')->getOpenCaseActivityTypeId()) {
     $query = "select cc.contact_id, adr.postal_code as cont_pc, stddat.nsd_site, site_adr.postal_code as site_pc
              from civicrm_case_contact cc, civicrm_contact c, civicrm_address adr, civicrm_address site_adr,
              civicrm_value_nbr_participation_data partdat, civicrm_value_nbr_study_data stddat
@@ -213,10 +223,6 @@ function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form,
       CRM_Nihrbackbone_NihrValidation::validateAlias($formName, $fields, $files, $form, $errors);
     }
   }
-
-  if ($form instanceof CRM_Nihrbackbone_Form_ImportCsvMap) {
-    CRM_Nihrbackbone_Form_ImportCsvMap::validateForm($fields, $form, $errors);
-  }
 }
 
 /**
@@ -359,16 +365,6 @@ function nihrbackbone_civicrm_entityTypes(&$entityTypes) {
 
 // --- Functions below this ship commented out. Uncomment as required. ---
 
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- **/
-function nihrbackbone_civicrm_preProcess($formName, &$form) {  #JB
-
-
-
-}
 
 /**
  * Implements hook_civicrm_navigationMenu().

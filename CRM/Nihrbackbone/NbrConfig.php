@@ -48,6 +48,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_tempNonRecallTagId = NULL;
   // activity types
   private $_activityTypeOptionGroupId = NULL;
+  private $_bulkMailActivityTypeId = NULL;
   private $_consentActivityTypeId = NULL;
   private $_consentStage2ActivityTypeId = NULL;
   private $_emailActivityTypeId = NULL;
@@ -55,6 +56,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_letterActivityTypeId = NULL;
   private $_meetingActivityTypeId = NULL;
   private $_notRecruitedActivityTypeId = NULL;
+  private $_openCaseActivityTypeId = NULL;
   private $_phoneActivityTypeId = NULL;
   private $_redundantActivityTypeId = NULL;
   private $_smsActivityTypeId = NULL;
@@ -90,6 +92,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_notRecruitedReasonCustomFieldId = NULL;
   private $_otherExpensesCustomFieldId = NULL;
   private $_parkingFeeCustomFieldId = NULL;
+  private $_participationStudyIdColumnName = NULL;
   private $_questionnaireVersionStage2CustomFieldId = NULL;
   private $_redundantReasonCustomFieldId = NULL;
   private $_redundantDestroySamplesCustomFieldId = NULL;
@@ -704,6 +707,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param int $id
    */
+  public function setBulkMailActivityTypeId($id) {
+    $this->_bulkMailActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getBulkMailActivityTypeId() {
+    return $this->_bulkMailActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
   public function setConsentStage2ActivityTypeId($id) {
     $this->_consentStage2ActivityTypeId = $id;
   }
@@ -783,6 +800,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getNotRecruitedActivityTypeId() {
     return $this->_notRecruitedActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setOpenCaseActivityTypeId($id) {
+    $this->_openCaseActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getOpenCaseActivityTypeId() {
+    return $this->_openCaseActivityTypeId;
   }
 
   /**
@@ -1287,6 +1318,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getParkingFeeCustomFieldId() {
     return $this->_parkingFeeCustomFieldId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setParticipationStudyIdColumnName($name) {
+    $this->_participationStudyIdColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getParticipationStudyIdColumnName() {
+    return $this->_participationStudyIdColumnName;
   }
 
   /**
