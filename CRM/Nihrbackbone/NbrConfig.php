@@ -75,6 +75,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_participationDataTableName = NULL;
   private $_visitTableName = NULL;
   private $_visitStage2TableName = NULL;
+  private $_volunteerPanelTableName = NULL;
   private $_volunteerStatusTableName = NULL;
   // custom fields
   private $_attemptsCustomFieldId = NULL;
@@ -104,6 +105,10 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_withdrawnReasonCustomFieldId = NULL;
   private $_withdrawnDestroySamplesCustomFieldId = NULL;
   private $_withdrawnDestroyDataCustomFieldId = NULL;
+  private $_volunteerCentreColumnName = NULL;
+  private $_volunteerPanelColumnName = NULL;
+  private $_volunteerSiteColumnName = NULL;
+  private $_volunteerSourceColumnName = NULL;
   private $_volunteerStatusColumnName = NULL;
    // study participation status
   private $_acceptedParticipationStatusValue = NULL;
@@ -1141,6 +1146,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string
    */
+  public function setVolunteerPanelTableName($name) {
+    $this->_volunteerPanelTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerPanelTableName() {
+    return $this->_volunteerPanelTableName;
+  }
+
+  /**
+   * @param string
+   */
   public function setVolunteerStatusTableName($name) {
     $this->_volunteerStatusTableName = $name;
   }
@@ -1150,6 +1169,62 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getVolunteerStatusTableName() {
     return $this->_volunteerStatusTableName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVolunteerCentreColumnName($name) {
+    $this->_volunteerCentreColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerCentreColumnName() {
+    return $this->_volunteerCentreColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVolunteerPanelColumnName($name) {
+    $this->_volunteerPanelColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerPanelColumnName() {
+    return $this->_volunteerPanelColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVolunteerSiteColumnName($name) {
+    $this->_volunteerSiteColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerSiteColumnName() {
+    return $this->_volunteerSiteColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVolunteerSourceColumnName($name) {
+    $this->_volunteerSourceColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerSourceColumnName() {
+    return $this->_volunteerSourceColumnName;
   }
 
   /**

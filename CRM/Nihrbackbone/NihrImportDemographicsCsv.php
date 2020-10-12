@@ -926,18 +926,14 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     // TODO add centre
 
-    $table = 'civicrm_value_nihr_volunteer_panel';
-
-    $volunteerPanelCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_panel', 'id');
-    $volunteerCentreCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_centre', 'id');
-    $volunteerSiteCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_site', 'id');
-    $volunteerSourceCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_source', 'id');
-
+    $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomGroup('table_name');
+    $panelColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_panel', 'column_name');
+    $siteColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_site', 'column_name');
+    $centreColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_centre', 'column_name');
     // ---
     $siteAliasTypeCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getSiteAliasCustomField('nsa_alias_type', 'id');
     $siteAliasCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getSiteAliasCustomField('nsa_alias', 'id');
-    $siteAliasTypeValue = "nbr_site_alias_type_".strtolower($dataSource);
-
+    $siteAliasTypeValue = "nbr_site_alias_type_" . strtolower($dataSource);
     // migration
     if ($dataSource == 'starfish') {
       if ($panel == 'IBD Main' || $panel == 'IBD Inception') {
