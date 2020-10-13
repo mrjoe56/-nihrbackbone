@@ -374,18 +374,22 @@ class NbrBackboneContainer implements CompilerPassInterface {
     switch ($dao->name) {
       case "nvp_centre":
         $definition->addMethodCall('setVolunteerCentreColumnName', [$dao->column_name]);
+        $definition->addMethodCall('setVolunteerCentreCustomFieldId', [(int) $dao->id]);
         break;
 
       case "nvp_panel":
         $definition->addMethodCall('setVolunteerPanelColumnName', [$dao->column_name]);
+        $definition->addMethodCall('setVolunteerPanelCustomFieldId', [(int) $dao->id]);
         break;
 
       case "nvp_site":
         $definition->addMethodCall('setVolunteerSiteColumnName', [$dao->column_name]);
+        $definition->addMethodCall('setVolunteerSiteCustomFieldId', [(int) $dao->id]);
         break;
 
       case "nvp_source":
         $definition->addMethodCall('setVolunteerSourceColumnName', [$dao->column_name]);
+        $definition->addMethodCall('setVolunteerSourceCustomFieldId', [(int) $dao->id]);
         break;
     }
   }

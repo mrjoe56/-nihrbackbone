@@ -106,9 +106,13 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_withdrawnDestroySamplesCustomFieldId = NULL;
   private $_withdrawnDestroyDataCustomFieldId = NULL;
   private $_volunteerCentreColumnName = NULL;
+  private $_volunteerCentreCustomFieldId = NULL;
   private $_volunteerPanelColumnName = NULL;
+  private $_volunteerPanelCustomFieldId = NULL;
   private $_volunteerSiteColumnName = NULL;
+  private $_volunteerSiteCustomFieldId = NULL;
   private $_volunteerSourceColumnName = NULL;
+  private $_volunteerSourceCustomFieldId = NULL;
   private $_volunteerStatusColumnName = NULL;
    // study participation status
   private $_acceptedParticipationStatusValue = NULL;
@@ -1186,6 +1190,20 @@ class CRM_Nihrbackbone_NbrConfig {
   }
 
   /**
+   * @param int
+   */
+  public function setVolunteerCentreCustomFieldId($id) {
+    $this->_volunteerCentreCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getVolunteerCentreCustomFieldId() {
+    return $this->_volunteerCentreCustomFieldId;
+  }
+
+  /**
    * @param string
    */
   public function setVolunteerPanelColumnName($name) {
@@ -1197,6 +1215,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getVolunteerPanelColumnName() {
     return $this->_volunteerPanelColumnName;
+  }
+
+  /**
+   * @param int
+   */
+  public function setVolunteerPanelCustomFieldId($id) {
+    $this->_volunteerPanelCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getVolunteerPanelCustomFieldId() {
+    return $this->_volunteerPanelCustomFieldId;
   }
 
   /**
@@ -1214,6 +1246,20 @@ class CRM_Nihrbackbone_NbrConfig {
   }
 
   /**
+   * @param int
+   */
+  public function setVolunteerSiteCustomFieldId($id) {
+    $this->_volunteerSiteCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getVolunteerSiteCustomFieldId() {
+    return $this->_volunteerSiteCustomFieldId;
+  }
+
+  /**
    * @param string
    */
   public function setVolunteerSourceColumnName($name) {
@@ -1225,6 +1271,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getVolunteerSourceColumnName() {
     return $this->_volunteerSourceColumnName;
+  }
+
+  /**
+   * @param int
+   */
+  public function setVolunteerSourceCustomFieldId($id) {
+    $this->_volunteerSourceCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getVolunteerSourceCustomFieldId() {
+    return $this->_volunteerSourceCustomFieldId;
   }
 
   /**
