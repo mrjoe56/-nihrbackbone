@@ -73,6 +73,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_consentStage2TableName = NULL;
   private $_consentTableName = NULL;
   private $_participationDataTableName = NULL;
+  private $_siteAliasTableName = NULL;
   private $_visitTableName = NULL;
   private $_visitStage2TableName = NULL;
   private $_volunteerPanelTableName = NULL;
@@ -99,6 +100,8 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_redundantDestroySamplesCustomFieldId = NULL;
   private $_redundantDestroyDataCustomFieldId = NULL;
   private $_sampleSiteCustomFieldId = NULL;
+  private $_siteAliasColumnName = NULL;
+  private $_siteAliasTypeColumnName = NULL;
   private $_studyParticipationStatusColumnName = NULL;
   private $_studyPaymentCustomFieldId = NULL;
   private $_toLabDateCustomFieldId = NULL;
@@ -1150,6 +1153,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string
    */
+  public function setSiteAliasTableName($name) {
+    $this->_siteAliasTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getSiteAliasTableName() {
+    return $this->_siteAliasTableName;
+  }
+
+  /**
+   * @param string
+   */
   public function setVolunteerPanelTableName($name) {
     $this->_volunteerPanelTableName = $name;
   }
@@ -1173,6 +1190,34 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getVolunteerStatusTableName() {
     return $this->_volunteerStatusTableName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setSiteAliasColumnName($name) {
+    $this->_siteAliasColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getSiteAliasColumnName() {
+    return $this->_siteAliasColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setSiteAliasTypeColumnName($name) {
+    $this->_siteAliasTypeColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getSiteAliasTypeColumnName() {
+    return $this->_siteAliasTypeColumnName;
   }
 
   /**

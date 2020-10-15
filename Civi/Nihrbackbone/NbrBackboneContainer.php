@@ -250,6 +250,15 @@ class NbrBackboneContainer implements CompilerPassInterface {
           }
           break;
 
+        case "nbr_site_alias":
+          if ($dao->name == "nsa_alias") {
+            $definition->addMethodCall('setSiteAliasColumnName', [$dao->column_name]);
+          }
+          if ($dao->name == "nsa_alias_type") {
+            $definition->addMethodCall('setSiteAliasTypeColumnName', [$dao->column_name]);
+          }
+          break;
+
         case "nihr_volunteer_consent":
           if ($dao->name == "nvc_consent_version") {
             $definition->addMethodCall('setConsentVersionColumnName', [$dao->column_name]);
@@ -448,19 +457,20 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setCustomGroups(&$definition) {
-    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11)";
+    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12)";
     $queryParams = [
       1 => ["contact_id_history", "String"],
       2 => ["nbr_participation_data", "String"],
-      3 => ["nihr_volunteer_consent", "String"],
-      4 => ["nihr_volunteer_panel", "String"],
-      5 => ["nihr_visit_data", "String"],
-      6 => ["nihr_visit_data_stage2", "String"],
-      7 => ["nihr_volunteer_consent_stage2", "String"],
-      8 => ["nihr_volunteer_not_recruited", "String"],
-      9 => ["nihr_volunteer_redundant", "String"],
-      10 => ["nihr_volunteer_withdrawn", "String"],
-      11 => ["nihr_volunteer_status", "String"]
+      3 => ["nbr_site_alias", "String"],
+      4 => ["nihr_volunteer_consent", "String"],
+      5 => ["nihr_volunteer_panel", "String"],
+      6 => ["nihr_visit_data", "String"],
+      7 => ["nihr_visit_data_stage2", "String"],
+      8 => ["nihr_volunteer_consent_stage2", "String"],
+      9 => ["nihr_volunteer_not_recruited", "String"],
+      10 => ["nihr_volunteer_redundant", "String"],
+      11 => ["nihr_volunteer_withdrawn", "String"],
+      12 => ["nihr_volunteer_status", "String"]
     ];
     $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($dao->fetch()) {
@@ -471,6 +481,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
         case "nbr_participation_data":
           $definition->addMethodCall('setParticipationDataTableName', [$dao->table_name]);
+          break;
+
+        case "nbr_site_alias":
+          $definition->addMethodCall('setSiteAliasTableName', [$dao->table_name]);
           break;
 
         case "nihr_volunteer_consent":
