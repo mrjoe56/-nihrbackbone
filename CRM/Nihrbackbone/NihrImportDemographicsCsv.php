@@ -1169,13 +1169,13 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'warning');
         }
         // process not recruited, redundant or withdrawn if required
-        if (!empty($data['not_recruited_date']) || !empty($data['not_recruited_reason'])) {
+        if (!empty($data['not_recruited_date'])) {
           $this->migrateStatusActivity('not_recruited', $contactId, $data['not_recruited_date'], $data['not_recruited_reason'], $data['not_recruited_by']);
         }
-        if (!empty($data['redundant_date']) || !empty($data['redundant_reason'])) {
+        if (!empty($data['redundant_date'])) {
           $this->migrateStatusActivity('redundant', $contactId, $data['redundant_date'], $data['redundant_reason'], $data['redundant_by'], $data['request_to_destroy']);
         }
-        if (!empty($data['withdrawn_date']) || !empty($data['withdrawn_reason'])) {
+        if (!empty($data['withdrawn_date'])) {
           $this->migrateStatusActivity('withdrawn', $contactId, $data['withdrawn_date'], $data['withdrawn_reason'], $data['withdrawn_by'], $data['request_to_destroy']);
         }
         // process deceased if required
