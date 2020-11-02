@@ -82,7 +82,9 @@ class CRM_Nihrbackbone_BAO_NbrMailing extends CRM_Nihrbackbone_DAO_NbrMailing {
       }
       catch (CiviCRM_API3_Exception $ex) {
       }
-      CRM_Nihrbackbone_NbrInvitation::addInviteActivity($recipient->case_id, $recipient->contact_id, $nbrMailing['study_id'], "bulk invite (" . $mailingSubject . ")");
+      if ($nbrMailing['nbr_mailing_type'] == "invite") {
+        CRM_Nihrbackbone_NbrInvitation::addInviteActivity($recipient->case_id, $recipient->contact_id, $nbrMailing['study_id'], "bulk invite (" . $mailingSubject . ")");
+      }
     }
   }
 
