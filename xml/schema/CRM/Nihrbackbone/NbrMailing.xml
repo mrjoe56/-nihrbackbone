@@ -38,14 +38,14 @@
   <foreignKey>
     <name>group_id</name>
     <table>civicrm_group</table>
+    <onDelete>SET NULL</onDelete>
     <key>id</key>
-    <onDelete>CASCADE</onDelete>
   </foreignKey>
 
   <field>
     <name>study_id</name>
     <type>int unsigned</type>
-    <comment>FK to Stduy (Campaign)</comment>
+    <comment>FK to Study (Campaign)</comment>
   </field>
   <foreignKey>
     <name>study_id</name>

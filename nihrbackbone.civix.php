@@ -7,9 +7,9 @@
  * extension.
  */
 class CRM_Nihrbackbone_ExtensionUtil {
-  const SHORT_NAME = "nihrbackbone";
-  const LONG_NAME = "nihrbackbone";
-  const CLASS_PREFIX = "CRM_Nihrbackbone";
+  const SHORT_NAME = 'nihrbackbone';
+  const LONG_NAME = 'nihrbackbone';
+  const CLASS_PREFIX = 'CRM_Nihrbackbone';
 
   /**
    * Translate a string using the extension's domain.
