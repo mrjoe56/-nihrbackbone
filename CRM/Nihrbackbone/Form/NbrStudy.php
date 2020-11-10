@@ -67,6 +67,11 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'api' => ['params' => ['contact_sub_type' => 'nbr_site']],
       'placeholder' => '- select site -',
     ], FALSE);
+    $this->addEntityRef('nsd_panel', E::ts('Panel(s)'), [
+      'api' => ['params' => ['contact_sub_type' => 'nbr_panel']],
+      'placeholder' => '- select panel(s) -',
+      'multiple' => TRUE,
+    ], FALSE);
     $this->addEntityRef('nsd_principal_investigator', E::ts('Principal Investigator'), [
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
       'placeholder' => '- select investigator -',
@@ -83,13 +88,10 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     $this->add('advcheckbox', 'nsd_data_only', E::ts('Data'), [], FALSE);
     $this->add('advcheckbox', 'nsd_online_study', E::ts('Recall: Online'), [], FALSE);
     $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Recall: Multiple visits'), [], FALSE);
-    $this->addEntityRef('nsd_primary_nurse', E::ts('Primary nurse'), [
-      'api' => ['params' => ['group' => 'nbr_bioresourcers']],
-      'placeholder' => '- select nurse -',
-    ], FALSE);
-    $this->addEntityRef('nsc_panel', E::ts('Panel'), [
+    $this->addEntityRef('nsc_panel', E::ts('Panel(s)'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_panel']],
-      'placeholder' => '- select panel -',
+      'placeholder' => '- select panel(s) -',
+      'multiple' => TRUE,
     ], FALSE);
     $this->add('select', 'nsc_gender_id', E::ts('Gender'), $this->_genderList,FALSE, [
       'class' => 'crm-select2',
@@ -125,6 +127,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
       'placeholder' => '- select researcher -',
       'disabled' => 'disabled',
+      'multiple' => TRUE,
     ], FALSE);
     $this->add('textarea', 'nsd_scientific_info', E::ts('Scientific Information'), [
       'rows' => 4,
@@ -145,6 +148,12 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'api' => ['params' => ['contact_sub_type' => 'nbr_site']],
       'placeholder' => '- select site -',
       'disabled' => 'disabled',
+    ], FALSE);
+    $this->addEntityRef('nsd_panel', E::ts('Panel(s)'), [
+      'api' => ['params' => ['contact_sub_type' => 'nbr_panel']],
+      'placeholder' => '- select panel(s) -',
+      'disabled' => 'disabled',
+      'multiple' => TRUE,
     ], FALSE);
     $this->add('text', 'nsd_study_long_name', E::ts("Long Name"), [
       'size' => 100,
@@ -167,14 +176,10 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     $this->add('advcheckbox', 'nsd_data_only', E::ts('Data'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsd_online_study', E::ts('Recall: Online'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Recall: Multiple visits'), ['disabled' => 'disabled'], FALSE);
-    $this->addEntityRef('nsd_primary_nurse', E::ts('Primary nurse'), [
-      'api' => ['params' => ['group' => 'nbr_bioresourcers']],
-      'placeholder' => '- select nurse -',
-      'disabled' => 'disabled',
-    ], FALSE);
-    $this->addEntityRef('nsc_panel', E::ts('Panel'), [
+    $this->addEntityRef('nsc_panel', E::ts('Panel(s)'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_panel']],
-      'placeholder' => '- select panel -',
+      'placeholder' => '- select panel(s) -',
+      'multiple' => TRUE,
       'disabled' => 'disabled',
     ], FALSE);
     $this->add('select', 'nsc_gender_id', E::ts('Gender'), $this->_genderList,FALSE, [
