@@ -54,10 +54,9 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       ]);
     $this->add('datepicker', 'start_date', E::ts('Start Date'), [],TRUE, ['time' => FALSE]);
     $this->add('datepicker', 'end_date', E::ts('End Date'), [],FALSE, ['time' => FALSE]);
-    $this->addEntityRef('nsd_researcher', E::ts('Researcher(s)'), [
+    $this->addEntityRef('nsd_researcher', E::ts('Researcher'), [
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
-      'placeholder' => '- select researcher(s) -',
-      'multiple' => TRUE,
+      'placeholder' => '- select researcher -',
     ], FALSE);
     $this->addEntityRef('nsd_centre_origin', E::ts('Centre of Origin'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_centre']],
@@ -127,7 +126,6 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
       'placeholder' => '- select researcher -',
       'disabled' => 'disabled',
-      'multiple' => TRUE,
     ], FALSE);
     $this->add('textarea', 'nsd_scientific_info', E::ts('Scientific Information'), [
       'rows' => 4,
