@@ -251,4 +251,41 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     }
     return TRUE;
   }
+
+  /**
+   * Upgrade 1090 - remove constraint on civicrn_nbr_mailing to civicrm_group from onDelete cascadate to
+   * onDelete set null
+   *
+   * @return bool
+   * @throws CiviCRM_API3_Exception
+   */
+  public function upgrade_1090() {
+    $this->ctx->log->info(E::ts('Applying update 1090 - change constraint onDelete civicrm_nbr_mailing'));
+    // save data in nbrmailing before drop table
+    $data = CRM_Core_DAO::executeQuery("SELECT * FROM civicrm_nbr_mailing");
+    CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS civicrm_nbr_mailing");
+    $this->executeSqlFile('sql/recreateNbrMailing.sql');
+    // insert data if required
+    while ($data->fetch()) {
+      if ($data->group_id) {
+        $insert = "INSERT INTO civicrm_nbr_mailing (mailing_id, group_id, study_id, nbr_mailing_type)
+        VALUES(%1, %2, %3, %4)";
+        CRM_Core_DAO::executeQuery($insert, [
+          1 => [$data->mailing_id, "Integer"],
+          2 => [$data->group_id, "Integer"],
+          3 => [$data->study_id, "Integer"],
+          4 => [$data->nbr_mailing_type, "String"],
+        ]);
+      } else {
+        $insert = "INSERT INTO civicrm_nbr_mailing (mailing_id, study_id, nbr_mailing_type)
+        VALUES(%1, %2, %3)";
+        CRM_Core_DAO::executeQuery($insert, [
+          1 => [$data->mailing_id, "Integer"],
+          2 => [$data->study_id, "Integer"],
+          3 => [$data->nbr_mailing_type, "String"],
+        ]);
+      }
+    }
+    return TRUE;
+  }
 }

@@ -48,6 +48,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_tempNonRecallTagId = NULL;
   // activity types
   private $_activityTypeOptionGroupId = NULL;
+  private $_bulkMailActivityTypeId = NULL;
   private $_consentActivityTypeId = NULL;
   private $_consentStage2ActivityTypeId = NULL;
   private $_emailActivityTypeId = NULL;
@@ -55,6 +56,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_letterActivityTypeId = NULL;
   private $_meetingActivityTypeId = NULL;
   private $_notRecruitedActivityTypeId = NULL;
+  private $_openCaseActivityTypeId = NULL;
   private $_phoneActivityTypeId = NULL;
   private $_redundantActivityTypeId = NULL;
   private $_smsActivityTypeId = NULL;
@@ -70,8 +72,11 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_contactIdentityCustomGroupId = NULL;
   private $_consentStage2TableName = NULL;
   private $_consentTableName = NULL;
+  private $_participationDataTableName = NULL;
+  private $_siteAliasTableName = NULL;
   private $_visitTableName = NULL;
   private $_visitStage2TableName = NULL;
+  private $_volunteerPanelTableName = NULL;
   private $_volunteerStatusTableName = NULL;
   // custom fields
   private $_attemptsCustomFieldId = NULL;
@@ -89,16 +94,28 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_notRecruitedReasonCustomFieldId = NULL;
   private $_otherExpensesCustomFieldId = NULL;
   private $_parkingFeeCustomFieldId = NULL;
+  private $_participationStudyIdColumnName = NULL;
   private $_questionnaireVersionStage2CustomFieldId = NULL;
   private $_redundantReasonCustomFieldId = NULL;
   private $_redundantDestroySamplesCustomFieldId = NULL;
   private $_redundantDestroyDataCustomFieldId = NULL;
   private $_sampleSiteCustomFieldId = NULL;
+  private $_siteAliasColumnName = NULL;
+  private $_siteAliasTypeColumnName = NULL;
+  private $_studyParticipationStatusColumnName = NULL;
   private $_studyPaymentCustomFieldId = NULL;
   private $_toLabDateCustomFieldId = NULL;
   private $_withdrawnReasonCustomFieldId = NULL;
   private $_withdrawnDestroySamplesCustomFieldId = NULL;
   private $_withdrawnDestroyDataCustomFieldId = NULL;
+  private $_volunteerCentreColumnName = NULL;
+  private $_volunteerCentreCustomFieldId = NULL;
+  private $_volunteerPanelColumnName = NULL;
+  private $_volunteerPanelCustomFieldId = NULL;
+  private $_volunteerSiteColumnName = NULL;
+  private $_volunteerSiteCustomFieldId = NULL;
+  private $_volunteerSourceColumnName = NULL;
+  private $_volunteerSourceCustomFieldId = NULL;
   private $_volunteerStatusColumnName = NULL;
    // study participation status
   private $_acceptedParticipationStatusValue = NULL;
@@ -702,6 +719,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param int $id
    */
+  public function setBulkMailActivityTypeId($id) {
+    $this->_bulkMailActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getBulkMailActivityTypeId() {
+    return $this->_bulkMailActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
   public function setConsentStage2ActivityTypeId($id) {
     $this->_consentStage2ActivityTypeId = $id;
   }
@@ -781,6 +812,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getNotRecruitedActivityTypeId() {
     return $this->_notRecruitedActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setOpenCaseActivityTypeId($id) {
+    $this->_openCaseActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getOpenCaseActivityTypeId() {
+    return $this->_openCaseActivityTypeId;
   }
 
   /**
@@ -1108,6 +1153,34 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string
    */
+  public function setSiteAliasTableName($name) {
+    $this->_siteAliasTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getSiteAliasTableName() {
+    return $this->_siteAliasTableName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVolunteerPanelTableName($name) {
+    $this->_volunteerPanelTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerPanelTableName() {
+    return $this->_volunteerPanelTableName;
+  }
+
+  /**
+   * @param string
+   */
   public function setVolunteerStatusTableName($name) {
     $this->_volunteerStatusTableName = $name;
   }
@@ -1117,6 +1190,146 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getVolunteerStatusTableName() {
     return $this->_volunteerStatusTableName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setSiteAliasColumnName($name) {
+    $this->_siteAliasColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getSiteAliasColumnName() {
+    return $this->_siteAliasColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setSiteAliasTypeColumnName($name) {
+    $this->_siteAliasTypeColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getSiteAliasTypeColumnName() {
+    return $this->_siteAliasTypeColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVolunteerCentreColumnName($name) {
+    $this->_volunteerCentreColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerCentreColumnName() {
+    return $this->_volunteerCentreColumnName;
+  }
+
+  /**
+   * @param int
+   */
+  public function setVolunteerCentreCustomFieldId($id) {
+    $this->_volunteerCentreCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getVolunteerCentreCustomFieldId() {
+    return $this->_volunteerCentreCustomFieldId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVolunteerPanelColumnName($name) {
+    $this->_volunteerPanelColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerPanelColumnName() {
+    return $this->_volunteerPanelColumnName;
+  }
+
+  /**
+   * @param int
+   */
+  public function setVolunteerPanelCustomFieldId($id) {
+    $this->_volunteerPanelCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getVolunteerPanelCustomFieldId() {
+    return $this->_volunteerPanelCustomFieldId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVolunteerSiteColumnName($name) {
+    $this->_volunteerSiteColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerSiteColumnName() {
+    return $this->_volunteerSiteColumnName;
+  }
+
+  /**
+   * @param int
+   */
+  public function setVolunteerSiteCustomFieldId($id) {
+    $this->_volunteerSiteCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getVolunteerSiteCustomFieldId() {
+    return $this->_volunteerSiteCustomFieldId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setVolunteerSourceColumnName($name) {
+    $this->_volunteerSourceColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerSourceColumnName() {
+    return $this->_volunteerSourceColumnName;
+  }
+
+  /**
+   * @param int
+   */
+  public function setVolunteerSourceCustomFieldId($id) {
+    $this->_volunteerSourceCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getVolunteerSourceCustomFieldId() {
+    return $this->_volunteerSourceCustomFieldId;
   }
 
   /**
@@ -1285,6 +1498,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getParkingFeeCustomFieldId() {
     return $this->_parkingFeeCustomFieldId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setParticipationStudyIdColumnName($name) {
+    $this->_participationStudyIdColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getParticipationStudyIdColumnName() {
+    return $this->_participationStudyIdColumnName;
   }
 
   /**
@@ -1850,6 +2077,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string
    */
+  public function setParticipationDataTableName($name) {
+    $this->_participationDataTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getParticipationDataTableName() {
+    return $this->_participationDataTableName  ;
+  }
+
+  /**
+   * @param string
+   */
   public function setConsentVersionColumnName($name) {
     $this->_consentVersionColumnName = $name;
   }
@@ -1873,6 +2114,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getLeafletVersionColumnName() {
     return $this->_leafletVersionColumnName  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setStudyParticipationStatusColumnName($name) {
+    $this->_studyParticipationStatusColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getStudyParticipationStatusColumnName() {
+    return $this->_studyParticipationStatusColumnName  ;
   }
 
   /**

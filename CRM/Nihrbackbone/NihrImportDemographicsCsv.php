@@ -920,24 +920,64 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     }
   }
 
+  /**
+   * Method to get the id of the panel
+   *
+   * @param $type
+   * @param $name
+   * @param $siteAliasType
+   * @return false|int
+   */
+  public function getIdCentrePanelSite($type, $name, $siteAliasType = NULL) {
+    // site can be sic code or site alias
+    if ($type == "site") {
+      $query = "SELECT id FROM civicrm_contact WHERE contact_type = %1 AND sic_code = %2 AND contact_sub_type = %3";
+      $queryParams = [
+        1 => ["Organization", "String"],
+        2 => [$name, "String"],
+        3 => ['nbr_site', "String"],
+      ];
+      $foundId = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+      if ($foundId) {
+        return (int) $foundId;
+      }
+      else {
+        // try site alias with type
+        $table = Civi::service('nbrBackbone')->getSiteAliasTableName();
+        $siteAliasColumn = Civi::service('nbrBackbone')->getSiteAliasColumnName();
+        $siteAliasTypeColumn = Civi::service('nbrBackbonen')->getSiteAliasTypeColumnName();
+        $query = "SELECT entity_id FROM " . $table . " WHERE ". $siteAliasColumn. " = %1 AND "
+          . $siteAliasTypeColumn . " = %2 LIMIT 1";
+        $queryParams = [
+          1 => [$name, "String"],
+          2 => [$siteAliasType, "String"],
+        ];
+        $foundId = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+        if ($foundId) {
+          return (int) $foundId;
+        }
+      }
+    }
+    else {
+      $query = "SELECT id FROM civicrm_contact WHERE contact_type = %1 AND organization_name = %2 AND contact_sub_type = %3";
+      $queryParams = [
+        1 => ["Organization", "String"],
+        2 => [$name, "String"],
+        3 => ['nbr_' . $type, "String"],
+      ];
+      $foundId = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+      if ($foundId) {
+        return (int) $foundId;
+      }
+    }
+    return FALSE;
+  }
+
   private function addPanel($contactID, $dataSource, $panel, $site, $centre, $source)
   {
     // TODO $dataSource is ignored at the moment as IBD now split in 2 panels
-
-    // TODO add centre
-
-    $table = 'civicrm_value_nihr_volunteer_panel';
-
-    $volunteerPanelCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_panel', 'id');
-    $volunteerCentreCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_centre', 'id');
-    $volunteerSiteCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_site', 'id');
-    $volunteerSourceCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_source', 'id');
-
     // ---
-    $siteAliasTypeCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getSiteAliasCustomField('nsa_alias_type', 'id');
-    $siteAliasCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getSiteAliasCustomField('nsa_alias', 'id');
-    $siteAliasTypeValue = "nbr_site_alias_type_".strtolower($dataSource);
-
+    $siteAliasTypeValue = "nbr_site_alias_type_" . strtolower($dataSource);
     // migration
     if ($dataSource == 'starfish') {
       if ($panel == 'IBD Main' || $panel == 'IBD Inception') {
@@ -947,124 +987,107 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $siteAliasTypeValue = "nbr_site_alias_type_strides";
       }
     }
-
+    $panelData = [];
     // *** centre/panel/site: usually two of each are set per record, all of them are contact organisation
     // *** records; check if given values are on the - if any is missing do not insert any 'panel' data
-    $centreID = 0;
-    $panelID = 0;
-    $siteID = 0;
-
-    $xdata = [];
-    $xdata['id'] = $contactID;
-
-    // *** check if panel exists and if so, select ID
-    if (isset($panel) && $panel <> '') {
-      try {
-        $result = civicrm_api3('Contact', 'get', [
-          'contact_sub_type' => "nbr_panel",
-          'display_name' => $panel,
-        ]);
-      } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error selecting panel ' . $panel . ': ' . $ex->getMessage(), 'error');
-      }
-
-      if ($result['count'] <> 1) {
-        // error, panel does not exist, exit
+    if (isset($panel) && !empty($panel)) {
+      $panelID = $this->getIdCentrePanelSite('panel', $panel);
+      if (!$panelID) {
         $this->_logger->logMessage('Panel does not exist on database: ' . $panel, 'error');
         return;
-      } else {
-        $xdata[$volunteerPanelCustomField] = $result['id'];
-        //  &&& $panelID = $result['id'];
       }
+      $panelData['panel_id'] = $panelID;
     }
-
-    // *** check if site exists and if so, select ID
-    // (site code can be sic code or site alias (IBD and STRIDES at the moment)
-    if (isset($site) && $site <> '') {
-      try {
-        // sic code first
-        $result = civicrm_api3('Contact', 'get', [
-          'sequential' => 1,
-          'contact_type' => "Organization",
-          'contact_sub_type' => "nbr_site",
-          'sic_code' => $site,
-        ]);
-      } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error selecting site ' . $site . ': ' . $ex->getMessage(), 'error');
-      }
-
-      if ($result['count'] == 0) {
-        try {
-          // site alias (STRIDES and IBD)
-          $result = civicrm_api3('Contact', 'get', [
-            'sequential' => 1,
-            'contact_type' => "Organization",
-            'contact_sub_type' => "nbr_site",
-            $siteAliasTypeCustomField => $siteAliasTypeValue,
-            $siteAliasCustomField => $site,
-          ]);
-          } catch (CiviCRM_API3_Exception $ex) {
-            $this->_logger->logMessage('Error selecting site(2) ' . $site . ': ' . $ex->getMessage(), 'error');
-          }
-      }
-
-      if ($result['count'] <> 1) {
-        // error, site does not exist, exit
-        $this->_logger->logMessage('Site does not exist on database: ' . $site, 'error');
-        return;
-      } else {
-        // &&& $siteID = $result['id'];
-        $xdata[$volunteerSiteCustomField] = $result['id'];
-      }
-    }
-
-    // *** check if centre exists
-    if (isset($centre) && $centre <> '') {
-      try {
-        $result = civicrm_api3('Contact', 'get', [
-          'contact_sub_type' => "nbr_centre",
-          'display_name' => $centre,
-        ]);
-      } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error selecting centre ' . $centre . ': ' . $ex->getMessage(), 'error');
-      }
-
-      if ($result['count'] <> 1) {
-        // error, centre does not exist, exit
+    if (isset($centre) && !empty($centre)) {
+      $centreID = $this->getIdCentrePanelSite('centre', $centre);
+      if (!$centreID) {
         $this->_logger->logMessage('Centre does not exist on database: ' . $centre, 'error');
         return;
-      } else {
-        // &&&  $centreID = $result['id'];
-        $xdata[$volunteerCentreCustomField] = $result['id'];
       }
+      $panelData['centre_id'] = $centreID;
+    }
+    if (isset($site) && !empty($site)) {
+      $siteID = $this->getIdCentrePanelSite('site', $site, $siteAliasTypeValue);
+      if (!$siteID) {
+        $this->_logger->logMessage('Site does not exist on database: ' . $site, 'error');
+        return;
+      }
+      $panelData['site_id'] = $siteID;
     }
 
     // --- check that data was provided
-    if(count($xdata) < 3) {
-      $this->_logger->logMessage('No panel information provided for : ' . $contactID, 'error');
-      return;
+    $mandatories = ['centre_id', 'panel_id', 'site_id'];
+    foreach ($mandatories as $mandatory) {
+      if (!isset($panelData[$mandatory]) || empty($panelData[$mandatory])) {
+        $this->_logger->logMessage('No panel information provided for : ' . $contactID, 'error');
+        return;
+      }
     }
-
+    $panelData['contact_id'] = $contactID;
     // --- check if panel/site/centre combination is already linked to volunteer ------------------
-    try {
-      $result = civicrm_api3('Contact', 'get', $xdata);
-    } catch (CiviCRM_API3_Exception $ex) {
-      $this->_logger->logMessage('Error selecting volunteer with panel ' . $contactID . ': '. $ex->getMessage(), 'error');
-    }
-
-    if ($result['count'] == 0) {
-      // --- panel not yet linked to volunteer, insert -----------------------------------
+    if (!$this->hasPanelSiteCentre($panelData)) {
       // *** add source, if given
       if(isset($source) && !empty($source)) {
-        $xdata[$volunteerSourceCustomField] = $source;
+        $panelData['source'] = $source;
       }
-
-      try {
-        $result = civicrm_api3("Contact", "create", $xdata);
-      } catch (CiviCRM_API3_Exception $ex) {
-        $this->_logger->logMessage('Error inserting panel for volunteer ' . $contactID . ': '. $ex->getMessage(), 'error');
-      }
+      $this->insertPanel($panelData);
     }
+  }
+
+  /**
+   * Method to insert a panel record
+   *
+   * @param $panelData
+   */
+  private function insertPanel($panelData) {
+    $table = Civi::service('nbrBackbone')->getVolunteerPanelTableName();
+    $centreColumn = Civi::service('nbrBackbone')->getVolunteerCentreColumnName();
+    $panelColumn = Civi::service('nbrBackbone')->getVolunteerPanelColumnName();
+    $siteColumn = Civi::service('nbrBackbone')->getVolunteerSiteColumnName();
+    $sourceColumn = Civi::service('nbrBackbone')->getVolunteerSourceColumnName();
+    $insertParams = [
+      1 => [(int) $panelData['contact_id'], "Integer"],
+      2 => [(int) $panelData['centre_id'], "Integer"],
+      3 => [(int) $panelData['panel_id'], "Integer"],
+      4 => [(int) $panelData['site_id'], "Integer"],
+    ];
+    if (isset($panelData['source'])) {
+      $insert = "INSERT INTO " . $table . " (entity_id, " . $centreColumn . ", "
+        . $panelColumn . ", " . $siteColumn . ", " . $sourceColumn . ")
+        VALUES(%1, %2, %3, %4, %5)";
+      $insertParams[5] = [$panelData['source'], "String"];
+    }
+    else {
+      $insert = "INSERT INTO " . $table . " (entity_id, " . $centreColumn . ", "
+        . $panelColumn . ", " . $siteColumn . ") VALUES(%1, %2, %3, %4)";
+    }
+    CRM_Core_DAO::executeQuery($insert, $insertParams);
+  }
+
+  /**
+   * Method to check if volunteer already has panel, centre, site
+   *
+   * @param $panelData
+   * @return bool
+   */
+  private function hasPanelSiteCentre($panelData) {
+    $table = Civi::service('nbrBackbone')->getVolunteerPanelTableName();
+    $centreColumn = Civi::service('nbrBackbone')->getVolunteerCentreColumnName();
+    $panelColumn = Civi::service('nbrBackbone')->getVolunteerPanelColumnName();
+    $siteColumn = Civi::service('nbrBackbone')->getVolunteerSiteColumnName();
+    $query = "SELECT COUNT(*) FROM ". $table . " WHERE entity_id = %1 AND
+      " . $centreColumn . " = %2 AND ". $panelColumn . " = %3 AND " . $siteColumn . " = %4";
+    $queryParams = [
+      1 => [(int) $panelData['contact_id'], "Integer"],
+      2 => [(int) $panelData['centre_id'], "Integer"],
+      3 => [(int) $panelData['panel_id'], "Integer"],
+      4 => [(int) $panelData['site_id'], "Integer"],
+    ];
+    $count = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($count > 0) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
   private function addActivity ($contactId, $activityType, $dateTime)
@@ -1146,13 +1169,13 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'warning');
         }
         // process not recruited, redundant or withdrawn if required
-        if (!empty($data['not_recruited_date']) || !empty($data['not_recruited_reason'])) {
+        if (!empty($data['not_recruited_date'])) {
           $this->migrateStatusActivity('not_recruited', $contactId, $data['not_recruited_date'], $data['not_recruited_reason'], $data['not_recruited_by']);
         }
-        if (!empty($data['redundant_date']) || !empty($data['redundant_reason'])) {
+        if (!empty($data['redundant_date'])) {
           $this->migrateStatusActivity('redundant', $contactId, $data['redundant_date'], $data['redundant_reason'], $data['redundant_by'], $data['request_to_destroy']);
         }
-        if (!empty($data['withdrawn_date']) || !empty($data['withdrawn_reason'])) {
+        if (!empty($data['withdrawn_date'])) {
           $this->migrateStatusActivity('withdrawn', $contactId, $data['withdrawn_date'], $data['withdrawn_reason'], $data['withdrawn_by'], $data['request_to_destroy']);
         }
         // process deceased if required

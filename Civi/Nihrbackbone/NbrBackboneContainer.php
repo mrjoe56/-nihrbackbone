@@ -241,6 +241,24 @@ class NbrBackboneContainer implements CompilerPassInterface {
           }
           break;
 
+        case "nbr_participation_data":
+          if ($dao->name == "nvpd_study_participation_status") {
+            $definition->addMethodCall('setStudyParticipationStatusColumnName', [$dao->column_name]);
+          }
+          if ($dao->name == "nvpd_study_id") {
+            $definition->addMethodCall('setParticipationStudyIdColumnName', [$dao->column_name]);
+          }
+          break;
+
+        case "nbr_site_alias":
+          if ($dao->name == "nsa_alias") {
+            $definition->addMethodCall('setSiteAliasColumnName', [$dao->column_name]);
+          }
+          if ($dao->name == "nsa_alias_type") {
+            $definition->addMethodCall('setSiteAliasTypeColumnName', [$dao->column_name]);
+          }
+          break;
+
         case "nihr_volunteer_consent":
           if ($dao->name == "nvc_consent_version") {
             $definition->addMethodCall('setConsentVersionColumnName', [$dao->column_name]);
@@ -248,6 +266,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
           if ($dao->name == "nvc_information_leaflet_version") {
             $definition->addMethodCall('setLeafletVersionColumnName', [$dao->column_name]);
           }
+          break;
+
+        case "nihr_volunteer_panel":
+          $this->setPanelCustomFields($dao, $definition);
           break;
 
         case "nihr_visit_data":
@@ -352,6 +374,36 @@ class NbrBackboneContainer implements CompilerPassInterface {
   }
 
   /**
+   * Method to set the custom field properties for panel data
+   *
+   * @param $dao
+   * @param $definition
+   */
+  private function setPanelCustomFields($dao, &$definition) {
+    switch ($dao->name) {
+      case "nvp_centre":
+        $definition->addMethodCall('setVolunteerCentreColumnName', [$dao->column_name]);
+        $definition->addMethodCall('setVolunteerCentreCustomFieldId', [(int) $dao->id]);
+        break;
+
+      case "nvp_panel":
+        $definition->addMethodCall('setVolunteerPanelColumnName', [$dao->column_name]);
+        $definition->addMethodCall('setVolunteerPanelCustomFieldId', [(int) $dao->id]);
+        break;
+
+      case "nvp_site":
+        $definition->addMethodCall('setVolunteerSiteColumnName', [$dao->column_name]);
+        $definition->addMethodCall('setVolunteerSiteCustomFieldId', [(int) $dao->id]);
+        break;
+
+      case "nvp_source":
+        $definition->addMethodCall('setVolunteerSourceColumnName', [$dao->column_name]);
+        $definition->addMethodCall('setVolunteerSourceCustomFieldId', [(int) $dao->id]);
+        break;
+    }
+  }
+
+  /**
    * Method to set the custom field properties for visit data
    *
    * @param $dao
@@ -405,17 +457,20 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setCustomGroups(&$definition) {
-    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4, %5, %6, %7, %8, %9)";
+    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12)";
     $queryParams = [
       1 => ["contact_id_history", "String"],
-      2 => ["nihr_volunteer_consent", "String"],
-      3 => ["nihr_visit_data", "String"],
-      4 => ["nihr_visit_data_stage2", "String"],
-      5 => ["nihr_volunteer_consent_stage2", "String"],
-      6 => ["nihr_volunteer_not_recruited", "String"],
-      7 => ["nihr_volunteer_redundant", "String"],
-      8 => ["nihr_volunteer_withdrawn", "String"],
-      9 => ["nihr_volunteer_status", "String"]
+      2 => ["nbr_participation_data", "String"],
+      3 => ["nbr_site_alias", "String"],
+      4 => ["nihr_volunteer_consent", "String"],
+      5 => ["nihr_volunteer_panel", "String"],
+      6 => ["nihr_visit_data", "String"],
+      7 => ["nihr_visit_data_stage2", "String"],
+      8 => ["nihr_volunteer_consent_stage2", "String"],
+      9 => ["nihr_volunteer_not_recruited", "String"],
+      10 => ["nihr_volunteer_redundant", "String"],
+      11 => ["nihr_volunteer_withdrawn", "String"],
+      12 => ["nihr_volunteer_status", "String"]
     ];
     $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($dao->fetch()) {
@@ -424,8 +479,20 @@ class NbrBackboneContainer implements CompilerPassInterface {
           $definition->addMethodCall('setContactIdentityCustomGroupId', [(int) $dao->id]);
           break;
 
+        case "nbr_participation_data":
+          $definition->addMethodCall('setParticipationDataTableName', [$dao->table_name]);
+          break;
+
+        case "nbr_site_alias":
+          $definition->addMethodCall('setSiteAliasTableName', [$dao->table_name]);
+          break;
+
         case "nihr_volunteer_consent":
           $definition->addMethodCall('setConsentTableName', [$dao->table_name]);
+          break;
+
+        case "nihr_volunteer_panel":
+          $definition->addMethodCall('setVolunteerPanelTableName', [$dao->table_name]);
           break;
 
         case "nihr_visit_data":
@@ -534,7 +601,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
   private function setActivityTypes(&$definition) {
     $query = "SELECT cov.value, cov.name FROM civicrm_option_group AS cog
         JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
-        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15)";
+        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16, %17)";
     $dao = \CRM_Core_DAO::executeQuery($query, [
       1 => ["activity_type", "String"],
       2 => ["nihr_consent", "String"],
@@ -551,9 +618,15 @@ class NbrBackboneContainer implements CompilerPassInterface {
       13 => ["nihr_volunteer_not_recruited", "String"],
       14 => ["nihr_volunteer_redundant", "String"],
       15 => ["nihr_volunteer_withdrawn", "String"],
+      16 => ["Open Case", "String"],
+      17 => ["Bulk Email", "String"],
     ]);
     while ($dao->fetch()) {
       switch ($dao->name) {
+        case "Bulk Email":
+          $definition->addMethodCall('setBulkMailActivityTypeId', [(int) $dao->value]);
+          break;
+
         case "Email":
           $definition->addMethodCall('setEmailActivityTypeId', [(int) $dao->value]);
           break;
@@ -596,6 +669,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
         case "nihr_volunteer_withdrawn":
           $definition->addMethodCall('setWithdrawnActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "Open Case":
+          $definition->addMethodCall('setOpenCaseActivityTypeId', [(int) $dao->value]);
           break;
 
         case "Phone Call":
