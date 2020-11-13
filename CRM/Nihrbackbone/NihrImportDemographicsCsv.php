@@ -945,7 +945,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         // try site alias with type
         $table = Civi::service('nbrBackbone')->getSiteAliasTableName();
         $siteAliasColumn = Civi::service('nbrBackbone')->getSiteAliasColumnName();
-        $siteAliasTypeColumn = Civi::service('nbrBackbonen')->getSiteAliasTypeColumnName();
+        $siteAliasTypeColumn = Civi::service('nbrBackbone')->getSiteAliasTypeColumnName();
         $query = "SELECT entity_id FROM " . $table . " WHERE ". $siteAliasColumn. " = %1 AND "
           . $siteAliasTypeColumn . " = %2 LIMIT 1";
         $queryParams = [
