@@ -36,5 +36,6 @@
   "other_diagnosis": "other_diagnosis",
   "site": "site",
   "withdraw": "xx",
-  "withdraw_date_request": "xx"
+  "withdraw_date_request": "xx",
+  "panel": "panel"
 }

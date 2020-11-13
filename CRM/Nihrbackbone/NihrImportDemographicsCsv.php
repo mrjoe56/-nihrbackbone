@@ -108,7 +108,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     // check if mapping contains mandatory columns according to source given
     if (($this->_dataSource == 'ucl' && !isset($this->_mapping['local_id'])) ||
-      ($this->_dataSource == 'ibd' && !isset($this->_mapping['pack_id']) && !isset($this->_mapping['ibd_id'])) ||
+      ($this->_dataSource == 'ibd' && !isset($this->_mapping['pack_id']) && !isset($this->_mapping['ibd_id']) && !isset($this->_mapping['pat_bio_no'])) ||
       ($this->_dataSource == 'starfish' && !isset($this->_mapping['participant_id']))) {
       // todo : log error
     }
