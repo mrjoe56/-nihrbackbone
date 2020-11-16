@@ -14,7 +14,6 @@ function nihrbackbone_civicrm_pre($op, $objectName, $id, &$params) {
     // if mailing was not completed, reset volunteers with invitation pending
     CRM_Nihrbackbone_BAO_NbrMailing::resetInvitationPending($id);
   }
-
 }
 
 /**
@@ -186,6 +185,9 @@ function writeBmi($entityID, $bmi) {
   }
 }
 
+/**
+ * Implements hook civicrm_buildForm
+ */
 function nihrbackbone_civicrm_buildForm($formName, &$form) {  # jb2
   if ($form instanceof CRM_Case_Form_CustomData) {
     CRM_Nihrbackbone_NbrVolunteerCase::buildFormCustomData($form);
