@@ -371,6 +371,26 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     return $result;
   }
 
+  /**
+   * Method to get the current study status for a case
+   *
+   * @param $caseId
+   * @return array
+   */
+  public static function getCurrentStudyStatus($caseId) {
+    $result = [];
+    $statusCustomFieldId = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
+    try {
+      $result = civicrm_api3('Case', 'getvalue', [
+        'return' => $statusCustomFieldId,
+        'id' => $caseId,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return $result;
+  }
+
 
   /**
    * Method to get all participation case ids where volunteer = selected
