@@ -998,6 +998,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       }
       $panelData['panel_id'] = $panelID;
     }
+    else {
+      $panelData['panel_id'] = '';
+    }
+
     if (isset($centre) && !empty($centre)) {
       $centreID = $this->getIdCentrePanelSite('centre', $centre);
       if (!$centreID) {
@@ -1006,6 +1010,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       }
       $panelData['centre_id'] = $centreID;
     }
+    else {
+      $panelData['centre_id'] = '';
+    }
+
     if (isset($site) && !empty($site)) {
       $siteID = $this->getIdCentrePanelSite('site', $site, $siteAliasTypeValue);
       if (!$siteID) {
@@ -1014,12 +1022,15 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       }
       $panelData['site_id'] = $siteID;
     }
+    else {
+      $panelData['site_id'] = '';
+    }
 
     // --- check that data was provided
     $mandatories = ['centre_id', 'panel_id', 'site_id'];
     $countMandatory = 0;
     foreach ($mandatories as $mandatory) {
-      if (!isset($panelData[$mandatory]) && !empty($panelData[$mandatory])) {
+      if ($panelData[$mandatory] <> '') {
         $countMandatory++;
       }
     }
@@ -1034,6 +1045,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       if(isset($source) && !empty($source)) {
         $panelData['source'] = $source;
       }
+      else {
+        $panelData['source'] = '';
+      }
+
       $this->insertPanel($panelData);
     }
   }
@@ -1049,24 +1064,47 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     $panelColumn = Civi::service('nbrBackbone')->getVolunteerPanelColumnName();
     $siteColumn = Civi::service('nbrBackbone')->getVolunteerSiteColumnName();
     $sourceColumn = Civi::service('nbrBackbone')->getVolunteerSourceColumnName();
-    $insertParams = [
-      1 => [(int) $panelData['contact_id'], "Integer"],
-      2 => [(int) $panelData['centre_id'], "Integer"],
-      3 => [(int) $panelData['panel_id'], "Integer"],
-      4 => [(int) $panelData['site_id'], "Integer"],
+
+    $queryParams = [
+      1 => [$panelData['contact_id'], "Integer"]
     ];
-    if (isset($panelData['source'])) {
-      $insert = "INSERT INTO " . $table . " (entity_id, " . $centreColumn . ", "
-        . $panelColumn . ", " . $siteColumn . ", " . $sourceColumn . ")
-        VALUES(%1, %2, %3, %4, %5)";
-      $insertParams[5] = [$panelData['source'], "String"];
+
+    $query = "INSERT INTO " . $table . " (entity_id ";
+    $query2 = "values (%1";
+    $i = 2;
+
+    if($panelData['centre_id'] <> '') {
+      $query = $query . ", " . $centreColumn;
+      $query2 .= ",%$i";
+      $ref = [$panelData['centre_id'], "Integer"];
+      array_push($queryParams, $ref);
+      $i++;
     }
-    else {
-      $insert = "INSERT INTO " . $table . " (entity_id, " . $centreColumn . ", "
-        . $panelColumn . ", " . $siteColumn . ") VALUES(%1, %2, %3, %4)";
+    if($panelData['panel_id'] <> '') {
+      $query = $query . ", " . $panelColumn;
+      $query2 .= ",%$i";
+      $ref = [$panelData['panel_id'], "Integer"];
+      array_push($queryParams, $ref);
+      $i++;
     }
-    CRM_Core_DAO::executeQuery($insert, $insertParams);
+    if($panelData['site_id'] <> '') {
+      $query = $query . ", " . $siteColumn;
+      $query2 .= ",%$i";
+      $ref = [$panelData['site_id'], "Integer"];
+      array_push($queryParams, $ref);
+      $i++;
+    }
+    if($panelData['source'] <> '') {
+      $query = $query . ", " . $sourceColumn;
+      $query2 .= ",%$i";
+      $ref = [$panelData['source'], "String"];
+      array_push($queryParams, $ref);
+    }
+
+    $query = $query . ") " . $query2 . ")";
+    CRM_Core_DAO::executeQuery($query, $queryParams);
   }
+
 
   /**
    * Method to check if volunteer already has panel, centre, site
