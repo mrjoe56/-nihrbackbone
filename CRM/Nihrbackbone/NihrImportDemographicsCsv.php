@@ -1017,11 +1017,15 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     // --- check that data was provided
     $mandatories = ['centre_id', 'panel_id', 'site_id'];
+    $countMandatory = 0;
     foreach ($mandatories as $mandatory) {
-      if (!isset($panelData[$mandatory]) || empty($panelData[$mandatory])) {
-        $this->_logger->logMessage('No panel information provided for : ' . $contactID, 'error');
-        return;
+      if (!isset($panelData[$mandatory]) && !empty($panelData[$mandatory])) {
+        $countMandatory++;
       }
+    }
+    if ($countMandatory < 2) {
+      $this->_logger->logMessage('No panel information provided for : ' . $contactID, 'error');
+      return;
     }
     $panelData['contact_id'] = $contactID;
     // --- check if panel/site/centre combination is already linked to volunteer ------------------
