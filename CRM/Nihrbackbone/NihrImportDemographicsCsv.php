@@ -251,7 +251,9 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             'cih_type_nspn_id',
             'cih_type_rare_diseases_id',
             'cih_type_dil_withdrawal_form_id',
-            'cih_type_replaced_sid'
+            'cih_type_replaced_sid',
+            'cih_type_participant_id',
+            'cih_type_bioresource_id'
         );
 
         foreach ($aliases as &$alias) {
@@ -646,8 +648,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             $primary = 1;
           }
           $location = Civi::service('nbrBackbone')->getHomeLocationTypeId();
-          if (isset($data['location_type_id']) && $data['location_type_id'] <> '') {
-            $location = $data['location_type_id'];
+          if (isset($data['contact_location']) && $data['contact_location'] <> '') {
+            $location = $data['contact_location'];
           }
           $insert = "INSERT INTO civicrm_email (contact_id, location_type_id, email, is_primary, is_billing, is_bulkmail, on_hold)
             VALUES(%1, %2, %3, %4, %5, %5, %5)";

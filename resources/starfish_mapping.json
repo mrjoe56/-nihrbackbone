@@ -146,10 +146,12 @@
   "cih_type_strides_pid": "cih_type_strides_pid",
   "cih_type_ucl": "cih_type_ucl",
   "cih_type_ucl_local": "cih_type_ucl_local",
+  "cih_type_participant_id" : "cih_type_participant_id",
+  "cih_type_bioresource_id": "cih_type_bioresource_id",
 
   "contact_category": "contact_category",
   "contact_location": "contact_location",
-  "contact_type": "contact_type",
+  "contact_phone_type": "contact_phone_type",
   "is_primary": "is_primary"
 
 }
