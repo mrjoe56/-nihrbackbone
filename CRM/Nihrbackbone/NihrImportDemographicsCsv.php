@@ -183,14 +183,12 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         list($contactId, $new_volunteer) = $this->addContact($data);
         $this->addEmail($contactId, $data);
         $this->addAddress($contactId, $data);
-        $this->addPhone($contactId, $data, 'phone_home', Civi::service('nbrBackbone')->getHomeLocationTypeId(), CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
-        $this->addPhone($contactId, $data, 'phone_work', Civi::service('nbrBackbone')->getWorkLocationTypeId() , CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
-        $this->addPhone($contactId, $data, 'phone_mobile', Civi::service('nbrBackbone')->getHomeLocationTypeId(), CRM_Nihrbackbone_BackboneConfig::singleton()->getMobilePhoneTypeId());
+        //$this->addPhone($contactId, $data, 'phone_home', Civi::service('nbrBackbone')->getHomeLocationTypeId(), CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
+        //$this->addPhone($contactId, $data, 'phone_work', Civi::service('nbrBackbone')->getWorkLocationTypeId() , CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
+        //$this->addPhone($contactId, $data, 'phone_mobile', Civi::service('nbrBackbone')->getHomeLocationTypeId(), CRM_Nihrbackbone_BackboneConfig::singleton()->getMobilePhoneTypeId());
         // Starfish migration
         if (isset($data['contact_category']) && $data['contact_category'] == 'Phone') {
-          //$this->addPhone($contactId, $data, 'phone', $data['contact_location'], $data['contact_type'], $data['is_primary']);
-          // &&& starfish data dump needs to be fixed, reported to Julie
-          $this->addPhone($contactId, $data, 'phone', $data['contact_location'], 'Phone', $data['is_primary']);
+          $this->addPhone($contactId, $data, 'phone', $data['contact_location'], $data['contact_phone_type'], $data['is_primary']);
         }
         $this->addNote($contactId, $data['notes']);
 
