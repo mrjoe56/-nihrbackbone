@@ -348,7 +348,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           $this->migrationVolunteerStatus($contactId, $data);
 
           // migrate paper questionnaire flag
-          if (isset($data['nihr_paper_questionnaire']) && $data['nihr_paper_questionnaire'] == 'yes') {
+          if (isset($data['nihr_paper_questionnaire']) && $data['nihr_paper_questionnaire'] == 'Yes') {
             $this->addActivity($contactId, 'nihr_paper_questionnaire', '');
           }
         }
