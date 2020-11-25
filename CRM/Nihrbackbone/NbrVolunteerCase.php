@@ -1048,4 +1048,32 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     return FALSE;
   }
 
+
+  /**
+   * Get recruitment case id for contact (there should only be one!)
+   *
+   * @param $contactId
+   * @return bool|string
+   */
+  public static function getActiveRecruitmentCaseId($contactId) {
+    if (empty($contactId)) {
+      return FALSE;
+    }
+    $query = "SELECT ccc.case_id
+        FROM civicrm_case AS cc
+            JOIN civicrm_case_contact AS ccc ON cc.id = ccc.case_id
+        WHERE cc.is_deleted = %1 AND cc.case_type_id = %2 AND ccc.contact_id = %3
+        ORDER BY cc.start_date DESC LIMIT 1";
+    $caseId = CRM_Core_DAO::singleValueQuery($query, [
+      1 => [0, "Integer"],
+      2 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitmentCaseTypeId(), "Integer"],
+      3 => [(int) $contactId, "Integer"],
+    ]);
+    if ($caseId) {
+      return $caseId;
+    }
+    return FALSE;
+  }
+
+
 }

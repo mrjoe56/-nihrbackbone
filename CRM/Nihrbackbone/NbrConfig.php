@@ -65,6 +65,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_visitStage2ActivityTypeId = NULL;
   private $_withdrawnActivityTypeId = NULL;
   // activity status
+  private $_arrangeActivityStatusId = NULL;
   private $_completedActivityStatusId = NULL;
   private $_returnToSenderActivityStatusId = NULL;
   private $_scheduledActivityStatusId = NULL;
@@ -938,6 +939,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getIdentifierTypeCustomFieldId() {
     return $this->_identifierTypeCustomFieldId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setArrangeActivityStatusId($id) {
+    $this->_arrangeActivityStatusId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getArrangeActivityStatusId() {
+    return $this->_arrangeActivityStatusId;
   }
 
   /**

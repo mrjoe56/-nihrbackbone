@@ -196,15 +196,20 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $query = "SELECT cov.name, cov.value
       FROM civicrm_option_group AS cog
           JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
-      WHERE cog.name = %1 AND cov.name IN (%2, %3, %4)";
+      WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5)";
     $dao = \CRM_Core_DAO::executeQuery($query, [
       1 => ["activity_status", "String"],
-      2 => ["Completed", "String"],
-      3 => ["Scheduled", "String"],
-      4 => ["Return to sender", "String"],
+      2 => ["Arrange", "String"],
+      3 => ["Completed", "String"],
+      4 => ["Scheduled", "String"],
+      5 => ["Return to sender", "String"],
     ]);
     while ($dao->fetch()) {
       switch ($dao->name) {
+        case "Arrange":
+          $definition->addMethodCall('setArrangeActivityStatusId', [(int) $dao->value]);
+          break;
+
         case "Completed":
           $definition->addMethodCall('setCompletedActivityStatusId', [(int) $dao->value]);
           break;

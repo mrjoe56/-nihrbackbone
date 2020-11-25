@@ -349,7 +349,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
           // migrate paper questionnaire flag
           if (isset($data['nihr_paper_hlq']) && $data['nihr_paper_hlq'] == 'Yes') {
-            $this->addActivity($contactId, 'nihr_paper_hlq', '');
+            $this->addPaperHlqActivity($contactId, 'nihr_paper_hlq', '');
           }
         }
 
@@ -1140,6 +1140,23 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         'activity_type_id' => $activityType,
         'activity_date_time' => $dateTime,
         'target_id' => $contactId,
+      ]);
+    } catch (CiviCRM_API3_Exception $ex) {
+      $this->_logger->logMessage('Error inserting $activityType activity for volunteer ' . $contactId . ': ' . $ex->getMessage(), 'error');
+    }
+  }
+
+  private function addPaperHlqActivity ($contactId, $activityType, $dateTime)
+  {
+    // get latest recruitment case for contact
+    $caseId = CRM_Nihrbackbone_NbrVolunteerCase::getActiveRecruitmentCaseId($contactId);
+    try {
+      $result = civicrm_api3('Activity', 'create', [
+        'activity_type_id' => $activityType,
+        'activity_date_time' => $dateTime,
+        'target_id' => $contactId,
+        'case_id' => $caseId,
+        'status_id' => Civi::service('nbrBackbone')->getArrangeActivityStatusId(),
       ]);
     } catch (CiviCRM_API3_Exception $ex) {
       $this->_logger->logMessage('Error inserting $activityType activity for volunteer ' . $contactId . ': ' . $ex->getMessage(), 'error');
