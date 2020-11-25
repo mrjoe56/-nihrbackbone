@@ -54,6 +54,7 @@ function nihrbackbone_civicrm_container(ContainerBuilder $container) {
   $container->addCompilerPass(new Civi\Nihrbackbone\NbrBackboneContainer());
 }
 
+
 /** Implements hook_civicrm_post 18/12/19 */
 function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 
@@ -73,40 +74,23 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
     }
   }
 
-  # if editing a primary Address activity for a participant - update distance to Addenbrookes value
-  if ($objectName == 'Address' && $objectRef->is_primary) {
-    if ($op == 'edit' || $op == 'create') {
-      try {
-        $contactType = (string)civicrm_api3('Contact', 'getvalue', ['id' => $objectRef->contact_id, 'return' => 'contact_type',]);
-        if ($contactType == "Individual") {
-          CRM_Nihrbackbone_NihrAddress::set_dist_to_cuh($op, $objectName, $objectID, $objectRef);
-        }
-      } catch (CiviCRM_API3_Exception $ex) {
-      }
-    }
-  }
-
-  # if editing a primary Address activity for a participant or site - update distance to centre values for linked cases
+  # if editing a primary Address activity for a participant or centre - set distance to centre for all linked cases
   if ($op == 'edit' && $objectName == 'Address' && $objectRef->is_primary == 1) {
-    #CRM_Nihrbackbone_NihrAddress::set_distance_to_centre($op,$objectName, $objectID,$objectRef);
-    CRM_Nihrbackbone_NihrAddress::set_distance_to_centre($objectRef);
+    CRM_Nihrbackbone_NihrAddress::set_distance_to_centre_contact($objectRef);
   }
-
-  # if creating (opening) a case :
-  #  get PID and postcode, site ID and postcode, and set distance to centre for this case
+  # if creating (opening) a case -  set distance to centre for the case
   if ($op == 'create' && $objectName == 'Activity' && $objectRef->activity_type_id == Civi::service('nbrBackbone')->getOpenCaseActivityTypeId()) {
-    #$query = "select cc.contact_id, adr.postal_code as cont_pc, stddat.nsd_site, site_adr.postal_code as site_pc
-    #         from civicrm_case_contact cc, civicrm_contact c, civicrm_address adr, civicrm_address site_adr,
-    #         civicrm_value_nbr_participation_data partdat, civicrm_value_nbr_study_data stddat
-    #         where cc.contact_id = c.id and c.id = adr.contact_id and cc.case_id = partdat.entity_id
-    #         and partdat.nvpd_study_id = stddat.entity_id and stddat.nsd_site = site_adr.contact_id and case_id = %1";
-    #$dao = CRM_Core_DAO::executeQuery($query, [1 => [$objectRef->case_id, 'Integer']]);
-    #if ($dao->fetch()) {
-    #  CRM_Nihrbackbone_NihrAddress::setCaseDistance($objectRef->case_id, $dao->cont_pc, $dao->nsd_site,  $dao->site_pc);
-    #}
     CRM_Nihrbackbone_NihrAddress::set_case_distance($objectRef->case_id);
   }
-
+  # if study edit - set distance to centre for all cases linked to the study
+  if ($op == 'edit' && $objectName == 'Campaign') {
+    if (CRM_Core_Transaction::isActive()) {
+      CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'CRM_Nihrbackbone_NihrAddress::set_distance_to_centre_study', [$objectRef->id]);
+    }
+    else {
+      CRM_Nihrbackbone_NihrAddress::set_distance_to_centre_study($objectRef->id);
+    }
+  }
 
 }
 
