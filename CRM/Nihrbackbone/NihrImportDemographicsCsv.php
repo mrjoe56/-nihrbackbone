@@ -316,13 +316,13 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
           }
 
-          if ($data['nihr_paper_questionnaire'] == 'yes') {
+          if ($data['nihr_paper_hlq'] == 'Yes') {
             // add action
             try {
               civicrm_api3('Activity', 'create', [
                 'source_contact_id' => $contactId,
                 'case_id' => $caseID,
-                'activity_type_id' => "nihr_paper_questionnaire",
+                'activity_type_id' => "nihr_paper_hlq",
               ]);
             } catch (CiviCRM_API3_Exception $ex) {
               $message = E::ts('Error when adding paper questionnaire activity to recruitment case for volunteer ') . $contactId
@@ -348,8 +348,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           $this->migrationVolunteerStatus($contactId, $data);
 
           // migrate paper questionnaire flag
-          if (isset($data['nihr_paper_questionnaire']) && $data['nihr_paper_questionnaire'] == 'Yes') {
-            $this->addActivity($contactId, 'nihr_paper_questionnaire', '');
+          if (isset($data['nihr_paper_hlq']) && $data['nihr_paper_hlq'] == 'Yes') {
+            $this->addActivity($contactId, 'nihr_paper_hlq', '');
           }
         }
 
