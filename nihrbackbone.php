@@ -74,21 +74,21 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
     }
   }
 
-  # if editing a primary Address activity for a participant or centre - set distance to centre for all linked cases
+  # if editing a primary Address activity for a participant or study site - set distance to study site for all linked cases
   if ($op == 'edit' && $objectName == 'Address' && $objectRef->is_primary == 1) {
-    CRM_Nihrbackbone_NihrAddress::set_distance_to_centre_contact($objectRef);
+    CRM_Nihrbackbone_NihrAddress::set_distance_to_studysite_contact($objectRef);
   }
-  # if creating (opening) a case -  set distance to centre for the case
+  # if creating (opening) a case -  set distance to study site for the case
   if ($op == 'create' && $objectName == 'Activity' && $objectRef->activity_type_id == Civi::service('nbrBackbone')->getOpenCaseActivityTypeId()) {
     CRM_Nihrbackbone_NihrAddress::set_case_distance($objectRef->case_id);
   }
-  # if study edit - set distance to centre for all cases linked to the study
+  # if study edit - set distance to study site for all cases linked to the study
   if ($op == 'edit' && $objectName == 'Campaign') {
     if (CRM_Core_Transaction::isActive()) {
-      CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'CRM_Nihrbackbone_NihrAddress::set_distance_to_centre_study', [$objectRef->id]);
+      CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'CRM_Nihrbackbone_NihrAddress::set_distance_to_studysite_study', [$objectRef->id]);
     }
     else {
-      CRM_Nihrbackbone_NihrAddress::set_distance_to_centre_study($objectRef->id);
+      CRM_Nihrbackbone_NihrAddress::set_distance_to_studysite_study($objectRef->id);
     }
   }
 

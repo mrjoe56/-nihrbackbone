@@ -8,20 +8,20 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  * @date 26 Sep 2019                  last update 20/12/19
  * @license AGPL-3.0
  * called from nihrbackbone post hook :
- *  set_distance_to_centre_contact - called on change of participant or centre postcode
+ *  set_distance_to_studysite_contact - called on change of participant or centre postcode
  *  set_distance_to_centre_study   - called on update of a study
  *  set_case_distance              - called when new case added
- *  set_dist_to_cuh                - called on change of participant postcode
+ *  set_distance_to_cuh            - called on change of participant postcode
  */
 
 class CRM_Nihrbackbone_NihrAddress {
 
-  public static function set_distance_to_centre_contact(&$objectRef) {
+  public static function set_distance_to_studysite_contact(&$objectRef) {
     $contact_id = $objectRef->contact_id;
     $query = "select count(*) from civicrm_value_nbr_study_data where nsd_site = %1";
     $panel_count = CRM_Core_DAO::singleValueQuery($query, [1 => [$contact_id, 'Integer']]);
     if (intval($panel_count >= 1)) {
-      // if contact  is a valid centre - set distance to centre value for all cases linked to the centre
+      // if contact  is a valid study site - set distance to centre value for all cases linked to the study site
       Civi::log()->debug('For centre '.$contact_id.' - ');
       $query = "select pd.entity_id as case_id
                 from civicrm_value_nbr_study_data prd, civicrm_value_nbr_participation_data pd, civicrm_case c
@@ -36,19 +36,19 @@ class CRM_Nihrbackbone_NihrAddress {
     else {
       $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
       if ($volunteer->isValidVolunteer($contact_id)) {
-        // if contact is a valid participant - set distance to centre value for all cases linked to the participant
+        // if contact is a valid participant - set distance to study site value for all cases linked to the participant
         $query = "select case_id from civicrm_case c, civicrm_case_contact cc, civicrm_value_nbr_participation_data pd
                    where c.id = cc.case_id and c.is_deleted = 0 and pd.entity_id = c.id and cc.contact_id = %1";
         $cur = CRM_Core_DAO::executeQuery($query, [1 => [$contact_id, 'Integer']]);
         while ($cur->fetch()) {self::set_case_distance($cur->case_id);}
         // and set distance to CUH for the participant
-        self::set_dist_to_cuh($objectRef);
+        self::set_distance_to_cuh($objectRef);
       }
     }
   }
 
-  public static function set_distance_to_centre_study($study_id) {
-    // if centre for a study is changed - set distance to centre value for all cases linked to the study
+  public static function set_distance_to_studysite_study($study_id) {
+    // if study site for a study is changed - set distance to study site value for all cases linked to the study
     Civi::log()->debug('set dist for study site change called for study ID '.$study_id);
       $query = "select pd.entity_id as case_id
                 from 	civicrm_value_nbr_participation_data pd, civicrm_value_nbr_study_data sd
@@ -61,7 +61,7 @@ class CRM_Nihrbackbone_NihrAddress {
   }
 
   public static function set_case_distance($case_id) {
-    // set distance to centre for a case entity
+    // set distance to study site for a case entity
     Civi::log()->debug('set dist for case ID '.$case_id);
     $query = "select cc.contact_id, adr.postal_code as cont_pc, sd.nsd_site, site_adr.postal_code as site_pc
              from civicrm_case_contact cc, civicrm_contact c, civicrm_address adr, civicrm_address site_adr,
@@ -81,7 +81,7 @@ class CRM_Nihrbackbone_NihrAddress {
     }
   }
 
-  public static function set_dist_to_cuh(&$objectRef) {
+  public static function set_distance_to_cuh(&$objectRef) {
     // set distance to Addenbrookes for a contact
     $distance = civicrm_api3("Distance", "calculate", [
       'postcode_from' => $objectRef->postal_code,
