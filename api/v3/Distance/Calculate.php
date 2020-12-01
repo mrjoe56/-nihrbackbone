@@ -33,8 +33,12 @@ function civicrm_api3_distance_Calculate($params) {
   $url = 'http://www.mapquestapi.com/directions/v2/route?key=ge1sXrGxbNAcYEreGTxWFV8PAT0m7UWA&from='.$from.'&to='.$to.'&outFormat=json&unit=Miles&routeType=shortest&locale=en_GB';
   $data = file_get_contents($url);
   $data = json_decode($data);
+  $max_uk = 700;
+
   $distance = round($data->route->distance);
+  $distance = ($distance>$max_uk?0:$distance);
   $m = 'from pcode '.$from.' to pcode '.$to;
+
   // it would seem that some postcodes are unknown to mapquest - if so try with general area of 'from' postcode ..
   if ($distance == 0) {
     $from_area = getPostCodeArea($from);
@@ -42,6 +46,7 @@ function civicrm_api3_distance_Calculate($params) {
     $data = file_get_contents($url);
     $data = json_decode($data);
     $distance = round($data->route->distance);
+    $distance = ($distance>$max_uk?0:$distance);
     $m = 'from area '.$from_area.' to pcode '.$to;
   }
   // if that does not work - try general area of 'to' postcode ..
@@ -51,6 +56,7 @@ function civicrm_api3_distance_Calculate($params) {
     $data = file_get_contents($url);
     $data = json_decode($data);
     $distance = round($data->route->distance);
+    $distance = ($distance>$max_uk?0:$distance);
     $m = 'from pcode '.$from.' to area '.$to_area;
   }
   // finally - try general area of 'from'  and 'to' postcodes ..
@@ -59,6 +65,7 @@ function civicrm_api3_distance_Calculate($params) {
     $data = file_get_contents($url);
     $data = json_decode($data);
     $distance = round($data->route->distance);
+    $distance = ($distance>$max_uk?0:$distance);
     $m = 'from area '.$from_area.' to area '.$to_area;
   }
   Civi::log()->debug('dist calc by method : '.$m);
