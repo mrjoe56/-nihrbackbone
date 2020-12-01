@@ -1,14 +1,7 @@
 <?php
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
-/**
- * Distance.Calculate API specification (optional)  JB 18/12/19
- *
- * @param array $spec description of fields supported by this API call
- * @return void
- * @see https://docs.civicrm.org/dev/en/latest/framework/api-architecture/
-*/
-
+/* Distance.Calculate API specification (optional)  JB 18/12/19 */
 function _civicrm_api3_distance_Calculate(&$spec) {
   $spec['postcode'] = [
     'api.required' =>1,
@@ -19,7 +12,7 @@ function _civicrm_api3_distance_Calculate(&$spec) {
 }
 
 /**
- * Distance.Calculate API
+ * Distance.Calculate API  JB 01/12/20
  *
  * @param array $params
  * @return array API result descriptor
@@ -68,7 +61,7 @@ function civicrm_api3_distance_Calculate($params) {
     $distance = ($distance>$max_uk?0:$distance);
     $m = 'from area '.$from_area.' to area '.$to_area;
   }
-  Civi::log()->debug('dist calc by method : '.$m);
+  #Civi::log()->debug('dist calc by method : '.$m);
   return $distance;
 }
 

@@ -55,7 +55,7 @@ function nihrbackbone_civicrm_container(ContainerBuilder $container) {
 }
 
 
-/** Implements hook_civicrm_post 18/12/19 */
+/** Implements hook_civicrm_post 01/12/20 */
 function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 
   if ($objectName == "Activity") {
