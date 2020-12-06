@@ -84,6 +84,36 @@ class CRM_Nihrbackbone_NihrAddress {
 
   }
 
+  /**
+   * Method to find the state_province_id with a name, either from CiviCRM or from synonym list
+   *
+   * @param $name
+   * @return false|string
+   */
+  public static function getCountyIdForSynonym($name) {
+    if (!empty($name)) {
+      $name = trim($name);
+      // first check if we can find the county in CiviCRM
+      $query = "SELECT id FROM civicrm_state_province WHERE country_id = %1 AND name = %2";
+      $countyId = CRM_Core_DAO::singleValueQuery($query, [
+        1 => [Civi::service('nbrBackbone')->getUkCountryId(), "Integer"],
+        2 => [$name, "String"],
+      ]);
+      if ($countyId) {
+        return $countyId;
+      }
+      else {
+        // if not found in CiviCRM, try with synonym
+        $query = "SELECT state_province_id FROM civicrm_nbr_county WHERE synonym = %1";
+        $countyId = CRM_Core_DAO::singleValueQuery($query, [1 => [trim($name), "String"]]);
+        if ($countyId) {
+          return $countyId;
+        }
+      }
+    }
+    return FALSE;
+  }
+
 }
 
-?>
+

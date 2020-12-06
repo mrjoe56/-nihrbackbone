@@ -39,6 +39,8 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition->addMethodCall('setOtherBleedDifficultiesValue', ["bd_other"]);
     $definition->addMethodCall('setOtherSampleSiteValue', ["visit_bleed_site_other"]);
     $definition->addMethodCall('setDefaultNbrMailingType', ["invite"]);
+    $definition->addMethodCall('setUkCountryId', [1226]);
+    $definition->addMethodCall('setParticipantIdIdentifierType', ["cih_type_participant_id"]);
     $container->setDefinition('nbrBackbone', $definition);
   }
 

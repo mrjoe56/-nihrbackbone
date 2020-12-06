@@ -165,6 +165,8 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_homeLocationTypeId = NULL;
   private $_workLocationTypeId = NULL;
   private $_bioResourcersGroupId = NULL;
+  private $_ukCountryId = NULL;
+  private $_participantIdIdentifierType = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -2076,6 +2078,20 @@ class CRM_Nihrbackbone_NbrConfig {
   }
 
   /**
+   * @param int
+   */
+  public function setUkCountryId($id) {
+    $this->_ukCountryId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getUkCountryId() {
+    return $this->_ukCountryId  ;
+  }
+
+  /**
    * @param string
    */
   public function setConsentTableName($name) {
@@ -2143,6 +2159,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getStudyParticipationStatusColumnName() {
     return $this->_studyParticipationStatusColumnName  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setParticipantIdIdentifierType($name) {
+    $this->_participantIdIdentifierType = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getParticipantIdIdentifierType() {
+    return $this->_participantIdIdentifierType  ;
   }
 
   /**

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Nihrbackbone</base>
+  <class>NbrCounty</class>
+  <name>civicrm_nbr_county</name>
+  <comment>Table to map county syonyms (incl. original Starfish names)</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique NbrCounty ID</comment>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>state_province_id</name>
+    <type>int unsigned</type>
+    <comment>FK to State/Province</comment>
+  </field>
+  <foreignKey>
+    <name>state_province_id</name>
+    <table>civicrm_state_province</table>
+    <key>id</key>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>synonym</name>
+    <type>varchar</type>
+    <length>256</length>
+    <comment>County synonym</comment>
+  </field>
+  <index>
+    <name>index_synonym</name>
+    <fieldName>synonym</fieldName>
+    <unique>false</unique>
+  </index>
+
+</table>
