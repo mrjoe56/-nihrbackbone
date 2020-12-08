@@ -1179,7 +1179,6 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         'target_id' => $contactId,
         'case_id' => $caseId,
         'status_id' => "Completed",
-        'status_id' => Civi::service('nbrBackbone')->getArrangeActivityStatusId(),
       ]);
     } catch (CiviCRM_API3_Exception $ex) {
       $this->_logger->logMessage('Error inserting $activityType activity for volunteer ' . $contactId . ': ' . $ex->getMessage(), 'error');
