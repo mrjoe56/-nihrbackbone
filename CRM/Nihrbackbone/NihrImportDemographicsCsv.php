@@ -712,7 +712,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           ];
           $index = 7;
           $insert = "INSERT INTO civicrm_address (contact_id, location_type_id, is_primary, street_address,
-            city, postal_code, is_billing";
+            city, postal_code, is_billing,";
           // optional fields, only add if there is data
           if ($data['address_2'] <> '') {
             $index++;
@@ -725,6 +725,16 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             $insertParams[$index] = [$data['address_3'], "String"];
             $insert .= ", supplemental_address_2";
             $columns[] = "%" . $index;
+          }
+
+          if ($data['county']) {
+            $mappedCountyId = CRM_Nihrbackbone_NihrAddress::getCountyIdForSynonym($data['county']);
+            if ($mappedCountyId) {
+              $index++;
+              $insertParams[$index] = [(int) $mappedCountyId, "Integer"];
+              $insert .= ", state_province_id";
+              $columns[] = "%" . $index;
+            }
           }
 
           $insert .= ") VALUES(" . implode(", ", $columns) . ")";

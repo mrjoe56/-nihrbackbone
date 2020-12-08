@@ -288,4 +288,111 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     }
     return TRUE;
   }
+
+  /**
+   * Upgrade 1100 - add somerset to state/province, create and populate civicrm_nbr_county if required
+   *
+   * @return bool
+   * @throws CiviCRM_API3_Exception
+   */
+  public function upgrade_1100() {
+    $this->ctx->log->info(E::ts('Applying update 1100 - add somerset to state/province, create and populate civicrm_nbr_county if required'));
+    // add county Somerset
+    $this->addSomerset();
+    // add civicrm_nbr_county if required
+    if (!CRM_Core_DAO::checkTableExists('civicrm_nbr_county')) {
+      $this->executeSqlFile('sql/createNbrCounty.sql');
+    }
+    $this->populateNbrCounty();
+    return TRUE;
+  }
+
+  /**
+   * Method to populate civicrm_nbr_county with existing synonyms
+   */
+  private function populateNbrCounty() {
+    // check if starfish mapping table exists and if so, add if required
+    $this->addStarfishMapping();
+    // add synonyms from csv file in resources
+    $container = CRM_Extension_System::singleton()->getFullContainer();
+    $csvFile = $container->getPath('nihrbackbone') . '/resources/starfish_county_synonyms.csv';
+    $csv = fopen($csvFile, 'r');
+    while (!feof($csv)) {
+      $data = fgetcsv($csv, 0, "~");
+      if ($data) {
+        // retrieve state_province_id of starfish record
+        $query = "SELECT state_province_id FROM civicrm_nbr_county WHERE synonym = %1";
+        $stateProvinceId = CRM_Core_DAO::singleValueQuery($query, [1 => [$data[0], "String"]]);
+        if ($stateProvinceId) {
+          $query = "SELECT COUNT(*) FROM civicrm_nbr_county WHERE synonym = %1 AND state_province_id = %2";
+          $count = CRM_Core_DAO::singleValueQuery($query, [
+            1 => [$data[1], "String"],
+            2 => [(int) $stateProvinceId, "Integer"],
+          ]);
+          if ($count == 0) {
+            $insert = "INSERT INTO civicrm_nbr_county (state_province_id, synonym) VALUES(%1, %2)";
+            CRM_Core_DAO::executeQuery($insert, [
+              1 => [(int) $stateProvinceId, "Integer"],
+              2 => [$data[1], "String"],
+            ]);
+          }
+        }
+      }
+    }
+    fclose($csv);
+  }
+
+  /**
+   * Method to add the starfish county mapping
+   */
+  private function addStarfishMapping() {
+    if (!CRM_Core_DAO::checkTableExists('starfish_civi_county_mapping')) {
+      $this->executeSqlFile('sql/starfish_civi_county_mapping.sql');
+    }
+    $starfishCounty = CRM_Core_DAO::executeQuery("SELECT * FROM starfish_civi_county_mapping WHERE starfish_county IS NOT NULL");
+    while ($starfishCounty->fetch()) {
+      $query = "SELECT COUNT(*) FROM civicrm_nbr_county WHERE synonym = %1 AND state_province_id = %2";
+      $count = CRM_Core_DAO::singleValueQuery($query, [
+        1 => [$starfishCounty->starfish_county, "String"],
+        2 => [(int)$starfishCounty->id, "Integer"],
+      ]);
+      if ($count == 0) {
+        $insert = "INSERT INTO civicrm_nbr_county (state_province_id, synonym) VALUES(%1, %2)";
+        CRM_Core_DAO::executeQuery($insert, [
+          1 => [(int) $starfishCounty->id, "Integer"],
+          2 => [$starfishCounty->starfish_county, "String"],
+        ]);
+      }
+    }
+  }
+
+  /**
+   * Method to add Somerset as county if not exists
+   */
+  private function addSomerset() {
+    $ukId = Civi::service('nbrBackbone')->getUkCountryId();
+    $somAbb = "SOM";
+    $query = "SELECT COUNT(*) FROM civicrm_state_province WHERE country_id = %1 AND abbreviation = %2";
+    $count = CRM_Core_DAO::singleValueQuery($query, [
+      1 => [$ukId, "Integer"],
+      2 => [$somAbb, "String"]
+    ]);
+    if ($count == 0) {
+      $insert = "INSERT INTO civicrm_state_province (name, abbreviation, country_id) VALUES (%1, %2, %3)";
+      CRM_Core_DAO::executeQuery($insert, [
+        1 => ["Somerset", "String"],
+        2 => [$somAbb, "String"],
+        3 => [$ukId, "Integer"],
+      ]);
+    }
+    $query = "SELECT id FROM civicrm_state_province WHERE abbreviation = %1";
+    $somersetId = CRM_Core_DAO::singleValueQuery($query, [1 => [$somAbb, "String"]]);
+    if ($somersetId && CRM_Core_DAO::checkTableExists('starfish_civi_county_mapping')) {
+      $update = "UPDATE starfish_civi_county_mapping SET id = %1 WHERE abbreviation = %2";
+      CRM_Core_DAO::executeQuery($update, [
+        1 => [(int) $somersetId, "Integer"],
+        2 => [$somAbb, "String"],
+      ]);
+    }
+  }
 }

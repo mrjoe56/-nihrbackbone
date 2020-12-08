@@ -474,6 +474,11 @@ function _nihrbackbone_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NU
  */
 function _nihrbackbone_civix_civicrm_entityTypes(&$entityTypes) {
   $entityTypes = array_merge($entityTypes, [
+    'CRM_Nihrbackbone_DAO_NbrCounty' => [
+      'name' => 'NbrCounty',
+      'class' => 'CRM_Nihrbackbone_DAO_NbrCounty',
+      'table' => 'civicrm_nbr_county',
+    ],
     'CRM_Nihrbackbone_DAO_NbrImportLog' => [
       'name' => 'NbrImportLog',
       'class' => 'CRM_Nihrbackbone_DAO_NbrImportLog',
