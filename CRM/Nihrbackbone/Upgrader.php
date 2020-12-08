@@ -370,7 +370,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
    * Method to add Somerset as county if not exists
    */
   private function addSomerset() {
-    $ukId = 1226;
+    $ukId = Civi::service('nbrBackbone')->getUkCountryId();
     $somAbb = "SOM";
     $query = "SELECT COUNT(*) FROM civicrm_state_province WHERE country_id = %1 AND abbreviation = %2";
     $count = CRM_Core_DAO::singleValueQuery($query, [
@@ -383,6 +383,15 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
         1 => ["Somerset", "String"],
         2 => [$somAbb, "String"],
         3 => [$ukId, "Integer"],
+      ]);
+    }
+    $query = "SELECT id FROM civicrm_state_province WHERE abbreviation = %1";
+    $somersetId = CRM_Core_DAO::singleValueQuery($query, [1 => [$somAbb, "String"]]);
+    if ($somersetId && CRM_Core_DAO::checkTableExists('starfish_civi_county_mapping')) {
+      $update = "UPDATE starfish_civi_county_mapping SET id = %1 WHERE abbreviation = %2";
+      CRM_Core_DAO::executeQuery($update, [
+        1 => [(int) $somersetId, "Integer"],
+        2 => [$somAbb, "String"],
       ]);
     }
   }
