@@ -152,6 +152,8 @@
   "contact_category": "contact_category",
   "contact_location": "contact_location",
   "contact_phone_type": "contact_phone_type",
-  "is_primary": "is_primary"
+  "is_primary": "is_primary",
 
+  "spine_lookup": "spine_lookup",
+  "ibd_questionnaire_data_loaded": "ibd_questionnaire_data_loaded"
 }
