@@ -349,7 +349,16 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
           // migrate paper questionnaire flag
           if (isset($data['nihr_paper_hlq']) && $data['nihr_paper_hlq'] == 'Yes') {
-            $this->addPaperHlqActivity($contactId, 'nihr_paper_hlq', '');
+            $this->addRecruitmentCaseActivity($contactId, 'nihr_paper_hlq', '');
+          }
+
+          // migrate spine lookup data
+          if (isset($data['spine_lookup']) && $data['spine_lookup'] <> '') {
+            $this->addRecruitmentCaseActivity($contactId, 'spine_lookup', $data['spine_lookup']);
+          }
+          // migrate date ibd questionnaire data loaded
+          if (isset($data['ibd_questionnaire_data_loaded']) && $data['ibd_questionnaire_data_loaded'] <> '') {
+            $this->addRecruitmentCaseActivity($contactId, 'ibd_questionnaire_data_loaded', $data['ibd_questionnaire_data_loaded']);
           }
         }
 
@@ -717,6 +726,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             $insert .= ", supplemental_address_2";
             $columns[] = "%" . $index;
           }
+
           $insert .= ") VALUES(" . implode(", ", $columns) . ")";
           CRM_Core_DAO::executeQuery($insert, $insertParams);
         }
@@ -1146,8 +1156,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     }
   }
 
-  private function addPaperHlqActivity ($contactId, $activityType, $dateTime)
+  private function addRecruitmentCaseActivity($contactId, $activityType, $dateTime)
   {
+    // TODO - do not create duplicates; check dateTime param has got correct format
+
     // get latest recruitment case for contact
     $caseId = CRM_Nihrbackbone_NbrVolunteerCase::getActiveRecruitmentCaseId($contactId);
     try {
