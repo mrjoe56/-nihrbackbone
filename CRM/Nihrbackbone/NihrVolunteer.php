@@ -635,6 +635,41 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Method to check if the volunteer has at least 1 valid activity of a specific type
+   * (where volunteer is target of the activity)
+   *
+   * @param $volunteerId
+   * @param $activityType
+   * @param null $activityStatus
+   * @return bool
+   */
+  public static function hasActivity($volunteerId, $activityType, $activityStatus = NULL) {
+    // default completed
+    if (!$activityStatus) {
+      $activityStatus = Civi::service('nbrBackbone')->getCompletedActivityStatusId();
+    }
+    if (!empty($volunteerId) && !empty($activityType)) {
+      $query = "SELECT COUNT(*)
+        FROM civicrm_activity_contact AS a
+          JOIN civicrm_activity AS b ON a.activity_id = b.id
+        WHERE b.is_deleted = %1 AND b.is_test = %1 AND b.is_current_revision = %2 AND b.status_id = %3
+          AND b.activity_type_id = %4 AND a.contact_id = %5 AND a.record_type_id = %6";
+      $count = CRM_Core_DAO::singleValueQuery($query, [
+        1 => [0, "Integer"],
+        2 => [1, "Integer"],
+        3 => [$activityStatus, "Integer"],
+        4 => [(int) $activityType, "Integer"],
+        5 => [(int) $volunteerId, "Integer"],
+        6 => [Civi::service('nbrBackbone')->getTargetRecordTypeId(), "Integer"],
+      ]);
+      if ($count > 0) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Check if volunteer allows email
    *
    * @param $volunteerId
@@ -832,6 +867,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @return bool
    */
   public static function setVolunteerStatus($volunteerId, $sourceStatus) {
+
     $sourceStatus = strtolower($sourceStatus);
     // first check if status exists, use pending if not
     try {
