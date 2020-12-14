@@ -1168,20 +1168,35 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
   private function addRecruitmentCaseActivity($contactId, $activityType, $dateTime)
   {
-    // TODO - do not create duplicates; check dateTime param has got correct format
+    // TODO - check dateTime param has got correct format
 
     // get latest recruitment case for contact
     $caseId = CRM_Nihrbackbone_NbrVolunteerCase::getActiveRecruitmentCaseId($contactId);
+
+    // only enter if not already on the case
     try {
-      $result = civicrm_api3('Activity', 'create', [
+      $cnt = civicrm_api3('Activity', 'getcount', [
         'activity_type_id' => $activityType,
-        'activity_date_time' => $dateTime,
         'target_id' => $contactId,
         'case_id' => $caseId,
-        'status_id' => "Completed",
       ]);
     } catch (CiviCRM_API3_Exception $ex) {
-      $this->_logger->logMessage('Error inserting $activityType activity for volunteer ' . $contactId . ': ' . $ex->getMessage(), 'error');
+      $this->_logger->logMessage('Error checking on $activityType activity for volunteer ' . $contactId . ': ' . $ex->getMessage(), 'error');
+    }
+
+    if ($cnt == 0) {
+
+      try {
+        $result = civicrm_api3('Activity', 'create', [
+          'activity_type_id' => $activityType,
+          'activity_date_time' => $dateTime,
+          'target_id' => $contactId,
+          'case_id' => $caseId,
+          'status_id' => "Completed",
+        ]);
+      } catch (CiviCRM_API3_Exception $ex) {
+        $this->_logger->logMessage('Error inserting $activityType activity for volunteer ' . $contactId . ': ' . $ex->getMessage(), 'error');
+      }
     }
   }
 
