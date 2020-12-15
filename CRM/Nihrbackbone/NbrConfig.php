@@ -153,6 +153,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_unsubscribeId = NULL;
   private $_welcomeId = NULL;
     // others
+  private $_participationCaseTypeName = NULL;
   private $_correctConsentStatusValue = NULL;
   private $_visitStage2Substring = NULL;
   private $_normalPriorityId = NULL;
@@ -2173,6 +2174,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getParticipantIdIdentifierType() {
     return $this->_participantIdIdentifierType  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setParticipationCaseTypeName($name) {
+    $this->_participationCaseTypeName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getParticipationCaseTypeName() {
+    return $this->_participationCaseTypeName  ;
   }
 
   /**
