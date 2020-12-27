@@ -167,6 +167,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_workLocationTypeId = NULL;
   private $_bioResourcersGroupId = NULL;
   private $_ukCountryId = NULL;
+  private $_bioResourceIdentifierType = NULL;
   private $_participantIdIdentifierType = NULL;
 
   /**
@@ -2160,6 +2161,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getStudyParticipationStatusColumnName() {
     return $this->_studyParticipationStatusColumnName  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setBioresourceIdIdentifierType($name) {
+    $this->_participantIdIdentifierType = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getBioresourceIdIdentifierType() {
+    return $this->_participantIdIdentifierType  ;
   }
 
   /**

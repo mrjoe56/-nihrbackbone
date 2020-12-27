@@ -74,6 +74,28 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Method to get the contact id of the volunteer with the bioresource id
+   *
+   * @param $bioresourceId
+   * @return false|string
+   */
+  public function getContactIdWithBioresourceId($bioresourceId) {
+    if (!empty($bioresourceId)) {
+      $query = "SELECT entity_id
+        FROM civicrm_value_contact_id_history
+        WHERE identifier_type = %1 AND identifier = %2";
+      $contactId = CRM_Core_DAO::singleValueQuery($query, [
+        1 => [Civi::service('nbrBackbone')->getBioresourceIdIdentifierType(), "String"],
+        2 => [$bioresourceId, "String"],
+      ]);
+      if ($contactId) {
+        return $contactId;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Method to find volunteer by identity
    *
    * @param $identifier
