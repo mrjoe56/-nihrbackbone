@@ -74,6 +74,28 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Method to get the contact id of the volunteer with the study participant id
+   *
+   * @param $studyParticipantId
+   * @return false|string
+   */
+  public function getContactIdWithStudyParticipantId($studyParticipantId) {
+    if (!empty($studyParticipantId)) {
+      $query = "SELECT entity_id
+        FROM civicrm_value_contact_id_history
+        WHERE identifier_type = %1 AND identifier = %2";
+      $contactId = CRM_Core_DAO::singleValueQuery($query, [
+        1 => [CRM_Nihrnumbergenerator_Config::singleton()->studyParticipantIdIdentifier,  "String"],
+        2 => [$studyParticipantId, "String"],
+      ]);
+      if ($contactId) {
+        return $contactId;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Method to get the contact id of the volunteer with the bioresource id
    *
    * @param $bioresourceId
