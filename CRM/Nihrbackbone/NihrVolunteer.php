@@ -1010,4 +1010,22 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
   }
 
+  /**
+   * Method to check if volunteer has status withdrawn
+   *
+   * @param int $volunteerId
+   * @return bool
+   */
+  public static function isWithdrawn(int $volunteerId) {
+    $table = Civi::service('nbrBackbone')->getVolunteerStatusTableName();
+    $column = Civi::service('nbrBackbone')->getVolunteerStatusColumnName();
+    $withdrawn = Civi::service('nbrBackbone')->getWithdrawnVolunteerStatus();
+    $query = "SELECT " . $column . " FROM " . $table . " WHERE entity_id = %1";
+    $status = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, "Integer"]]);
+    if ($status && $status == $withdrawn) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
 }
