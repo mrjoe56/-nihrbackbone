@@ -96,6 +96,31 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Method to get contact id with email (checking for primary first, then single most recent email)
+   *
+   * @param $email
+   * @return false|string
+   */
+  public function getContactIdWithEmail($email) {
+    if (!empty($email)) {
+      $query = "SELECT contact_id FROM civicrm_email WHERE email = %1 AND is_primary = %2 ORDER BY id DESC LIMIT 1";
+      $contactId = CRM_Core_DAO::singleValueQuery($query, [
+        1 => [$email, "String"],
+        2 => [1, "Integer"],
+        ]);
+      if ($contactId) {
+        return $contactId;
+      }
+      $query = "SELECT contact_id FROM civicrm_email WHERE email = %1 ORDER BY id DESC LIMIT 1";
+      $contactId = CRM_Core_DAO::singleValueQuery($query, [1 => [$email, "String"]]);
+      if ($contactId) {
+        return $contactId;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Method to get the contact id of the volunteer with the bioresource id
    *
    * @param $bioresourceId

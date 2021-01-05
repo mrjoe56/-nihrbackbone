@@ -1,3 +1,6 @@
+## Version 1.72
+* issue 7165: add method to find contact id with email
+
 ## Version 1.71
 * issue 7165: add method to get contact id with study participant id
 
