@@ -74,6 +74,53 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Method to get the contact id of the volunteer with the study participant id
+   *
+   * @param $studyParticipantId
+   * @return false|string
+   */
+  public function getContactIdWithStudyParticipantId($studyParticipantId) {
+    if (!empty($studyParticipantId)) {
+      $query = "SELECT entity_id
+        FROM civicrm_value_contact_id_history
+        WHERE identifier_type = %1 AND identifier = %2";
+      $contactId = CRM_Core_DAO::singleValueQuery($query, [
+        1 => [CRM_Nihrnumbergenerator_Config::singleton()->studyParticipantIdIdentifier,  "String"],
+        2 => [$studyParticipantId, "String"],
+      ]);
+      if ($contactId) {
+        return $contactId;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to get contact id with email (checking for primary first, then single most recent email)
+   *
+   * @param $email
+   * @return false|string
+   */
+  public function getContactIdWithEmail($email) {
+    if (!empty($email)) {
+      $query = "SELECT contact_id FROM civicrm_email WHERE email = %1 AND is_primary = %2 ORDER BY id DESC LIMIT 1";
+      $contactId = CRM_Core_DAO::singleValueQuery($query, [
+        1 => [$email, "String"],
+        2 => [1, "Integer"],
+        ]);
+      if ($contactId) {
+        return $contactId;
+      }
+      $query = "SELECT contact_id FROM civicrm_email WHERE email = %1 ORDER BY id DESC LIMIT 1";
+      $contactId = CRM_Core_DAO::singleValueQuery($query, [1 => [$email, "String"]]);
+      if ($contactId) {
+        return $contactId;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Method to get the contact id of the volunteer with the bioresource id
    *
    * @param $bioresourceId

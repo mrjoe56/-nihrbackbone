@@ -1075,5 +1075,37 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     return FALSE;
   }
 
+  /**
+   * Method to create query for daily calculate of eligibility
+   * @param $query
+   * @param $queryParams
+   * @param string $mode
+   */
+  public static function getQueryForCalculationMode(&$query, &$queryParams, $mode = "default") {
+    $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+    $statusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
+    $query = "SELECT DISTINCT(a.contact_id), c.entity_id AS case_id, d.id AS study_id
+    FROM civicrm_case_contact AS a
+        JOIN civicrm_case AS b ON a.case_id = b.id
+        JOIN " . $tableName . " AS c on a.case_id = c.entity_id
+        JOIN civicrm_campaign AS d ON c." . $studyIdColumn . " = d.id
+    WHERE d.campaign_type_id = %1 AND d.status_id = %2 AND b.is_deleted = %3";
+    $queryParams = [
+      1 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCampaignTypeId(), "Integer"],
+      2 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), "Integer"],
+      3 => [0, "Integer"],
+      4 => [Civi::service('nbrBackbone')->getSelectedParticipationStatusValue(), "String"],
+    ];
+    if ($mode == "full") {
+      $query .= " AND c." . $statusColumn . " IN(%4, %5, %6, %7)";
+      $queryParams[5] = [Civi::service('nbrBackbone')->getInvitationPendingParticipationStatusValue(), "String"];
+      $queryParams[6] = [Civi::service('nbrBackbone')->getInvitedParticipationStatusValue(), "String"];
+      $queryParams[7] = [Civi::service('nbrBackbone')->getAcceptedParticipationStatusValue(), "String"];
+    }
+    else {
+      $query .= " AND c." . $statusColumn . " = %4";
+    }
+  }
 
 }
