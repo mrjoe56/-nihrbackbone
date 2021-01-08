@@ -157,6 +157,11 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     if (!file_exists($mappingFile)) {
       $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . "default_mapping.json";
     }
+
+    // &&&&&& use this as default for all
+    $mappingFile = $resourcePath . DIRECTORY_SEPARATOR . "starfish_mapping.json";
+
+
     $mappingJson = file_get_contents($mappingFile);
     $this->_mapping = json_decode($mappingJson, TRUE);
   }
@@ -168,7 +173,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
    */
   private function importDemographics()
   {
-    $this->_logger->logMessage('file: ' .$this->_csvFile . '; dataSource: ' . $this->_dataSource . '; separator: ' . $this->_separator);
+    $this->_logger->logMessage('file: ' . $this->_csvFile . '; dataSource: ' . $this->_dataSource . '; separator: ' . $this->_separator);
 
     while (!feof($this->_csv)) {
       $data = fgetcsv($this->_csv, 0, $this->_separator);
@@ -180,39 +185,42 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $data = $this->formatData($data);
 
         // add volunteer or update data of existing volunteer
-        list($contactId, $new_volunteer) = $this->addContact($data);
-        $this->addEmail($contactId, $data);
-        $this->addAddress($contactId, $data);
-        //$this->addPhone($contactId, $data, 'phone_home', Civi::service('nbrBackbone')->getHomeLocationTypeId(), CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
-        //$this->addPhone($contactId, $data, 'phone_work', Civi::service('nbrBackbone')->getWorkLocationTypeId() , CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
-        //$this->addPhone($contactId, $data, 'phone_mobile', Civi::service('nbrBackbone')->getHomeLocationTypeId(), CRM_Nihrbackbone_BackboneConfig::singleton()->getMobilePhoneTypeId());
-        // Starfish migration
-        if (isset($data['contact_category']) && $data['contact_category'] == 'Phone') {
-          $this->addPhone($contactId, $data, 'phone', $data['contact_location'], $data['contact_phone_type'], $data['is_primary']);
-        }
-        $this->addNote($contactId, $data['notes']);
+        list($contactId, $new_volunteer, $local_id_missing) = $this->addContact($data);
+        // no contact record created/mapped if local ID is not provided
+        if (!$local_id_missing) {
+          $this->addEmail($contactId, $data);
+          $this->addAddress($contactId, $data);
+          //$this->addPhone($contactId, $data, 'phone_home', Civi::service('nbrBackbone')->getHomeLocationTypeId(), CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
+          //$this->addPhone($contactId, $data, 'phone_work', Civi::service('nbrBackbone')->getWorkLocationTypeId() , CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
+          //$this->addPhone($contactId, $data, 'phone_mobile', Civi::service('nbrBackbone')->getHomeLocationTypeId(), CRM_Nihrbackbone_BackboneConfig::singleton()->getMobilePhoneTypeId());
+          // Starfish migration
+          if (isset($data['contact_category']) && $data['contact_category'] == 'Phone') {
+            $this->addPhone($contactId, $data, 'phone', $data['contact_location'], $data['contact_phone_type'], $data['is_primary']);
+          }
 
-        if ($data['panel'] <> '' || $data['site'] <> '' || $data['centre'] <> '') {
-          $this->addPanel($contactId, $this->_dataSource, $data['panel'], $data['site'], $data['centre'], $data['source']);
-        }
+          $this->addNote($contactId, $data['notes']);
 
-        // *** Aliases ***
-        if (!empty($data['nhs_number'])) {
-          $this->addAlias($contactId, 'cih_type_nhs_number', $data['nhs_number'], 1);
-        }
-        if (!empty($data['pack_id'])) {
-          $this->addAlias($contactId, 'cih_type_pack_id', $data['pack_id'], 2);
-        }
-        if (!empty($data['ibd_id'])) {
-          $this->addAlias($contactId, 'cih_type_ibd_id', $data['ibd_id'], 2);
-        }
+          if ($data['panel'] <> '' || $data['site'] <> '' || $data['centre'] <> '') {
+            $this->addPanel($contactId, $this->_dataSource, $data['panel'], $data['site'], $data['centre'], $data['source']);
+          }
 
-        if (isset($data['alias_type_former_surname']) && !empty($data['alias_type_former_surname'])) {
-          $this->addAlias($contactId, 'cih_type_former_surname', $data['alias_type_former_surname'], 2);
-        }
+          // *** Aliases ***
+          if (!empty($data['nhs_number'])) {
+            $this->addAlias($contactId, 'cih_type_nhs_number', $data['nhs_number'], 1);
+          }
+          if (!empty($data['pack_id'])) {
+            $this->addAlias($contactId, 'cih_type_pack_id', $data['pack_id'], 2);
+          }
+          if (!empty($data['ibd_id'])) {
+            $this->addAlias($contactId, 'cih_type_ibd_id', $data['ibd_id'], 2);
+          }
 
-        // ^^^ starfish migration
-        $aliases = array(
+          if (isset($data['alias_type_former_surname']) && !empty($data['alias_type_former_surname'])) {
+            $this->addAlias($contactId, 'cih_type_former_surname', $data['alias_type_former_surname'], 2);
+          }
+
+          // ^^^ starfish migration
+          $aliases = array(
             'cih_type_anon_project_id',
             'cih_type_blood_donor_id',
             'cih_type_cardio_id',
@@ -252,122 +260,122 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             'cih_type_replaced_sid',
             'cih_type_participant_id',
             'cih_type_bioresource_id'
-        );
+          );
 
-        foreach ($aliases as &$alias) {
-          if (isset($data[$alias]) && !empty($data[$alias])) {
-            $this->addAlias($contactId, $alias, $data[$alias], 2);
-          }
-        }
-
-        // *** Diseases ***
-        $this->addDisease($contactId, $data['family_member'], $data['disease'], $data['diagnosis_year'], $data['diagnosis_age'], $data['disease_notes'], $data['taking_medication']);
-
-        // *** add source specific identifiers and data *********************************************************
-        switch ($this->_dataSource) {
-          case "ibd":
-            if ($data['diagnosis'] <> '') {
-              $this->addDisease($contactId, 'family_member_self', $data['diagnosis'], '', '', '', '');
+          foreach ($aliases as &$alias) {
+            if (isset($data[$alias]) && !empty($data[$alias])) {
+              $this->addAlias($contactId, $alias, $data[$alias], 2);
             }
-            if ($data['nva_ibdgc_number'] <> '') {
-              $this->addAlias($contactId, 'cih_type_ibdgc_number', $data['nva_ibdgc_number'], 1);
-            }
-            break;
-
-          case "ucl":
-            $this->addAlias($contactId, 'cih_type_ucl_br_local', $data['local_id'], 0);
-            if (!empty($data['national_id'])) {
-              $this->addAlias($contactId, 'cih_type_ucl_br', $data['national_id'], 0);
-            }
-            break;
-        }
-        /*
-        if (!empty($data['ucl_id'])) {
-          $this->addAlias($contactId, 'alias_type_local_ucl_id', $data['ucl_id'], 0);
-        }
-        // todo add all other aliases
-        */
-
-
-      // &&&&&  $this->addGeneralObservations($contactId, $data);
-
-
-
-        // *** add recruitment case, if volunteer record newly created *************************
-        // (unless migration -> datasource 'Starfish')
-        $caseID = '';
-
-        if ($new_volunteer && $this->_dataSource <> 'starfish') {
-          // use consent date as case started date
-          $consentDate = date('Y-m-d',strtotime($data['consent_date']));
-
-          try {
-            $result = civicrm_api3('NbrVolunteerCase', 'create', [
-              'contact_id' => $contactId,
-              'case_type' => 'recruitment',
-              'start_date' => $consentDate
-            ]);
-            $caseID = $result['case_id'];
-            $message = E::ts('Recruitment case for volunteer ' . $contactId . '  added');
-            CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
-          } catch (CiviCRM_API3_Exception $ex) {
-            $message = E::ts('Error when creating recruitment case for volunteer ') . $contactId
-              . E::ts(' from API NbrVolunteerCase create : ') . $ex->getMessage();
-            CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
           }
 
-          if ($data['nihr_paper_hlq'] == 'Yes') {
-            // add action
+          // *** Diseases ***
+          $this->addDisease($contactId, $data['family_member'], $data['disease'], $data['diagnosis_year'], $data['diagnosis_age'], $data['disease_notes'], $data['taking_medication']);
+
+          // *** add source specific identifiers and data *********************************************************
+          switch ($this->_dataSource) {
+            case "ibd":
+              if ($data['diagnosis'] <> '') {
+                $this->addDisease($contactId, 'family_member_self', $data['diagnosis'], '', '', '', '');
+              }
+              if ($data['nva_ibdgc_number'] <> '') {
+                $this->addAlias($contactId, 'cih_type_ibdgc_number', $data['nva_ibdgc_number'], 1);
+              }
+              break;
+
+            case "ucl":
+              $this->addAlias($contactId, 'cih_type_ucl_br_local', $data['local_id'], 0);
+              if (!empty($data['national_id'])) {
+                $this->addAlias($contactId, 'cih_type_ucl_br', $data['national_id'], 0);
+              }
+              break;
+          }
+          /*
+          if (!empty($data['ucl_id'])) {
+            $this->addAlias($contactId, 'alias_type_local_ucl_id', $data['ucl_id'], 0);
+          }
+          // todo add all other aliases
+          */
+
+
+          // &&&&&  $this->addGeneralObservations($contactId, $data);
+
+
+          // *** add recruitment case, if volunteer record newly created *************************
+          // (unless migration -> datasource 'Starfish')
+          $caseID = '';
+
+          if ($new_volunteer && $this->_dataSource <> 'starfish') {
+            // use consent date as case started date
+            $consentDate = date('Y-m-d', strtotime($data['consent_date']));
+
             try {
-              civicrm_api3('Activity', 'create', [
-                'source_contact_id' => $contactId,
-                'case_id' => $caseID,
-                'activity_type_id' => "nihr_paper_hlq",
+              $result = civicrm_api3('NbrVolunteerCase', 'create', [
+                'contact_id' => $contactId,
+                'case_type' => 'recruitment',
+                'start_date' => $consentDate
               ]);
+              $caseID = $result['case_id'];
+              $message = E::ts('Recruitment case for volunteer ' . $contactId . '  added');
+              CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
             } catch (CiviCRM_API3_Exception $ex) {
-              $message = E::ts('Error when adding paper questionnaire activity to recruitment case for volunteer ') . $contactId
-                . E::ts(' from API Activity create : ') . $ex->getMessage();
+              $message = E::ts('Error when creating recruitment case for volunteer ') . $contactId
+                . E::ts(' from API NbrVolunteerCase create : ') . $ex->getMessage();
               CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
             }
+
+            if ($data['nihr_paper_hlq'] == 'Yes') {
+              // add action
+              try {
+                civicrm_api3('Activity', 'create', [
+                  'source_contact_id' => $contactId,
+                  'case_id' => $caseID,
+                  'activity_type_id' => "nihr_paper_hlq",
+                ]);
+              } catch (CiviCRM_API3_Exception $ex) {
+                $message = E::ts('Error when adding paper questionnaire activity to recruitment case for volunteer ') . $contactId
+                  . E::ts(' from API Activity create : ') . $ex->getMessage();
+                CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
+              }
+            }
+
+            // TODO &&& CONSENT ONLY ADDED FOR NEW VOLUNTEERS; FOR EXISTING VOLUNTEERS: CHECK IF THIS SPECIFIC
+            // TODO     CONSENT ALREADY EXISTS AND IF NOT ADD (TO NEW CASE? TO ACTIVITIES?)
+            // add consent to recruitment case
+            $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
+            $nbrConsent->addConsent($contactId, $caseID, 'consent_form_status_not_valid', 'Consent', $data, $this->_logger);
           }
 
-          // TODO &&& CONSENT ONLY ADDED FOR NEW VOLUNTEERS; FOR EXISTING VOLUNTEERS: CHECK IF THIS SPECIFIC
-          // TODO     CONSENT ALREADY EXISTS AND IF NOT ADD (TO NEW CASE? TO ACTIVITIES?)
-          // add consent to recruitment case
-          $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
-          $nbrConsent->addConsent($contactId, $caseID, 'consent_form_status_not_valid', 'Consent', $data, $this->_logger);
-        }
+          // *** Starfish migration only
+          if ($this->_dataSource == 'starfish') {
+            if ($new_volunteer or $data['consent_version'] <> '') {
+              // consents all migrated into one recruitment case
+              $this->migrationAddConsent($contactId, $data);
+            }
+            // migrate volunteer status and fields linked to the status
+            $this->migrationVolunteerStatus($contactId, $data);
 
-        // *** Starfish migration only
-        if ($this->_dataSource == 'starfish') {
-          if ($new_volunteer or $data['consent_version'] <> '') {
-            // consents all migrated into one recruitment case
-            $this->migrationAddConsent($contactId, $data);
-          }
-          // migrate volunteer status and fields linked to the status
-          $this->migrationVolunteerStatus($contactId, $data);
+            // migrate paper questionnaire flag
+            if (isset($data['nihr_paper_hlq']) && $data['nihr_paper_hlq'] == 'Yes') {
+              $this->addRecruitmentCaseActivity($contactId, 'nihr_paper_hlq', '');
+            }
 
-          // migrate paper questionnaire flag
-          if (isset($data['nihr_paper_hlq']) && $data['nihr_paper_hlq'] == 'Yes') {
-            $this->addRecruitmentCaseActivity($contactId, 'nihr_paper_hlq', '');
+            // migrate spine lookup data
+            if (isset($data['spine_lookup']) && $data['spine_lookup'] <> '') {
+              $this->addRecruitmentCaseActivity($contactId, 'spine_lookup', $data['spine_lookup']);
+            }
+            // migrate date ibd questionnaire data loaded
+            if (isset($data['ibd_questionnaire_data_loaded']) && $data['ibd_questionnaire_data_loaded'] <> '') {
+              $this->addRecruitmentCaseActivity($contactId, 'ibd_questionnaire_data_loaded', $data['ibd_questionnaire_data_loaded']);
+            }
           }
 
-          // migrate spine lookup data
-          if (isset($data['spine_lookup']) && $data['spine_lookup'] <> '') {
-            $this->addRecruitmentCaseActivity($contactId, 'spine_lookup', $data['spine_lookup']);
+          // gdpr request - very likely only used for migration
+          if (isset($data['gdpr_request_received']) && $data['gdpr_request_received'] <> '') {
+            $this->addActivity($contactId, 'nihr_gdpr_request_received', $data['gdpr_request_received']);
           }
-          // migrate date ibd questionnaire data loaded
-          if (isset($data['ibd_questionnaire_data_loaded']) && $data['ibd_questionnaire_data_loaded'] <> '') {
-            $this->addRecruitmentCaseActivity($contactId, 'ibd_questionnaire_data_loaded', $data['ibd_questionnaire_data_loaded']);
+          if (isset($data['gdpr_sent_to_nbr']) && $data['gdpr_sent_to_nbr'] <> '') {
+            $this->addActivity($contactId, 'nihr_gdpr_sent_to_nbr', $data['gdpr_sent_to_nbr']);
           }
-        }
-
-        // gdpr request - very likely only used for migration
-        if (isset($data['gdpr_request_received']) && $data['gdpr_request_received'] <> '') {
-          $this->addActivity($contactId, 'nihr_gdpr_request_received', $data['gdpr_request_received']);
-        }
-        if (isset($data['gdpr_sent_to_nbr']) && $data['gdpr_sent_to_nbr'] <> '') {
-          $this->addActivity($contactId, 'nihr_gdpr_sent_to_nbr', $data['gdpr_sent_to_nbr']);
         }
       }
     }
@@ -505,6 +513,25 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           ; */
       }
 
+      if ($newKey == 'pack_id') {
+        // todo $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_ucl_br_local', 'id');
+        // &&& $mappedData['nva_alias_type'] = 'alias_type_packid';
+        // &&& $mappedData['nva_external_id'] = $value;
+
+
+        $mappedData['identifier_type'] = 'cih_type_packid';
+        $mappedData['identifier'] = $value;
+
+
+        /*  $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('alias_type_ibd_id', 'id');
+          $mappedData[$newKey] = $value;
+          $newKey = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_external_id', 'id');
+          $mappedData[$newKey] = $value;
+          // mapping ID is entered twice, once for insert (custom ID) and once for mapping (local_ucl_id)
+          $newKey = 'custom_'.CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerAliasCustomField('nva_alias_type', 'id');
+          ; */
+      }
+
       $mappedData[$newKey] = $value;
     }
     return $mappedData;
@@ -538,9 +565,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
    *
    * *** add new volunteer or update data of existing volunteer
    */
-  private function addContact($data)
+  private function addContact(&$data)
   {
     $new_volunteer = 1;
+    $local_identifier_missing = 0;
 
     // todo move to volunteer class (?)
 
@@ -566,6 +594,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     $volunteer = new CRM_Nihrbackbone_NihrVolunteer();
     $contactId = '';
+    $identifier = '';
+    $identifier_type = '';
 
     switch ($this->_dataSource) {
       case "ucl":
@@ -573,13 +603,20 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $contactId = $volunteer->findVolunteerByAlias($data['local_id'], 'cih_type_ucl_br_local');
         break;
       case "ibd":
-        if(!empty($data['pack_id'])) {
-          $contactId = $volunteer->findVolunteerByAlias($data['pack_id'], 'cih_type_packid');
+        if (!empty($data['pat_bio_no'])) {
+          $identifier = $data['pat_bio_no'];
+          if (strpos($identifier, 'IBD') !== false) {
+            $identifier_type = 'ibd_id';
+            $contactId = $volunteer->findVolunteerByAlias($identifier, 'cih_type_ibd_id');
+          }
+          else {
+            $identifier_type = 'pack_id';
+            $contactId = $volunteer->findVolunteerByAlias($identifier, 'cih_type_pack_id');
+          }
+        } else {
+          $this->_logger->logMessage('ERROR: IBD project ID missing, no data loaded: ' . $data['last_name'], 'error');
         }
-        // older entries have IBD IDs attached instead
-        if (!$contactId && !empty($data['ibd_id'])) {
-          $contactId = $volunteer->findVolunteerByAlias($data['ibd_id'], 'cih_type_ibd_id');
-        }
+
         break;
       case "starfish":
         $contactId = $volunteer->findVolunteerByAlias($data['participant_id'], 'cih_type_participant_id');
@@ -589,49 +626,55 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $this->_logger->logMessage('ERROR: no default mapping for ' . $this->_dataSource, 'error');
     }
 
-    if (!$contactId) {
-      // check if volunteer is already on Civi under a different panel/without the given ID
-      // TODO &&&
-    }
+    // only continue if identifier for project is provided
+    if ($identifier <> '' and $identifier_type <> '') {
+      $data[$identifier_type] = $identifier;
 
-    if ($contactId) {
-      // volunteer already exists
-      $data['id'] = $contactId;
-      $new_volunteer = 0;
-    }
-
-    else { // new record
-      // for records with missing names (e.g. loading from sample receipts) a fake first name and surname needs to be added
-      if ($data['first_name'] == '') {
-        $data['first_name'] = 'x';
-      }
-      if ($data['last_name'] == '') {
-        $data['last_name'] = 'x';
+      if (!$contactId) {
+        // check if volunteer is already on Civi under a different panel/without the given ID
+        $contactId = $volunteer->findVolunteer($data);
       }
 
-      // set volunteer status to 'pending'
-      $volunteerStatusCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerStatusCustomField('nvs_volunteer_status', 'id');
-      $data[$volunteerStatusCustomField] = 'volunteer_status_pending';
-    }
+      if ($contactId) {
+        // volunteer already exists
+        $data['id'] = $contactId;
+        $new_volunteer = 0;
+      } else { // new record
+        // for records with missing names (e.g. loading from sample receipts) a fake first name and surname needs to be added
+        if ($data['first_name'] == '') {
+          $data['first_name'] = 'x';
+        }
+        if ($data['last_name'] == '') {
+          $data['last_name'] = 'x';
+        }
 
-    foreach ($data as $key => $value) {
-      if (!empty($value)) {
-        $params[$key] = $value;
+        // set volunteer status to 'pending'
+        $volunteerStatusCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerStatusCustomField('nvs_volunteer_status', 'id');
+        $data[$volunteerStatusCustomField] = 'volunteer_status_pending';
       }
-    }
 
-    try {
-      // create/update volunteer record
-      $result = civicrm_api3("Contact", "create", $params);
-      $this->_logger->logMessage('Volunteer ' . $data['participant_id'] . ' ' .(int)$result['id'].' successfully loaded/updated. New volunteer: '. $new_volunteer);
-      return array((int)$result['id'], $new_volunteer);
-    } catch (CiviCRM_API3_Exception $ex) {
-      $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . " " . $ex->getMessage() . 'error');
-    }
+      foreach ($data as $key => $value) {
+        if (!empty($value)) {
+          $params[$key] = $value;
+        }
+      }
 
-    // **** if no name is available ('x' inserted) - TODO: use participant ID instead
+      try {
+        // create/update volunteer record
+        $result = civicrm_api3("Contact", "create", $params);
+        $this->_logger->logMessage('Volunteer ' . $data['participant_id'] . ' ' . (int)$result['id'] . ' successfully loaded/updated. New volunteer: ' . $new_volunteer);
+        return array((int)$result['id'], $new_volunteer, $local_identifier_missing);
+      } catch (CiviCRM_API3_Exception $ex) {
+        $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . " " . $ex->getMessage() . 'error');
+      }
+
+      // **** if no name is available ('x' inserted) - TODO: use participant ID instead
+    }
+    else {
+      $this->_logger->logMessage('Error local identifier missing, data not loaded ' . $data['last_name'], 'error');
+      $local_identifier_missing = 1;
+    }
   }
-
 
   private function addEmail($contactID, $data)
   {
@@ -750,6 +793,17 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     if ($data[$fieldName] <> '') {
       $phoneNumber = $data[$fieldName];
+
+      // set phoneType, if unknown ('x')
+      if($phoneType == 'x') {
+        if (substr($phoneNumber,0,2) == '07') {
+          $phoneType = 2; // Mobile
+        }
+        else {
+          $phoneType = 1;
+        }
+      }
+
       // only add if not already on database (do ignore type and location)
       $query = "SELECT COUNT(*) as phoneCount, (SELECT COUNT(*) FROM civicrm_value_fcd_former_comm_data
         WHERE entity_id = %1 AND fcd_communication_type = %2 AND fcd_details LIKE %3) AS fcdCount
@@ -804,7 +858,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       if (isset($externalID) && $externalID <> '') {
         $table = 'civicrm_value_contact_id_history';
 
-        // --- check if alias already exists ---------------------------------------------------------------------
+        // --- check if civicrm_value_contact_id_historyalias already exists ---------------------------------------------------------------------
         // todo compare on strings removing blanks and special chars
         $query = "SELECT identifier
                     FROM $table
@@ -826,8 +880,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             // todo check if nhs number format is correct (subroutine to be written by JB)
           }
           try {
-            $query = "insert into $table (entity_id, identifier_type, identifier)
-                              values (%1,%2,%3)";
+            $query = "insert into $table (entity_id, identifier_type, identifier, used_since)
+                              values (%1,%2,%3, current_timestamp())";
             $queryParams = [
               1 => [$contactID, "Integer"],
               2 => [$aliasType, "String"],

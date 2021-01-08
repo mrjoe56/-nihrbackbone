@@ -155,5 +155,6 @@
   "is_primary": "is_primary",
 
   "spine_lookup": "spine_lookup",
-  "ibd_questionnaire_data_loaded": "ibd_questionnaire_data_loaded"
+  "ibd_questionnaire_data_loaded": "ibd_questionnaire_data_loaded",
+  "pat_bio_no": "pat_bio_no"
 }

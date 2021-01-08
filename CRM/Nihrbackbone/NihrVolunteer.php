@@ -220,6 +220,58 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return $id;
   }
 
+  public function findVolunteer($data)
+  {
+    $id = '';
+
+    // this function should only be used if mapping on (local) ID failed to ensure that no duplicates are created
+    // mapping on first name, surname, gender, dob
+
+    // only use if all four data items are provided
+    if (isset($data['first_name']) && $data['first_name'] <> '' &&
+      isset($data['last_name']) && $data['last_name'] <> '' &&
+      isset($data['gender_id']) && $data['gender_id'] <> '' &&
+      isset($data['birth_date']) && $data['birth_date'] <> '') {
+
+      $dob = $data['birth_date']; // todo investigate how to map ('Date' and String are not working without modifying the value)
+      $sql = "
+        select count(*) as cnt, c.id as id
+        from civicrm_contact c
+        where c.contact_type = 'Individual'
+        and c.contact_sub_type = 'nihr_volunteer'
+        and c.first_name = %1
+        and c.last_name = %2
+        and c.gender_id = if(%3 = 'Female', '1', if(%3 = 'Male', '2', if(%3 = 'Other', '3', 'x')))";
+        // and c.birth_date = '$dob'";
+
+      $queryParams = [
+        1 => [$data['first_name'], 'String'],
+        2 => [$data['last_name'], 'String'],
+        3 => [$data['gender_id'], 'String'],
+      ];
+
+      try {
+        $xdata = CRM_Core_DAO::executeQuery($sql, $queryParams);
+        if ($xdata->fetch()) {
+          $count = $xdata->cnt;
+          $id = $xdata->id;
+        }
+      }
+      catch (Exception $ex) {
+        Civi::log()->warning(E::ts('Select FinVolunteer failed ' . $data['first_name'] . ' ' . $data['first_name'] . ': ' . $ex));
+      }
+
+      // cnt = 1 -> ID unique for this volunteer
+      if ($count == 0) {
+        $id = ''; // just in case
+      } elseif ($count > 1) {
+        // there are already duplicatede records of the volunteer - use one of these but give warning
+        Civi::log()->warning(E::ts('Multiple records linked to identifier ' . $data['first_name'] . ' ' . $data['first_name'] . ' used first one'));
+      }
+    }
+    return $id;
+  }
+
 
   /**
    * Method to calculate BMI
