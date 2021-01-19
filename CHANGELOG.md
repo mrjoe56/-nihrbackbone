@@ -1,3 +1,6 @@
+## Version 1.73
+* issue 7462: preg_replace for weird characters that are not empty (see https://stackoverflow.com/questions/45855783/php-how-to-get-rid-of-strange-characters-like-u00a0)
+
 ## Version 1.72
 * issue 7165: add method to find contact id with email
 
