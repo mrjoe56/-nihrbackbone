@@ -212,7 +212,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @param $identifierType
    * @return int|bool
    */
-  public function findVolunteerByAlias($identifier, $alias_type)
+  public function findVolunteerByAlias($identifier, $alias_type, $logger)
   {
 
     // for participant ID: $xID = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomField('nva_participant_id', 'id');
@@ -261,13 +261,12 @@ class CRM_Nihrbackbone_NihrVolunteer {
       $id = '';
     }
     elseif ($count > 1) {
-      // &&& $this->_logger->logMessage('Multiple records linked to identifier '.$identifier);
-      Civi::log()->warning(E::ts('Multiple records linked to identifier '.$identifier));
+      $logger->logMessage('Multiple records linked to identifier '.$identifier);
     }
     return $id;
   }
 
-  public function findVolunteer($data)
+  public function findVolunteer($data, $logger)
   {
     $id = '';
 
@@ -288,8 +287,8 @@ class CRM_Nihrbackbone_NihrVolunteer {
         and c.contact_sub_type = 'nihr_volunteer'
         and c.first_name = %1
         and c.last_name = %2
-        and c.gender_id = if(%3 = 'Female', '1', if(%3 = 'Male', '2', if(%3 = 'Other', '3', 'x')))";
-        // and c.birth_date = '$dob'";
+        and c.gender_id = if(%3 = 'Female', '1', if(%3 = 'Male', '2', if(%3 = 'Other', '3', 'x')))
+        and c.birth_date = '$dob'";
 
       $queryParams = [
         1 => [$data['first_name'], 'String'],
@@ -305,7 +304,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
         }
       }
       catch (Exception $ex) {
-        Civi::log()->warning(E::ts('Select FinVolunteer failed ' . $data['first_name'] . ' ' . $data['first_name'] . ': ' . $ex));
+        $logger->logMessage('Select FindVolunteer failed ' . $data['first_name'] . ' ' . $data['first_name']);
       }
 
       // cnt = 1 -> ID unique for this volunteer
@@ -313,12 +312,35 @@ class CRM_Nihrbackbone_NihrVolunteer {
         $id = ''; // just in case
       } elseif ($count > 1) {
         // there are already duplicatede records of the volunteer - use one of these but give warning
-        Civi::log()->warning(E::ts('Multiple records linked to identifier ' . $data['first_name'] . ' ' . $data['first_name'] . ' used first one'));
+        $logger->logMessage('Multiple records linked to identifier ' . $data['first_name'] . ' ' . $data['first_name'] . ' used first one');
       }
     }
     return $id;
   }
 
+  public function VolunteerStatusActiveOrPending($id, $logger)
+  {
+
+      $sql = "SELECT count(*)
+              from civicrm_value_nihr_volunteer_status 
+              where entity_id = %1
+              and nvs_volunteer_status in ('volunteer_status_pending', 'volunteer_status_active')";
+
+      $queryParams = [
+        1 => [$id, 'Integer'],
+      ];
+
+      try {
+        $count = (int)CRM_Core_DAO::singleValueQuery($sql, $queryParams);
+        if ($count > 0) {
+          return TRUE;
+        }
+      }
+      catch (Exception $ex) {
+        $logger->logMessage('VolunteerStatusActiveOrPending for ' . $id . ' failed.');
+      }
+      return FALSE;
+  }
 
   /**
    * Method to calculate BMI

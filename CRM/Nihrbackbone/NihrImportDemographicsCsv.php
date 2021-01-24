@@ -108,12 +108,16 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
     // check if mapping contains mandatory columns according to source given
     if (($this->_dataSource == 'ucl' && !isset($this->_mapping['cih_type_ucl_local'])) ||
-      ($this->_dataSource == 'ibd' && !isset($this->_mapping['pat_bio_no']))) {
-      // todo : log error
-    } elseif (!isset($this->_mapping['panel'])) {
+      ($this->_dataSource == 'ibd' && !isset($this->_mapping['pat_bio_no'])) ||
+      ($this->_dataSource == 'strides' && !isset($this->_mapping['cih_type_strides_pid']) &&
+          !isset($this->_mapping['cih_type_pack_id_din']))) {
+        $this->_logger->logMessage('ERROR: ID column missing for ' . $this->_dataSource . ' data not loaded', 'error');
+    }
+    elseif (!isset($this->_mapping['panel'])) {
       // todo check on panel, centre and site
       $this->_logger->logMessage('ERROR: panel missing for ' . $this->_dataSource . ' data not loaded', 'error');
-    } else {
+    }
+    else {
       $this->importDemographics();
     }
     fclose($this->_csv);
@@ -211,6 +215,14 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
             $this->addAlias($contactId, 'cih_type_ibd_id', $data['cih_type_ibd_id'], 2);
           }
 
+          // STRIDES
+          if (!empty($data['cih_type_strides_pid'])) {
+            $this->addAlias($contactId, 'cih_type_strides_pid', $data['cih_type_strides_pid'], 2);
+          }
+          if (!empty($data['cih_type_pack_id_din'])) {
+            $this->addAlias($contactId, 'cih_type_pack_id_din', $data['cih_type_pack_id_din'], 2);
+          }
+
           if (isset($data['previous_names']) && !empty($data['previous_names'])) {
             $this->addAlias($contactId, 'cih_type_former_surname', $data['previous_names'], 2);
           }
@@ -247,7 +259,11 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           // add consent to recruitment case
           // NOTE: status 'not valid' is set for IBD - call might need to be updated for other projects
           $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
-          $nbrConsent->addConsent($contactId, $caseID, 'consent_form_status_not_valid', 'Consent', $data, $this->_logger);
+          $consent_status = 'consent_form_status_correct';
+          if ($this->_dataSource == 'ibd') {
+            $consent_status = 'consent_form_status_not_valid';
+          }
+          $nbrConsent->addConsent($contactId, $caseID, $consent_status, 'Consent', $data, $this->_logger);
 
           // migrate paper questionnaire flag (IBD)
           if (isset($data['nihr_paper_hlq']) && $data['nihr_paper_hlq'] == 'Yes') {
@@ -279,7 +295,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           if (!empty($data['deceased_date'])) {
             $deceased = CRM_Nihrbackbone_NihrVolunteer::processDeceased($contactId, $data['deceased_date']);
             // set volunteer status to deceased
-            //$this->setVolunteerStatus($contactId, Civi::service('nbrBackbone')->getDeceasedVolunteerStatus());
+            $this->setVolunteerStatus($contactId, Civi::service('nbrBackbone')->getDeceasedVolunteerStatus());
             if (!$deceased) {
               $message = "Error trying to set contact ID " . $contactId . " to deceased with deceased date: " . $data['death_reported_date'] . ". Migrated but no deceased processing.";
               CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'warning');
@@ -511,23 +527,35 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     switch ($this->_dataSource) {
       case "ucl":
         // todo check if ID is empty, if so, do not load record
-        $contactId = $volunteer->findVolunteerByAlias($data['cih_type_ucl_local'], 'cih_type_ucl_local');
+        //contactId = $volunteer->findVolunteerByAlias($data['cih_type_ucl_local'], 'cih_type_ucl_local');
         break;
       case "ibd":
         if (!empty($data['pat_bio_no'])) {
           $identifier = $data['pat_bio_no'];
           if (strpos($identifier, 'IBD') !== false) {
             $identifier_type = 'cih_type_ibd_id';
-            $contactId = $volunteer->findVolunteerByAlias($identifier, 'cih_type_ibd_id');
-          } else {
+          }
+          else {
             $identifier_type = 'cih_type_packid';
-            $contactId = $volunteer->findVolunteerByAlias($identifier, 'cih_type_packid');
           }
         } else {
           $this->_logger->logMessage('ERROR: IBD project ID missing, no data loaded: ' . $data['last_name'], 'error');
         }
         break;
-
+      case "strides":
+        // either cih_type_strides_pid or cih_type_pack_id_din needs to be provided, if not, don't store the record
+        if($data['cih_type_strides_pid'] <> '') {
+          $identifier_type = 'cih_type_strides_pid';
+          $identifier = $data['cih_type_strides_pid'];
+        }
+        elseif($data['cih_type_pack_id_din'] <> '') {
+          $identifier_type = 'cih_type_pack_id_din';
+          $identifier = $data['cih_type_pack_id_din'];
+        }
+        else {
+          $this->_logger->logMessage('ERROR: Neither STRIDES pid nor pack ID provided, no data loaded: ' . $data['last_name'] . ' ' . $data['cih_type_blood_donor_id'], 'error');
+        }
+        break;
       default:
         $this->_logger->logMessage('ERROR: no default mapping for ' . $this->_dataSource, 'error');
     }
@@ -536,16 +564,26 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     if ($identifier <> '' and $identifier_type <> '') {
       $data[$identifier_type] = $identifier;
 
+      // check if ID already on database
+      $contactId = $volunteer->findVolunteerByAlias($identifier, $identifier_type, $this->_logger);
       if (!$contactId) {
         // check if volunteer is already on Civi under a different panel/without the given ID
-        $contactId = $volunteer->findVolunteer($data);
+        $contactId = $volunteer->findVolunteer($data, $this->_logger);
       }
 
       if ($contactId) {
         // volunteer already exists
+        // do not save data if volunteer is not active or pending
+        if (!$volunteer->VolunteerStatusActiveOrPending($contactId, $this->_logger)) {
+          $this->_logger->logMessage('ERROR: volunteer ' . $identifier . ' (' . $contactId .
+            ') has status other than active or pending, no data loaded', 'error');
+          return;
+        }
+
         $data['id'] = $contactId;
         $new_volunteer = 0;
-      } else { // new record
+      }
+      else { // new record
         // for records with missing names (e.g. loading from sample receipts) a fake first name and surname needs to be added
         if ($data['first_name'] == '') {
           $data['first_name'] = 'x';
@@ -580,6 +618,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       //$local_identifier_missing = 1;
     }
   }
+
 
   private function addEmail($contactID, $data)
   {
@@ -1278,10 +1317,11 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           if ($new != TRUE) {
             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $new, $this->_originalFileName, 'warning');
           }
+          // set volunteer status to withdrawn
+          $this->setVolunteerStatus($contactId, Civi::service('nbrBackbone')->getWithdrawnVolunteerStatus());
         }
       }
     }
-
 
 
   private function formatActivityDate($sourceDate) {
@@ -1296,5 +1336,34 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       }
     }
     return $activityDate->format("Y-m-d");
+  }
+
+  /**
+   * Method to set the volunteer status of a volunteer
+   *
+   * @param $volunteerId
+   * @param $sourceStatus
+   * @return bool
+   */
+  private function setVolunteerStatus($volunteerId, $sourceStatus) {
+    $sourceStatus = strtolower($sourceStatus);
+    // first check if status exists, use pending if not
+    $query = "SELECT COUNT(*) FROM civicrm_option_value WHERE option_group_id = %1 AND value = %2";
+    $queryParams = [
+      1 => [Civi::service('nbrBackbone')->getVolunteerStatusOptionGroupId(), "Integer"],
+      2 => [$sourceStatus, "String"],
+    ];
+    $count = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+    if ($count == 0) {
+      $sourceStatus = Civi::service('nbrBackbone')->getPendingVolunteerStatus();
+    }
+    $update = "UPDATE " . Civi::service('nbrBackbone')->getVolunteerStatusTableName() . " SET "
+      . Civi::service('nbrBackbone')->getVolunteerStatusColumnName() . " = %1 WHERE entity_id = %2";
+    $updateParams = [
+      1 => [$sourceStatus, "String"],
+      2 => [(int) $volunteerId, "Integer"],
+    ];
+    CRM_Core_DAO::executeQuery($update, $updateParams);
+    return TRUE;
   }
 }
