@@ -1,3 +1,6 @@
+## Version 1.75
+* included STRIDES; upload only if existing records are pending or active
+
 ## Version 1.74
 * IBD daily upload, removed migration code
 
