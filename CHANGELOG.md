@@ -1,3 +1,6 @@
+## Version 1.76
+* IBD data load, do not update data of volunteers with status other than active or pending 
+
 ## Version 1.75
 * included STRIDES; upload only if existing records are pending or active
 
