@@ -185,9 +185,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         $data = $this->formatData($data);
 
         // add volunteer or update data of existing volunteer
-        list($contactId, $new_volunteer, $local_id_missing) = $this->addContact($data);
-        // no contact record created/mapped if local ID is not provided
-        if (!$local_id_missing) {
+        list($contactId, $dataStored) = $this->addContact($data);
+        // data is not stored if no local identifier is given or if the existing volunteer has a status
+        // other than active or pending
+        if ($dataStored) {
           $this->addEmail($contactId, $data);
           $this->addAddress($contactId, $data);
           //$this->addPhone($contactId, $data, 'phone_home', Civi::service('nbrBackbone')->getHomeLocationTypeId(), CRM_Nihrbackbone_BackboneConfig::singleton()->getPhonePhoneTypeId());
@@ -495,7 +496,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
   private function addContact(&$data)
   {
     $new_volunteer = 1;
-    $local_identifier_missing = 0;
+    $storeData = 1;
 
     // todo move to volunteer class (?)
 
@@ -577,7 +578,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         if (!$volunteer->VolunteerStatusActiveOrPending($contactId, $this->_logger)) {
           $this->_logger->logMessage('ERROR: volunteer ' . $identifier . ' (' . $contactId .
             ') has status other than active or pending, no data loaded', 'error');
-          return;
+          return array(0, 0);
         }
 
         $data['id'] = $contactId;
@@ -592,9 +593,13 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           $data['last_name'] = 'x';
         }
 
-        // set volunteer status to 'pending'
+        // set volunteer status to 'pending' or IBD and 'active' for other projects
+        $volunteerStatus = 'volunteer_status_active';
+        if ($this->_dataSource == 'ibd') {
+          $volunteerStatus = 'volunteer_status_pending';
+        }
         $volunteerStatusCustomField = 'custom_' . CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerStatusCustomField('nvs_volunteer_status', 'id');
-        $data[$volunteerStatusCustomField] = 'volunteer_status_pending';
+        $data[$volunteerStatusCustomField] = $volunteerStatus;
       }
 
       foreach ($data as $key => $value) {
@@ -606,8 +611,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       try {
         // create/update volunteer record
         $result = civicrm_api3("Contact", "create", $params);
-        $this->_logger->logMessage('Volunteer ' . $data['participant_id'] . ' ' . (int)$result['id'] . ' successfully loaded/updated. New volunteer: ' . $new_volunteer);
-        return array((int)$result['id'], $new_volunteer, $local_identifier_missing);
+        $this->_logger->logMessage('Volunteer ' . $data['participant_id'] . ' ' . $identifier . ' (' . (int)$result['id'] . ') successfully loaded/updated. New volunteer: ' . $new_volunteer);
+        $contactId = $result['id'];
       } catch (CiviCRM_API3_Exception $ex) {
         $this->_logger->logMessage('Error message when adding volunteer ' . $data['last_name'] . " " . $ex->getMessage() . 'error');
       }
@@ -615,8 +620,9 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       // **** if no name is available ('x' inserted) - TODO: use participant ID instead
     } else {
       $this->_logger->logMessage('Error local identifier missing, data not loaded ' . $data['last_name'], 'error');
-      //$local_identifier_missing = 1;
+      $storeData = 0;
     }
+    return array($contactId, $storeData);
   }
 
 

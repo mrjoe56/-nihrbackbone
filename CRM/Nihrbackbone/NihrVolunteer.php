@@ -312,7 +312,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
         $id = ''; // just in case
       } elseif ($count > 1) {
         // there are already duplicatede records of the volunteer - use one of these but give warning
-        $logger->logMessage('Multiple records linked to identifier ' . $data['first_name'] . ' ' . $data['first_name'] . ' used first one');
+        $logger->logMessage('Multiple records linked to identifier ' . $data['first_name'] . ' ' . $data['last_name'] . ', used first one (' . $id . ')');
       }
     }
     return $id;
