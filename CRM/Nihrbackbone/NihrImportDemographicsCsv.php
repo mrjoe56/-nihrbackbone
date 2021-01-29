@@ -110,7 +110,8 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
     if (($this->_dataSource == 'ucl' && !isset($this->_mapping['cih_type_ucl_local'])) ||
       ($this->_dataSource == 'ibd' && !isset($this->_mapping['pat_bio_no'])) ||
       ($this->_dataSource == 'strides' && !isset($this->_mapping['cih_type_strides_pid']) &&
-          !isset($this->_mapping['cih_type_pack_id_din']))) {
+          !isset($this->_mapping['cih_type_pack_id_din'])) ||
+      ($this->_dataSource == 'nafld' && !isset($this->_mapping['cih_type_packid']))) {
         $this->_logger->logMessage('ERROR: ID column missing for ' . $this->_dataSource . ' data not loaded', 'error');
     }
     elseif (!isset($this->_mapping['panel'])) {
@@ -259,12 +260,14 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
 
           // add consent to recruitment case
           // NOTE: status 'not valid' is set for IBD - call might need to be updated for other projects
-          $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
-          $consent_status = 'consent_form_status_correct';
-          if ($this->_dataSource == 'ibd') {
-            $consent_status = 'consent_form_status_not_valid';
+          if (isset($data['consent_version']) && $data['consent_version'] <> '') {
+            $nbrConsent = new CRM_Nihrbackbone_NbrConsent();
+            $consent_status = 'consent_form_status_correct';
+            if ($this->_dataSource == 'ibd') {
+              $consent_status = 'consent_form_status_not_valid';
+            }
+            $nbrConsent->addConsent($contactId, $caseID, $consent_status, 'Consent', $data, $this->_logger);
           }
-          $nbrConsent->addConsent($contactId, $caseID, $consent_status, 'Consent', $data, $this->_logger);
 
           // migrate paper questionnaire flag (IBD)
           if (isset($data['nihr_paper_hlq']) && $data['nihr_paper_hlq'] == 'Yes') {
@@ -557,6 +560,16 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           $this->_logger->logMessage('ERROR: Neither STRIDES pid nor pack ID provided, no data loaded: ' . $data['last_name'] . ' ' . $data['cih_type_blood_donor_id'], 'error');
         }
         break;
+      case "nafld":
+        // packid
+        if($data['cih_type_packid'] <> '') {
+          $identifier_type = 'cih_type_packid';
+          $identifier = $data['cih_type_packid'];
+        }
+        else {
+          $this->_logger->logMessage('ERROR: No packID provided, no data loaded: ' . $data['last_name'], 'error');
+        }
+        break;
       default:
         $this->_logger->logMessage('ERROR: no default mapping for ' . $this->_dataSource, 'error');
     }
@@ -577,7 +590,7 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
         // do not save data if volunteer is not active or pending
         if (!$volunteer->VolunteerStatusActiveOrPending($contactId, $this->_logger)) {
           $this->_logger->logMessage('ERROR: volunteer ' . $identifier . ' (' . $contactId .
-            ') has status other than active or pending, no data loaded', 'error');
+            ') has status other than active or pending, no data loaded', 'warning');
           return array(0, 0);
         }
 
@@ -753,14 +766,17 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       }
 
       // only add if not already on database (do ignore type and location)
+      // (remove blanks for comparison)
+      $xPhoneNumber = str_replace(" ","", $phoneNumber);
+
       $query = "SELECT COUNT(*) as phoneCount, (SELECT COUNT(*) FROM civicrm_value_fcd_former_comm_data
-        WHERE entity_id = %1 AND fcd_communication_type = %2 AND fcd_details LIKE %3) AS fcdCount
-        FROM civicrm_phone WHERE contact_id = %1 and phone = %4";
+        WHERE entity_id = %1 AND fcd_communication_type = %2 AND replace(fcd_details, ' ', '') LIKE %3) AS fcdCount
+        FROM civicrm_phone WHERE contact_id = %1 and replace(phone, ' ', '') = %4";
       $queryParams = [
         1 => [(int)$contactID, "Integer"],
         2 => ["phone", "String"],
-        3 => ["%" . $phoneNumber . "%", "String"],
-        4 => [$phoneNumber, "String"],
+        3 => ["%" . $xPhoneNumber . "%", "String"],
+        4 => [$xPhoneNumber, "String"],
       ];
       $dao = CRM_Core_DAO::executeQuery($query, $queryParams);
       if ($dao->fetch()) {

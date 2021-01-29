@@ -19,13 +19,14 @@ class CRM_Nihrbackbone_NbrConsent
     } else {
       $existingLeafletVersion = $this->isExistingLeafletVersion($data['information_leaflet_version']);
       $existingConsentVersion = $this->isExistingConsentVersion($data['consent_version']);
-      if (!$existingLeafletVersion) {
+      if (!$existingLeafletVersion && isset($data['information_leaflet_version']) && $data['information_leaflet_version'] <> '') {
         $logger->logMessage( $contactId . ' leaflet version '
           . $data['information_leaflet_version'] . ' does not exist.' ,'warning');
+        $data['information_leaflet_version'] = '';
       }
       if (!$existingConsentVersion) {
-        $logger->logMessage('Could not add consent for contact ID ' . $contactId . ' because leaflet version '
-          . $data['information_leaflet_version'] . ' does not exist.' ,'error');
+        $logger->logMessage('Could not add consent for contact ID ' . $contactId . ' because consent version '
+          . $data['consent_version'] . ' does not exist.' ,'error');
       }
       if ($existingConsentVersion) {
         $consentDate = date('Y-m-d', strtotime($data['consent_date']));
