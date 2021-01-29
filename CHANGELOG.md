@@ -1,3 +1,6 @@
+## Version 1.77
+* updated phone data import; added NAFLD data
+
 ## Version 1.76
 * IBD data load, do not update data of volunteers with status other than active or pending 
 
