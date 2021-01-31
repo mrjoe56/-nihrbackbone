@@ -12,30 +12,43 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  * @throws API_Exception
  */
 function civicrm_api3_nihr_import_csv_Loaddemographics($params) {
-  $returnValues = [];
+
   // get the csv import and processed folders
   $folder = 'nbr_folder_'.$params['dataSource'];
   $loadFolder = Civi::settings()->get($folder);
   if ($loadFolder && !empty($loadFolder)) {
-    // get all .csv files from folder
-    $csvFiles = glob($loadFolder . DIRECTORY_SEPARATOR . "*.csv");
-    // sort
-    sort($csvFiles);
-    // only use newest - last - file
-    $csvFile = array_pop($csvFiles);
 
-    if (!$csvFile) {
-      throw new API_Exception(E::ts('Folder for import (' . $loadFolder . ') does not contain csv files'),  1001);
-    }
-
-    // process file
-    $import = new CRM_Nihrbackbone_NihrImportDemographicsCsv($csvFile, $params);
-    if ($import->validImportData()) {
-      $returnValues = $import->processImport();
-      return civicrm_api3_create_success($returnValues, $params, 'NihrImportCsv', 'loaddemographics');
-    }
+    // 1) upload PID data file
+    processFile($loadFolder, $params['dataSource'] . '_pid_data_export*', $params);
+    // 2) contact data
+    processFile($loadFolder, $params['dataSource'] . '_contacts_export*', $params);
   }
   else {
     throw new API_Exception(E::ts('Folder for import (' . $folder . ') not found or empty'),  1001);
+  }
+}
+
+
+function processFile($Folder, $FilePrefix, $params)
+{
+  $returnValues = [];
+
+  $csvFiles = glob($Folder . DIRECTORY_SEPARATOR . $FilePrefix);
+
+  // sort files with given prefix
+  sort($csvFiles);
+
+  // only use newest - last - file
+  $csvFile = array_pop($csvFiles);
+
+  if (!$csvFile) {
+    throw new API_Exception(E::ts('Folder for import (' . $Folder . ') does not contain ' . $FilePrefix . ' files'), 1001);
+  }
+
+  // process file
+  $import = new CRM_Nihrbackbone_NihrImportDemographicsCsv($csvFile, $params);
+  if ($import->validImportData()) {
+    $returnValues = $import->processImport();
+    return civicrm_api3_create_success($returnValues, $params, 'NihrImportCsv', 'loaddemographics');
   }
 }

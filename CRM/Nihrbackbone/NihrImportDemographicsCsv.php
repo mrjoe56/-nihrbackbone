@@ -781,15 +781,19 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
       $dao = CRM_Core_DAO::executeQuery($query, $queryParams);
       if ($dao->fetch()) {
         if ($dao->phoneCount == 0 && $dao->fcdCount == 0) {
-          $insert = "INSERT INTO civicrm_phone (contact_id, phone, is_primary, location_type_id, phone_type_id) VALUES(%1, %2, %3, %4, %5)";
-          $insertParams = [
-            1 => [(int)$contactID, "Integer"],
-            2 => [$phoneNumber, "String"],
-            3 => [(int)$isPrimary, "Integer"],
-            4 => [(int)$phoneLocation, "Integer"],
-            5 => [(int)$phoneType, "Integer"],
-          ];
-          CRM_Core_DAO::executeQuery($insert, $insertParams);
+          try {
+            $insert = "INSERT INTO civicrm_phone (contact_id, phone, is_primary, location_type_id, phone_type_id) VALUES(%1, %2, %3, %4, %5)";
+            $insertParams = [
+              1 => [(int)$contactID, "Integer"],
+              2 => [$phoneNumber, "String"],
+              3 => [(int)$isPrimary, "Integer"],
+              4 => [(int)$phoneLocation, "Integer"],
+              5 => [(int)$phoneType, "Integer"],
+            ];
+            CRM_Core_DAO::executeQuery($insert, $insertParams);
+          } catch (Exception $ex) {
+            $this->_logger->logMessage('Error addPhone ' . $contactID . ' ' . $ex->getMessage(), 'error');
+          }
         }
       }
     }

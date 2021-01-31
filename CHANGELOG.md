@@ -1,3 +1,6 @@
+## Version 1.78
+* upload multiple files (pid data, contacts) per project
+
 ## Version 1.77
 * updated phone data import; added NAFLD data
 

@@ -44,6 +44,7 @@
   "panel": "panel",
   "site": "site",
   "source": "source",
+
   "weight": "weight_kg",
   "height": "height_m",
   "hand_preference": "hand_preference",
