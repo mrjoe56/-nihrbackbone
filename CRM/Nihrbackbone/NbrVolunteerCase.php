@@ -1145,6 +1145,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       foreach ($cases as $case) {
         self::calculateEligibility($case['nvpd_study_id'], $volunteerId);
       }
+      unset($session->recalcForCaseId);
     }
   }
 }
