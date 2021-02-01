@@ -10,6 +10,17 @@ use \Symfony\Component\DependencyInjection\Definition;
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_pre/
  */
 function nihrbackbone_civicrm_pre($op, $objectName, $id, &$params) {
+  if ($objectName == "Case" && $op == "edit") {
+    $studyStatusCustomField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
+    // set case id in session if study status custom field is about to change
+    if (isset($params[$studyStatusCustomField])) {
+      $currentStatus = CRM_Nihrbackbone_NbrVolunteerCase::getCurrentStudyStatus($id);
+      if ($currentStatus != $params[$studyStatusCustomField]) {
+        $session = CRM_Core_Session::singleton();
+        $session->recalcForCaseId = $id;
+      }
+    }
+  }
   if ($objectName == "Mailing" && $op == "delete") {
     // if mailing was not completed, reset volunteers with invitation pending
     CRM_Nihrbackbone_BAO_NbrMailing::resetInvitationPending($id);
@@ -119,10 +130,14 @@ function nihrbackbone_civicrm_custom($op, $groupID, $entityID, &$params) {
     CRM_Nihrbackbone_NbrContactIdentity::checkDuplicatContactIdentity($op,$groupID, $entityID, $params);
   }
 
-  // if group = participation data and study status is invited, customInviteHook
+  // if group = participation data
   if ($groupID == CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('id')) {
     foreach ($params as $paramKey => $paramValues) {
+      // if status field
       if (isset($paramValues['custom_field_id']) && $paramValues['custom_field_id'] == CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id')) {
+        // check if eligibility should be recalculated
+        CRM_Nihrbackbone_NbrVolunteerCase::checkEligibilityRecalculation($entityID, $paramValues);
+        // if study status is invited, customInviteHook
         if ($paramValues['value'] == 'study_participation_status_invited') {
           CRM_Nihrbackbone_NbrInvitation::customInviteStatusHook($op, $entityID, $paramValues);
         }

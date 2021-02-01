@@ -1,3 +1,6 @@
+## Version 1.79
+* issue 7570: recalculate eligibility if study participation status of volunteer changes
+
 ## Version 1.78
 * upload multiple files (pid data, contacts) per project
 
@@ -5,7 +8,7 @@
 * updated phone data import; added NAFLD data
 
 ## Version 1.76
-* IBD data load, do not update data of volunteers with status other than active or pending 
+* IBD data load, do not update data of volunteers with status other than active or pending
 
 ## Version 1.75
 * included STRIDES; upload only if existing records are pending or active

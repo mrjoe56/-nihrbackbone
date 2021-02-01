@@ -1108,4 +1108,43 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     }
   }
 
+  /**
+   * Method to get volunteer id of a case
+   *
+   * @param $caseId
+   * @return false|int
+   */
+  public static function getCaseVolunteerId($caseId) {
+    try {
+      $result = civicrm_api3('Case', 'getvalue', [
+        'return' => "contact_id",
+        'id' => $caseId,
+      ]);
+      if ($result[1]) {
+        return $result[1];
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to check if the eligibility should be recalculated for the volunteer
+   * (if study participation status has changed)
+   *
+   * @param $caseId
+   * @param $values
+   */
+  public static function checkEligibilityRecalculation($caseId, $values) {
+    $session = CRM_Core_Session::singleton();
+    if ($session->recalcForCaseId) {
+      // recalculate eligibility on all studies for volunteer
+      $volunteerId = self::getCaseVolunteerId($caseId);
+      $cases = self::getVolunteerSelections($volunteerId);
+      foreach ($cases as $case) {
+        self::calculateEligibility($case['nvpd_study_id'], $volunteerId);
+      }
+    }
+  }
 }
