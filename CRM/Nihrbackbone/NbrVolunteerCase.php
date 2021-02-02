@@ -918,9 +918,15 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @return bool
    */
   public static function hasPanel($contactId, $studyId) {
-    $panelId = CRM_Nihrbackbone_NbrStudy::requiresPanel($studyId);
-    if ($panelId) {
-      return CRM_Nihrbackbone_NihrVolunteer::hasRequiredPanel($contactId, $panelId);
+    $panelIds = CRM_Nihrbackbone_NbrStudy::requiresPanel($studyId);
+    if ($panelIds) {
+      // turn comma separated list into array
+      $panelParts = explode(",", $panelIds);
+      foreach ($panelParts as $panelPart) {
+        if (!CRM_Nihrbackbone_NihrVolunteer::hasRequiredPanel($contactId, $panelPart)) {
+          return FALSE;
+        }
+      }
     }
     return TRUE;
   }
@@ -1138,12 +1144,13 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    */
   public static function checkEligibilityRecalculation($caseId, $values) {
     $session = CRM_Core_Session::singleton();
-    if ($session->recalcForCaseId) {
+    if (isset($session->recalcForCaseId) && !empty($session->recalcForCaseId)) {
       // recalculate eligibility on all studies for volunteer
       $volunteerId = self::getCaseVolunteerId($caseId);
       $cases = self::getVolunteerSelections($volunteerId);
       foreach ($cases as $case) {
-        self::calculateEligibility($case['nvpd_study_id'], $volunteerId);
+        $eligibilities = self::calculateEligibility($case['nvpd_study_id'], $volunteerId);
+        CRM_Nihrbackbone_NbrVolunteerCase::setEligibilityStatus($eligibilities, (int) $case['case_id'], TRUE);
       }
       unset($session->recalcForCaseId);
     }
