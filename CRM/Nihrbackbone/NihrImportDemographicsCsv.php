@@ -224,6 +224,10 @@ class CRM_Nihrbackbone_NihrImportDemographicsCsv
           if (!empty($data['cih_type_pack_id_din'])) {
             $this->addAlias($contactId, 'cih_type_pack_id_din', $data['cih_type_pack_id_din'], 2);
           }
+          if (!empty($data['cih_type_blood_donor_id'])) {
+            $this->addAlias($contactId, 'cih_type_blood_donor_id', $data['cih_type_blood_donor_id'], 2);
+          }
+
 
           if (isset($data['previous_names']) && !empty($data['previous_names'])) {
             $this->addAlias($contactId, 'cih_type_former_surname', $data['previous_names'], 2);
