@@ -166,6 +166,7 @@ class CRM_Nihrbackbone_NihrImportCsv
    */
   public function processImport($recallGroup = NULL)
   {
+    set_time_limit(0);
     // get mapping
     $this->getMapping();
     switch ($this->_type) {
