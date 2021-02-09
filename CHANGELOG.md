@@ -1,3 +1,6 @@
+## Version 1.80
+* STRIDES data upload: added blood donor ID
+
 ## Version 1.79
 * issue 7570: recalculate eligibility if study participation status of volunteer changes
 
