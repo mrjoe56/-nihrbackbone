@@ -1,3 +1,7 @@
+## Version 1.81
+* issue 7564: introduced set_time_limit = 0 when importing participants into study
+* issue 7675: use setting for statuses to be considered as invited in calculate eligibility
+
 ## Version 1.79
 * issue 7570: recalculate eligibility if study participation status of volunteer changes
 
