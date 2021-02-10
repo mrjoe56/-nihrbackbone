@@ -174,4 +174,25 @@ class CRM_Nihrbackbone_Utils {
     return $ages;
   }
 
+  /**
+   * Method to add the participation status clauses to a query
+   *
+   * @param $index
+   * @param $query
+   * @param $queryParams
+   */
+  public static function addParticipantStudyStatusClauses(&$index, &$query, &$queryParams) {
+    $participationStatusColumn = Civi::service('nbrBackbone')->getStudyParticipationStatusColumnName();
+    $statuses = explode(",", Civi::settings()->get('nbr_invited_study_status'));
+    $clauses = [];
+    foreach ($statuses as $status) {
+      $index++;
+      $clauses[] = "%" . $index;
+      $queryParams[$index] = [$status, "String"];
+    }
+    if (!empty($clauses)) {
+      $query .= " AND " . $participationStatusColumn . " IN(" . implode(",", $clauses) . ")";
+    }
+  }
+
 }

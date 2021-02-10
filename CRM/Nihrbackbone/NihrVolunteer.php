@@ -322,7 +322,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
   {
 
       $sql = "SELECT count(*)
-              from civicrm_value_nihr_volunteer_status 
+              from civicrm_value_nihr_volunteer_status
               where entity_id = %1
               and nvs_volunteer_status in ('volunteer_status_pending', 'volunteer_status_active')";
 
@@ -682,16 +682,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
       4 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), 'Integer'],
     ];
     $i = 4;
-    $invited = [];
-    $invitedStatuses = explode(",", Civi::settings()->get('nbr_invited_study_status'));
-    foreach ($invitedStatuses as $invitedStatus) {
-      $i++;
-      $invited[] = "%" . $i;
-      $queryParams[$i] = [$invitedStatus, 'String'];
-    }
-    if (!empty($invited)) {
-      $query .= " AND cvnpd." . $statusColumn . " IN (" . implode(", ", $invited) . ")";
-    }
+    CRM_Nihrbackbone_Utils::addParticipantStudyStatusClauses($i, $query, $queryParams);
     $count = (int) CRM_Core_DAO::singleValueQuery($query, $queryParams);
     if ($count > 0) {
       return TRUE;
@@ -952,7 +943,6 @@ class CRM_Nihrbackbone_NihrVolunteer {
     $studyTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyDataCustomGroup("table_name");
     $participationTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup("table_name");
     $inviteColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField("nvpd_date_invited", "column_name");
-    $partStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField("nvpd_study_participation_status", "column_name");
     $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField("nvpd_study_id", "column_name");
     $checkDate = self::calculateCheckDateMaxInvitations();
     $query = "SELECT COUNT(DISTINCT(c.id)) AS study_count
@@ -962,8 +952,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
             JOIN civicrm_case_contact AS d ON c.id = d.case_id
             LEFT JOIN " . $studyTable . " AS e ON b.id = e.entity_id
         WHERE a." . $inviteColumn . " >= %1 AND a." . $inviteColumn . " IS NOT NULL
-          AND b.status_id IN (%2, %3, %4) AND c.is_deleted = %5 AND c.case_type_id = %6 AND d.contact_id = %7
-          AND a." . $partStatusColumn. " IN(%8, %9, %10, %11, %12, %13, %14, %15, %16, %17)  AND ";
+          AND b.status_id IN (%2, %3, %4) AND c.is_deleted = %5 AND c.case_type_id = %6 AND d.contact_id = %7";
     $queryParams = [
       1 => [$checkDate->format("Y-m-d"), "String"],
       2 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), "Integer"],
@@ -972,27 +961,26 @@ class CRM_Nihrbackbone_NihrVolunteer {
       5 => [0, "Integer"],
       6 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
       7 => [(int) $contactId, "Integer"],
-      8 => [Civi::service('nbrBackbone')->getAcceptedParticipationStatusValue(), "String"],
-      9 => [Civi::service('nbrBackbone')->getExcludedParticipationStatusValue(), "String"],
-      10 => [Civi::service('nbrBackbone')->getInvitationPendingParticipationStatusValue(), "String"],
-      11 => [Civi::service('nbrBackbone')->getInvitedParticipationStatusValue(), "String"],
-      12 => [Civi::service('nbrBackbone')->getParticipatedParticipationStatusValue(), "String"],
-      13 => [Civi::service('nbrBackbone')->getRenegedParticipationStatusValue(), "String"],
-      14 => [Civi::service('nbrBackbone')->getWithdrawnParticipationStatusValue(), "String"],
-      15 => [Civi::service('nbrBackbone')->getNoResponseParticipationStatusValue(), "String"],
-      16 => [Civi::service('nbrBackbone')->getNotParticipatedParticipationStatusValue(), "String"],
-      17 => [Civi::service('nbrBackbone')->getDeclinedParticipationStatusValue(), "String"],
-      18 => [1, "Integer"],
     ];
+    $index = 7;
+    // add participant study status clauses
+    CRM_Nihrbackbone_Utils::addParticipantStudyStatusClauses($index, $query, $queryParams);
     switch ($type) {
       case "facetoface":
-        $query .= $faceToFaceColumn . " = %18";
+        $index++;
+        $queryParams[$index] = [1, "Integer"];
+        $query .= " AND e." . $faceToFaceColumn . " = %" . $index;
         break;
       case "online":
-        $query .= $onLineColumn . " = %18";
+        $index++;
+        $queryParams[$index] = [1, "Integer"];
+        $query .= " AND e." . $onLineColumn . " = %" . $index;
         break;
       case "total":
-        $query .= "(" . $faceToFaceColumn . " = %18 OR " . $onLineColumn . " = %18)";
+        $index++;
+        $queryParams[$index] = [1, "Integer"];
+        $query .= " AND (e." . $faceToFaceColumn . " = %" . $index . " OR e." . $onLineColumn . " = %" . $index
+          . ")";
         break;
       default:
         Civi::log()->warning(E::ts("Invalid type " . $type . " in ") . __METHOD__);
