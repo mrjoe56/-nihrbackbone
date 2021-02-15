@@ -45,7 +45,6 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_volunteerIdsCustomGroup = [];
   private $_volunteerPanelCustomGroup = [];
   private $_volunteerConsentCustomGroup = [];
-  private $_volunteerDiseaseCustomGroup = [];
   private $_siteAliasCustomGroup = [];
 
   // properties for case types ids
@@ -326,22 +325,6 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
-   * Getter for volunteer disease custom group
-   *
-   * @param null $key
-   * @return array|mixed
-   */
-  public function getVolunteerDiseaseCustomGroup($key = NULL) {
-    if ($key && isset($this->_volunteerDiseaseCustomGroup[$key])) {
-      return $this->_volunteerDiseaseCustomGroup[$key];
-    }
-    else {
-      return $this->_volunteerDiseaseCustomGroup;
-    }
-  }
-
-
-  /**
    * Getter for volunteer status custom group
    *
    * @param null $key
@@ -440,27 +423,6 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function getVolunteerConsentCustomField($customFieldName, $key = NULL) {
     foreach ($this->_volunteerConsentCustomGroup['custom_fields'] as $customField) {
-      if ($customField['name'] == $customFieldName) {
-        if ($key && isset($customField[$key])) {
-          return $customField[$key];
-        }
-        else {
-          return $customField;
-        }
-      }
-    }
-    return FALSE;
-  }
-
-  /**
-   * Getter for volunteer disease custom field
-   *
-   * @param $customFieldName
-   * @param $key
-   * @return mixed
-   */
-  public function getVolunteerDiseaseCustomField($customFieldName, $key = NULL) {
-    foreach ($this->_volunteerDiseaseCustomGroup['custom_fields'] as $customField) {
       if ($customField['name'] == $customFieldName) {
         if ($key && isset($customField[$key])) {
           return $customField[$key];

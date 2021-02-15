@@ -74,6 +74,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_contactIdentityTableName = NULL;
   private $_consentStage2TableName = NULL;
   private $_consentTableName = NULL;
+  private $_diseaseTableName = NULL;
   private $_participationDataTableName = NULL;
   private $_siteAliasTableName = NULL;
   private $_visitTableName = NULL;
@@ -88,7 +89,12 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_collectedByCustomFieldId = NULL;
   private $_consentVersionColumnName = NULL;
   private $_consentVersionStage2CustomFieldId = NULL;
+  private $_diagnosisAgeColumnName = NULL;
+  private $_diagnosisYearColumnName = NULL;
+  private $_diseaseColumnName = NULL;
+  private $_diseaseNotesColumnName = NULL;
   private $_expensesNotesCustomFieldId = NULL;
+  private $_familyMemberColumnName = NULL;
   private $_identifierTypeCustomFieldId = NULL;
   private $_identifierTypeColumnName = NULL;
   private $_identifierColumnName = NULL;
@@ -108,6 +114,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_siteAliasTypeColumnName = NULL;
   private $_studyParticipationStatusColumnName = NULL;
   private $_studyPaymentCustomFieldId = NULL;
+  private $_takingMedicationColumnName = NULL;
   private $_toLabDateCustomFieldId = NULL;
   private $_withdrawnReasonCustomFieldId = NULL;
   private $_withdrawnDestroySamplesCustomFieldId = NULL;
@@ -157,6 +164,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_welcomeId = NULL;
     // others
   private $_participationCaseTypeName = NULL;
+  private $_recruitmentCaseTypeName = NULL;
   private $_correctConsentStatusValue = NULL;
   private $_visitStage2Substring = NULL;
   private $_normalPriorityId = NULL;
@@ -170,7 +178,6 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_workLocationTypeId = NULL;
   private $_bioResourcersGroupId = NULL;
   private $_ukCountryId = NULL;
-  private $_bioResourceIdentifierType = NULL;
   private $_participantIdIdentifierType = NULL;
 
   /**
@@ -946,6 +953,90 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getContactIdentityCustomGroupId() {
     return $this->_contactIdentityCustomGroupId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setDiagnosisAgeColumnName($name) {
+    $this->_diagnosisAgeColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getDiagnosisAgeColumnName() {
+    return $this->_diagnosisAgeColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setDiagnosisYearColumnName($name) {
+    $this->_diagnosisYearColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getDiagnosisYearColumnName() {
+    return $this->_diagnosisYearColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setDiseaseColumnName($name) {
+    $this->_diseaseColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getDiseaseColumnName() {
+    return $this->_diseaseColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setDiseaseNotesColumnName($name) {
+    $this->_diseaseNotesColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getDiseaseNotesColumnName() {
+    return $this->_diseaseNotesColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setFamilyMemberColumnName($name) {
+    $this->_familyMemberColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getFamilyMemberColumnName() {
+    return $this->_familyMemberColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setTakingMedicationColumnName($name) {
+    $this->_takingMedicationColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getTakingMedicationColumnName() {
+    return $this->_takingMedicationColumnName;
   }
 
   /**
@@ -2155,6 +2246,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string
    */
+  public function setDiseaseTableName($name) {
+    $this->_diseaseTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getDiseaseTableName() {
+    return $this->_diseaseTableName  ;
+  }
+
+  /**
+   * @param string
+   */
   public function setParticipationDataTableName($name) {
     $this->_participationDataTableName = $name;
   }
@@ -2248,6 +2353,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getParticipationCaseTypeName() {
     return $this->_participationCaseTypeName  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setRecruitmentCaseTypeName($name) {
+    $this->_recruitmentCaseTypeName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getRecruitmentCaseTypeName() {
+    return $this->_recruitmentCaseTypeName  ;
   }
 
   /**

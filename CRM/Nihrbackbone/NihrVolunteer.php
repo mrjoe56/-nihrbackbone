@@ -1137,4 +1137,22 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return FALSE;
   }
 
+  /**
+   * Method to check if volunteer has status redundant
+   *
+   * @param int $volunteerId
+   * @return bool
+   */
+  public static function isRedundant(int $volunteerId) {
+    $table = Civi::service('nbrBackbone')->getVolunteerStatusTableName();
+    $column = Civi::service('nbrBackbone')->getVolunteerStatusColumnName();
+    $redundant = Civi::service('nbrBackbone')->getRedundantVolunteerStatus();
+    $query = "SELECT " . $column . " FROM " . $table . " WHERE entity_id = %1";
+    $status = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, "Integer"]]);
+    if ($status && $status == $redundant) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
 }
