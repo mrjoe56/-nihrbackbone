@@ -245,8 +245,15 @@ class NbrBackboneContainer implements CompilerPassInterface {
     while ($dao->fetch()) {
       switch ($customGroupName) {
         case "contact_id_history":
-          if ($dao->name == "id_history_entry_type") {
-            $definition->addMethodCall('setIdentifierTypeCustomFieldId', [(int) $dao->id]);
+          switch($dao->name) {
+            case "identifier_type":
+              $definition->addMethodCall('setIdentifierTypeCustomFieldId', [(int) $dao->id]);
+              $definition->addMethodCall('setIdentifierTypeColumnName', [$dao->column_name]);
+              break;
+
+            case "identifier":
+              $definition->addMethodCall('setIdentifierColumnName', [$dao->column_name]);
+              break;
           }
           break;
 
@@ -486,6 +493,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
       switch ($dao->name) {
         case "contact_id_history":
           $definition->addMethodCall('setContactIdentityCustomGroupId', [(int) $dao->id]);
+          $definition->addMethodCall('setContactIdentityTableName', [$dao->table_name]);
           break;
 
         case "nbr_participation_data":

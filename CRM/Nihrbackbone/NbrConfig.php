@@ -71,6 +71,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_scheduledActivityStatusId = NULL;
   // custom groups
   private $_contactIdentityCustomGroupId = NULL;
+  private $_contactIdentityTableName = NULL;
   private $_consentStage2TableName = NULL;
   private $_consentTableName = NULL;
   private $_participationDataTableName = NULL;
@@ -89,6 +90,8 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_consentVersionStage2CustomFieldId = NULL;
   private $_expensesNotesCustomFieldId = NULL;
   private $_identifierTypeCustomFieldId = NULL;
+  private $_identifierTypeColumnName = NULL;
+  private $_identifierColumnName = NULL;
   private $_incidentFormCustomFieldId = NULL;
   private $_leafletVersionColumnName = NULL;
   private $_mileageCustomFieldId =  NULL;
@@ -918,6 +921,20 @@ class CRM_Nihrbackbone_NbrConfig {
   }
 
   /**
+   * @param string
+   */
+  public function setContactIdentityTableName($name) {
+    $this->_contactIdentityTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getContactIdentityTableName() {
+    return $this->_contactIdentityTableName;
+  }
+
+  /**
    * @param int
    */
   public function setContactIdentityCustomGroupId($id) {
@@ -929,6 +946,34 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getContactIdentityCustomGroupId() {
     return $this->_contactIdentityCustomGroupId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setIdentifierColumnName($name) {
+    $this->_identifierColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getIdentifierColumnName() {
+    return $this->_identifierColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setIdentifierTypeColumnName($name) {
+    $this->_identifierTypeColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getIdentifierTypeColumnName() {
+    return $this->_identifierTypeColumnName;
   }
 
   /**
