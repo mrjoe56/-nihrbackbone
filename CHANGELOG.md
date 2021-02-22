@@ -1,4 +1,4 @@
-## Version 1.82 (not released yet)
+## Version 1.82
 * issue 7508: remove the loaddemographics from nihrbackbone
 
 ## Version 1.81
