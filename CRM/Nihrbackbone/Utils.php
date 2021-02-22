@@ -181,9 +181,14 @@ class CRM_Nihrbackbone_Utils {
    * @param $query
    * @param $queryParams
    */
-  public static function addParticipantStudyStatusClauses(&$index, &$query, &$queryParams) {
+  public static function addParticipantStudyStatusClauses($type, &$index, &$query, &$queryParams) {
     $participationStatusColumn = Civi::service('nbrBackbone')->getStudyParticipationStatusColumnName();
-    $statuses = explode(",", Civi::settings()->get('nbr_invited_study_status'));
+    if ($type == "max") {
+      $statuses = explode(",", Civi::settings()->get('nbr_max_invited_study_status'));
+    }
+    else {
+      $statuses = explode(",", Civi::settings()->get('nbr_invited_study_status'));
+    }
     $clauses = [];
     foreach ($statuses as $status) {
       $index++;
