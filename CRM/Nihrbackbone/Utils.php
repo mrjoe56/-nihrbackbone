@@ -177,6 +177,7 @@ class CRM_Nihrbackbone_Utils {
   /**
    * Method to add the participation status clauses to a query
    *
+   * @param $type
    * @param $index
    * @param $query
    * @param $queryParams
