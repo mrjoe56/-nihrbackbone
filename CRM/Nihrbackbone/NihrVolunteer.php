@@ -682,7 +682,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
       4 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitingStudyStatus(), 'Integer'],
     ];
     $i = 4;
-    CRM_Nihrbackbone_Utils::addParticipantStudyStatusClauses($i, $query, $queryParams);
+    CRM_Nihrbackbone_Utils::addParticipantStudyStatusClauses('other', $i, $query, $queryParams);
     $count = (int) CRM_Core_DAO::singleValueQuery($query, $queryParams);
     if ($count > 0) {
       return TRUE;
@@ -964,7 +964,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
     ];
     $index = 7;
     // add participant study status clauses
-    CRM_Nihrbackbone_Utils::addParticipantStudyStatusClauses($index, $query, $queryParams);
+    CRM_Nihrbackbone_Utils::addParticipantStudyStatusClauses('max', $index, $query, $queryParams);
     switch ($type) {
       case "facetoface":
         $index++;

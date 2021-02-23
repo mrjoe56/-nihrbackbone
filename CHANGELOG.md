@@ -1,3 +1,6 @@
+## Version 1.83
+* issue 7742: separate settings for max invites and on other study
+
 ## Version 1.82
 * issue 7508: remove the loaddemographics from nihrbackbone
 
