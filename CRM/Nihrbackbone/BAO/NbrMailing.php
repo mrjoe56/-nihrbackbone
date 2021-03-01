@@ -135,43 +135,62 @@ class CRM_Nihrbackbone_BAO_NbrMailing extends CRM_Nihrbackbone_DAO_NbrMailing {
       if (self::isNbrMailing($mailingId)) {
         $nbrMailing = self::getByMailingId($mailingId);
         // now get all case ids for bulk mail recipients
-        $caseIds = self::getBulkMailRecipients($nbrMailing['study_id'], $activityId);
-        // for each case, file activity on case
+        $caseIds = self::getBulkMailRecipients($nbrMailing['study_id'], $mailingId);
+        // for each case, file activity on case if not already on case
         foreach ($caseIds as $caseId) {
-          $insert = "INSERT INTO civicrm_case_activity (case_id, activity_id) VALUES(%1, %2)";
-          CRM_Core_DAO::executeQuery($insert, [
-            1 => [(int) $caseId, "Integer"],
-            2 => [(int) $activityId, "Integer"],
-          ]);
+          if (!self::hasBulkMailActivity($caseId, $activityId)) {
+            $insert = "INSERT INTO civicrm_case_activity (case_id, activity_id) VALUES(%1, %2)";
+            CRM_Core_DAO::executeQuery($insert, [
+              1 => [(int) $caseId, "Integer"],
+              2 => [(int) $activityId, "Integer"],
+            ]);
+          }
         }
       }
     }
   }
 
   /**
+   * Method to check if the case/activity record already exists
+   *
+   * @param $caseId
+   * @param $activityId
+   * @return bool
+   */
+  private static function hasBulkMailActivity($caseId, $activityId) {
+    $query = "SELECT COUNT(*) FROM civicrm_case_activity WHERE case_id = %1 AND activity_id = %2";
+    $count = CRM_Core_DAO::singleValueQuery($query, [
+      1 => [$caseId, "Integer"],
+      2 => [$activityId, "Integer"],
+    ]);
+    if ($count > 0) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
    * Method to get participation case ids for activity targets of activity and study
    *
    * @param $studyId
-   * @param $activityId
+   * @param $mailingId
    * @return array
    */
-  private static function getBulkMailRecipients($studyId, $activityId) {
+  private static function getBulkMailRecipients($studyId, $mailingId) {
     $result = [];
     $table = Civi::service('nbrBackbone')->getParticipationDataTableName();
     $studyIdColumn = Civi::service('nbrBackbone')->getParticipationStudyIdColumnName();
     $query = "SELECT b.case_id
-        FROM civicrm_activity_contact AS a
-            LEFT JOIN civicrm_case_contact AS b ON a.contact_id = b.contact_id
-            LEFT JOIN civicrm_case AS c ON b.case_id = c.id
-            LEFT JOIN ". $table . " AS d on c.id = d.entity_id
-        WHERE a.activity_id = %1 AND a.record_type_id = %2 AND c.is_deleted = %3 AND c.case_type_id = %4
-            AND d." . $studyIdColumn . " = %5";
+        FROM civicrm_mailing_recipients AS a
+            JOIN civicrm_case_contact AS b ON a.contact_id = b.contact_id
+            JOIN civicrm_case AS c ON b.case_id = c.id
+            LEFT JOIN " . $table . " AS d ON b.case_id = d.entity_id
+        WHERE a.mailing_id = %1 AND c.is_deleted = %2 AND c.case_type_id = %3 AND d. " . $studyIdColumn . " = %4";
     $queryParams = [
-      1 => [$activityId, "Integer"],
-      2 => [Civi::service('nbrBackbone')->getTargetRecordTypeId(), "Integer"],
-      3 => [0, "Integer"],
-      4 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
-      5 => [(int) $studyId, "Integer"],
+      1 => [$mailingId, "Integer"],
+      2 => [0, "Integer"],
+      3 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+      4 => [(int) $studyId, "Integer"],
     ];
     $dao = CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($dao->fetch()) {

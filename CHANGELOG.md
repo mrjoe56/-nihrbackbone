@@ -1,3 +1,6 @@
+## Version 1.84
+* issue 7708: fixed query to find cases where bulk mail activities need to be added to after bulk mailing from MSP
+
 ## Version 1.83
 * issue 7742: separate settings for max invites and on other study
 
