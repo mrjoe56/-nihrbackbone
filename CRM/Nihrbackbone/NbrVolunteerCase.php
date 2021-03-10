@@ -175,20 +175,17 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    */
   public function createRecruitmentVolunteerCase($contactId) {
     if (empty($contactId)) {
-      throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty contactId in ') . __METHOD__, 3003);
+      throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty or missing param contactId in ') . __METHOD__, 3003);
     }
-      // check if contact exists and has contact sub type Volunteer and does not have a case for this project yet
-      $nihrVolunteer = new CRM_Nihrbackbone_NihrVolunteer();
-
-        try {
-          $case = civicrm_api3('Case', 'create', $this->setRecruitmentCaseCreateData($contactId));
-          return ['case_id' => $case['id']];
-        }
-        catch (CiviCRM_API3_Exception $ex) {
-          throw new API_Exception('Could not create a Recruitment case for contact ID ' . $contactId
-            . ' in ' . __METHOD__ . ', error code from API Case create:'  . $ex->getMessage(), 3004);
-        }
-      }
+    try {
+      $case = civicrm_api3('Case', 'create', $this->setRecruitmentCaseCreateData($contactId));
+      return ['case_id' => $case['id']];
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      throw new API_Exception('Could not create a Recruitment case for contact ID ' . $contactId
+        . ' in ' . __METHOD__ . ', error code from API Case create:'  . $ex->getMessage(), 3004);
+    }
+  }
 
 
 
@@ -220,6 +217,9 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     if (isset($this->_apiParams['recall_group'])) {
       $caseCreateData[$recallGroupCustomFieldId] = $this->_apiParams['recall_group'];
     }
+    if (isset($this->_apiParams['start_date'])) {
+      $caseCreateData['start_date'] = $this->_apiParams['start_date'];
+    }
     return $caseCreateData;
   }
 
@@ -228,12 +228,19 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @return array
    */
   private function setRecruitmentCaseCreateData($contactId) {
+    $subject = "Recruitment";
+    if (isset($this->_apiParams['subject'])) {
+      $subject = $this->_apiParams['subject'];
+    }
     $caseCreateData =  [
       'contact_id' => $contactId,
       'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitmentCaseTypeId(),
-      'subject' => "Recruitment",
+      'subject' => $subject,
       'status_id' => "Open",
     ];
+    if (isset($this->_apiParams['start_date']) && !empty($this->_apiParams['start_date'])) {
+      $caseCreateData['start_date'] = $this->_apiParams['start_date'];
+    }
     return $caseCreateData;
   }
 
