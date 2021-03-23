@@ -584,7 +584,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setOptionGroups(&$definition) {
-    $query = "SELECT id, name FROM civicrm_option_group WHERE name IN (%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12)";
+    $query = "SELECT id, name FROM civicrm_option_group WHERE name IN (%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13)";
     $queryParams = [
       1 => ["activity_type", "String"],
       2 => ["nbr_bleed_difficulties", "String"],
@@ -598,6 +598,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
       10 => ["nbr_volunteer_status", "String"],
       11 => ["nbr_consent_version", "String"],
       12 => ["nbr_information_leaflet_version", "String"],
+      13 => ["nbr_medication", "String"],
     ];
     $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($dao->fetch()) {
@@ -616,6 +617,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
         case "nbr_information_leaflet_version":
           $definition->addMethodCall('setLeafletVersionOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_medication":
+          $definition->addMethodCall('setMedicationOptionGroupId', [(int) $dao->id]);
           break;
 
         case "nbr_not_recruited_reason":

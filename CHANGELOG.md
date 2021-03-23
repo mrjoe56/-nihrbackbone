@@ -1,5 +1,9 @@
+## Version 1.86
+* issue 6563: add container methods for medication option group
+
 ## Version 1.85
 * issue 7822: fix subject and start date in NbrVolunteerCase create API
+
 ## Version 1.84
 * issue 7708: fixed query to find cases where bulk mail activities need to be added to after bulk mailing from MSP
 

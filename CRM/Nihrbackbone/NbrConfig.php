@@ -146,6 +146,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_participationConsentVersionOptionGroupId = NULL;
   private $_consentVersionOptionGroupId = NULL;
   private $_leafletVersionOptionGroupId = NULL;
+  private $_medicationOptionGroupId = NULL;
   private $_notRecruitedReasonOptionGroupId = NULL;
   private $_questionnaireOptionGroupId = NULL;
   private $_redundantReasonOptionGroupId = NULL;
@@ -1877,6 +1878,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getLeafletVersionOptionGroupId() {
     return $this->_leafletVersionOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setMedicationOptionGroupId($id) {
+    $this->_medicationOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getMedicationOptionGroupId() {
+    return $this->_medicationOptionGroupId;
   }
 
   /**
