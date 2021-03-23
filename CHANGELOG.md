@@ -1,5 +1,5 @@
 ## Version 1.86
-* issue 6563: add container methods for medication option group
+* issue 6563: add container methods for disease/medication option groups and custom group + fields
 
 ## Version 1.85
 * issue 7822: fix subject and start date in NbrVolunteerCase create API

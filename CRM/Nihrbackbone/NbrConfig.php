@@ -75,6 +75,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_consentStage2TableName = NULL;
   private $_consentTableName = NULL;
   private $_diseaseTableName = NULL;
+  private $_medicationTableName = NULL;
   private $_participationDataTableName = NULL;
   private $_siteAliasTableName = NULL;
   private $_visitTableName = NULL;
@@ -93,6 +94,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_diagnosisYearColumnName = NULL;
   private $_diseaseColumnName = NULL;
   private $_diseaseNotesColumnName = NULL;
+  private $_drugFamilyColumnName = NULL;
   private $_expensesNotesCustomFieldId = NULL;
   private $_familyMemberColumnName = NULL;
   private $_identifierTypeCustomFieldId = NULL;
@@ -100,6 +102,8 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_identifierColumnName = NULL;
   private $_incidentFormCustomFieldId = NULL;
   private $_leafletVersionColumnName = NULL;
+  private $_medicationDateColumnName = NULL;
+  private $_medicationNameColumnName = NULL;
   private $_mileageCustomFieldId =  NULL;
   private $_notRecruitedReasonCustomFieldId = NULL;
   private $_otherExpensesCustomFieldId = NULL;
@@ -145,6 +149,10 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_bleedDifficultiesOptionGroupId = NULL;
   private $_participationConsentVersionOptionGroupId = NULL;
   private $_consentVersionOptionGroupId = NULL;
+  private $_diseaseOptionGroupId = NULL;
+  private $_drugFamilyOptionGroupId = NULL;
+  private $_ethnicityOptionGroupId = NULL;
+  private $_familyMemberOptionGroupId = NULL;
   private $_leafletVersionOptionGroupId = NULL;
   private $_medicationOptionGroupId = NULL;
   private $_notRecruitedReasonOptionGroupId = NULL;
@@ -1015,6 +1023,48 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string
    */
+  public function setDrugFamilyColumnName($name) {
+    $this->_drugFamilyColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getDrugFamilyColumnName() {
+    return $this->_drugFamilyColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setMedicationDateColumnName($name) {
+    $this->_medicationDateColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getMedicationDateColumnName() {
+    return $this->_medicationDateColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setMedicationNameColumnName($name) {
+    $this->_medicationNameColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getMedicationNameColumnName() {
+    return $this->_medicationNameColumnName;
+  }
+
+  /**
+   * @param string
+   */
   public function setFamilyMemberColumnName($name) {
     $this->_familyMemberColumnName = $name;
   }
@@ -1869,6 +1919,62 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param int
    */
+  public function setDiseaseOptionGroupId($id) {
+    $this->_diseaseOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getDiseaseOptionGroupId() {
+    return $this->_diseaseOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setDrugFamilyOptionGroupId($id) {
+    $this->_drugFamilyOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getDrugFamilyOptionGroupId() {
+    return $this->_drugFamilyOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setEthnicityOptionGroupId($id) {
+    $this->_ethnicityOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getEthnicityOptionGroupId() {
+    return $this->_ethnicityOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setFamilyMemberOptionGroupId($id) {
+    $this->_familyMemberOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getFamilyMemberOptionGroupId() {
+    return $this->_familyMemberOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
   public function setLeafletVersionOptionGroupId($id) {
     $this->_leafletVersionOptionGroupId = $id;
   }
@@ -2270,6 +2376,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getDiseaseTableName() {
     return $this->_diseaseTableName  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setMedicationTableName($name) {
+    $this->_medicationTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getMedicationTableName() {
+    return $this->_medicationTableName;
   }
 
   /**
