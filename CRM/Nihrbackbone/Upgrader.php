@@ -308,6 +308,140 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
   }
 
   /**
+   * Upgrade 1110 - change names, labels and values for bood/commercial/travel to willing
+   *
+   * @return bool
+   * @throws CiviCRM_API3_Exception
+   */
+  public function upgrade_1110() {
+    $this->ctx->log->info(E::ts('Applying update 1110 - change names, labels and values for bood/commercial/travel to willing'));
+    $columns = [
+      [
+        'old_name' => "nvse_unable_to_travel",
+        'old_label' => "Unable to travel",
+        'new_name' => "nvse_willing_to_travel",
+        'new_label' => "Travel",
+      ],
+      [
+        'old_name' => "nvse_no_blood_studies",
+        'old_label' => "Exc. from blood studies",
+        'new_name' => "nvse_willing_to_give_blood",
+        'new_label' => "Blood samples",
+      ],
+      [
+        'old_name' => "nvse_no_commercial_studies",
+        'old_label' => "Exc. commercial",
+        'new_name' => "nvse_willing_commercial",
+        'new_label' => "Commercial studies",
+      ],
+    ];
+    $this->swapUnableToWillingColumns($columns);
+    $this->swapUnableToWillingValues($columns);
+    return TRUE;
+  }
+
+  /**
+   * Swap values for unable to willing columns
+   *
+   * @param $columns
+   */
+  private function swapUnableToWillingValues($columns) {
+    $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
+    $dao = CRM_Core_DAO::executeQuery("SELECT id FROM " . $table);
+    while ($dao->fetch()) {
+      foreach ($columns as $column) {
+        $columnName = $column['new_name'];
+        if ($dao->$columnName == "1") {
+          CRM_Core_DAO::executeQuery("UPDATE " . $table . " SET " . $columnName . " = %1 WHERE id = %2", [
+            1 => [0, "Integer"],
+            2 => [(int) $dao->id, "Integer"],
+          ]);
+        }
+        else {
+          CRM_Core_DAO::executeQuery("UPDATE " . $table . " SET " . $columnName . " = %1 WHERE id = %2", [
+            1 => [1, "Integer"],
+            2 => [(int) $dao->id, "Integer"],
+          ]);
+        }
+      }
+    }
+  }
+
+  /**
+   * Method to swap unable to travel / no blood / no commercial custom field names and labels
+   *
+   * @param $columns
+   */
+  private function swapUnableToWillingColumns($columns) {
+    $customGroupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('id');
+    foreach ($columns as $column) {
+      // upgrade old name to new name and label if needed (both custom field and actual column)
+      $countOldNameQuery = "SELECT COUNT(*) FROM civicrm_custom_field WHERE custom_group_id = %1 AND name = %2";
+      $countOldName = CRM_Core_DAO::singleValueQuery($countOldNameQuery, [
+        1 => [(int) $customGroupId, "Integer"],
+        2 => [$column['old_name'], "String"],
+      ]);
+      if ($countOldName > 0) {
+        $this->updateCustomFieldOldName($customGroupId, $column);
+      }
+      else {
+        // upgrade to new label if needed
+        $countOldLabelQuery = "SELECT COUNT(*) FROM civicrm_custom_field WHERE custom_group_id = %1 AND name = %2 AND label = %3";
+        $countOldLabel = CRM_Core_DAO::singleValueQuery($countOldLabelQuery, [
+          1 => [(int) $customGroupId, "Integer"],
+          2 => [$column['new_name'], "String"],
+          3 => [$column['old_label'], "String"],
+        ]);
+        if ($countOldLabel > 0) {
+          $this->updateCustomFieldOldLabel($customGroupId, $column);
+        }
+      }
+    }
+  }
+
+  /**
+   * Method to update custom field label to new value
+   *
+   * @param $customGroupId
+   * @param $column
+   */
+  private function updateCustomFieldOldLabel($customGroupId, $column) {
+    $updateCustomField = "UPDATE civicrm_custom_field SET label = %1 WHERE custom_group_id = %2
+        AND name = %3";
+    $updateParams = [
+      1 => [$column['new_label'], "String"],
+      2 => [(int) $customGroupId, "Integer"],
+      3 => [$column['new_name'], "Integer"],
+    ];
+    CRM_Core_DAO::executeQuery($updateCustomField, $updateParams);
+  }
+
+  /**
+   * Method to update custom field name and label to new values
+   *
+   * @param $customGroupId
+   * @param $column
+   */
+  private function updateCustomFieldOldName($customGroupId, $column) {
+    $updateCustomField = "UPDATE civicrm_custom_field SET name = %1, label = %2, column_name = %1
+        WHERE custom_group_id = %3 AND name = %4";
+    $updateParams = [
+      1 => [$column['new_name'], "String"],
+      2 => [$column['new_label'], "String"],
+      3 => [(int) $customGroupId, "Integer"],
+      4 => [$column['old_name'], "String"],
+    ];
+    try {
+      CRM_Core_DAO::executeQuery($updateCustomField, $updateParams);
+      $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
+      $alterQuery = "ALTER TABLE " . $table . " CHANGE COLUMN " . $column['old_name'] . " " . $column['new_name'] . " TINYINT";
+      CRM_Core_DAO::executeQuery($alterQuery);
+    }
+    catch (Exception $ex) {
+    }
+  }
+
+  /**
    * Method to populate civicrm_nbr_county with existing synonyms
    */
   private function populateNbrCounty() {

@@ -379,11 +379,11 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @return bool
    */
   public static function availableForBlood($volunteerId) {
-    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_no_blood_studies', 'column_name');
+    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_willing_to_give_blood', 'column_name');
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
     $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
-    $excludeFromBlood = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
-    if (!$excludeFromBlood) {
+    $willingBlood = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
+    if ($willingBlood) {
       return TRUE;
     }
     return FALSE;
@@ -430,11 +430,11 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @return bool
    */
   public static function availableForCommercial($volunteerId) {
-    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_no_commercial_studies', 'column_name');
+    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_willing_commercial', 'column_name');
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
     $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
-    $excludeFromCommercial = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
-    if (!$excludeFromCommercial) {
+    $willingCommercial = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
+    if ($willingCommercial) {
       return TRUE;
     }
     return FALSE;
@@ -447,11 +447,11 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @return bool
    */
   public static function ableToTravel($volunteerId) {
-    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_unable_to_travel', 'column_name');
+    $columnName = CRM_Nihrbackbone_BackboneConfig::singleton()->getSelectionEligibilityCustomField('nvse_willing_to_travel', 'column_name');
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
     $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
-    $unable = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
-    if (!$unable) {
+    $travel = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
+    if ($travel) {
       return TRUE;
     }
     return FALSE;

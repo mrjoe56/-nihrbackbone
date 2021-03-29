@@ -1,3 +1,6 @@
+## Version 1.87
+* issue 7865: change blood/commercial/travel fields from able to willing
+
 ## Version 1.86
 * issue 6563: add container methods for disease/medication option groups and custom group + fields
 
