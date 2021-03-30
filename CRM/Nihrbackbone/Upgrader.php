@@ -315,6 +315,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
    */
   public function upgrade_1110() {
     $this->ctx->log->info(E::ts('Applying update 1110 - change names, labels and values for bood/commercial/travel to willing'));
+    set_time_limit(0);
     $columns = [
       [
         'old_name' => "nvse_unable_to_travel",
