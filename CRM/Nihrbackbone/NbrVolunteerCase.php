@@ -729,6 +729,8 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @param $form
    */
   public static function buildFormCaseView(&$form) {
+    // add template to show or not show eligibility depending on status
+    CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_show_eligible.tpl',]);
     // add template to remove merge case and reassign case links from form
     CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_case_links.tpl',]);
     $caseId = $form->getVar('_caseID');

@@ -1,3 +1,6 @@
+## Version 1.88
+* issue 6474: only show eligibility if study status selected
+
 ## Version 1.87
 * issue 7865: change blood/commercial/travel fields from able to willing
 
