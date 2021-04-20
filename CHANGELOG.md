@@ -1,3 +1,6 @@
+## Version 1.89
+* issue 7865: fix test error with swapping values
+
 ## Version 1.88
 * issue 6474: only show eligibility if study status selected
 

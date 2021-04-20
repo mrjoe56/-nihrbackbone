@@ -348,7 +348,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
    */
   private function swapUnableToWillingValues($columns) {
     $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
-    $dao = CRM_Core_DAO::executeQuery("SELECT id FROM " . $table);
+    $dao = CRM_Core_DAO::executeQuery("SELECT * FROM " . $table);
     while ($dao->fetch()) {
       foreach ($columns as $column) {
         $columnName = $column['new_name'];
@@ -358,7 +358,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
             2 => [(int) $dao->id, "Integer"],
           ]);
         }
-        else {
+        elseif ($dao->$columnName == "0") {
           CRM_Core_DAO::executeQuery("UPDATE " . $table . " SET " . $columnName . " = %1 WHERE id = %2", [
             1 => [1, "Integer"],
             2 => [(int) $dao->id, "Integer"],
