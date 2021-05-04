@@ -1,3 +1,6 @@
+## Version 2.0
+* issue 7983: retrieve study status for which eligibility has to be calculated from settings
+
 ## Version 1.89
 * issue 7865: fix test error with swapping values
 

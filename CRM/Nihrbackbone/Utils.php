@@ -177,27 +177,26 @@ class CRM_Nihrbackbone_Utils {
   /**
    * Method to add the participation status clauses to a query
    *
-   * @param $type
-   * @param $index
-   * @param $query
-   * @param $queryParams
+   * @param array $statuses
+   * @param int $index
+   * @param string $query
+   * @param array $queryParams
    */
-  public static function addParticipantStudyStatusClauses($type, &$index, &$query, &$queryParams) {
-    $participationStatusColumn = Civi::service('nbrBackbone')->getStudyParticipationStatusColumnName();
-    if ($type == "max") {
-      $statuses = explode(",", Civi::settings()->get('nbr_max_invited_study_status'));
+  public static function addParticipantStudyStatusClauses($statuses, &$index, &$query, &$queryParams) {
+    if (!is_array($statuses)) {
+      $statuses = explode(",", $statuses);
     }
-    else {
-      $statuses = explode(",", Civi::settings()->get('nbr_invited_study_status'));
-    }
-    $clauses = [];
-    foreach ($statuses as $status) {
-      $index++;
-      $clauses[] = "%" . $index;
-      $queryParams[$index] = [$status, "String"];
-    }
-    if (!empty($clauses)) {
-      $query .= " AND " . $participationStatusColumn . " IN(" . implode(",", $clauses) . ")";
+    if ($statuses) {
+      $participationStatusColumn = Civi::service('nbrBackbone')->getStudyParticipationStatusColumnName();
+      $clauses = [];
+      foreach ($statuses as $status) {
+        $index++;
+        $clauses[] = "%" . $index;
+        $queryParams[$index] = [$status, "String"];
+      }
+      if (!empty($clauses)) {
+        $query .= " AND " . $participationStatusColumn . " IN(" . implode(",", $clauses) . ")";
+      }
     }
   }
 
