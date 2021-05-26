@@ -383,7 +383,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
     $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
     $willingBlood = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
-    if ($willingBlood) {
+    if ($willingBlood || $willingBlood !== "0") {
       return TRUE;
     }
     return FALSE;
@@ -451,7 +451,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
     $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
     $travel = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
-    if ($travel) {
+    if ($travel || $travel !== "0") {
       return TRUE;
     }
     return FALSE;

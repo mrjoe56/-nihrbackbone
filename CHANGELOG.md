@@ -1,3 +1,6 @@
+## Version 2.1
+* issue 8055: update methods to calculate willing to give blood and able to travel
+
 ## Version 2.0
 * issue 7983: retrieve study status for which eligibility has to be calculated from settings
 
