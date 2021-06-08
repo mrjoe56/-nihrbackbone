@@ -103,7 +103,13 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
   }
 
 }
-
+/** Implements hook_civicrm_post_case_merge */
+function nihrbackbone_civicrm_post_case_merge($mainContactId, $mainCaseId, $otherContactId, $otherCaseId, $changeClient) {
+  // issue 7827 - resurrect participation data after case reassigned to new client
+  if ($changeClient || $otherContactId != $mainContactId) {
+    CRM_Nihrbackbone_NbrVolunteerCase::resurrectParticipationData($mainCaseId, $otherCaseId);
+  }
+}
 /** Implements hook_civicrm_summary  27/01/20 */
 function nihrbackbone_civicrm_summary($contactID, &$content, &$contentPlacement) {
   CRM_Nihrbackbone_NihrContactSummary::nihrbackbone_civicrm_summary($contactID);

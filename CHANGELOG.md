@@ -1,3 +1,6 @@
+## Version 2.2
+* issue 7827: ensure that change case to another client is re-enabled + resurrect participation data on activity create hook for activity of type Reassigned Case
+
 ## Version 2.1
 * issue 8055: update methods to calculate willing to give blood and able to travel
 

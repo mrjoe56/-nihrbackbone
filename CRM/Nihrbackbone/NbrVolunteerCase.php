@@ -1172,4 +1172,103 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       unset($session->recalcForCaseId);
     }
   }
+
+  /**
+   * Method to resurrect participation data after case merge
+   * @link https://www.wrike.com/open.htm?id=692748431 or https://issues.civicoop.org/issues/7827
+   *
+   * @param $newCaseId
+   * @param $oldCaseId
+   */
+  public static function resurrectParticipationData($newCaseId, $oldCaseId) {
+    // check if both cases are participation cases
+    if (self::isParticipationCase($newCaseId) && self::isParticipationCase($oldCaseId)) {
+      // if so, check if new case has same data. If not, copy from old case
+      $newCaseData = self::getParticipationData($newCaseId);
+      $oldCaseData = self::getParticipationData($oldCaseId);
+      $changed = FALSE;
+      $checkFields = [
+        CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name'),
+        CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participant_id', 'column_name'),
+        CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name'),
+      ];
+      if ($newCaseData && $oldCaseData) {
+        foreach ($checkFields as $checkField) {
+          if ($newCaseData[$checkField] != $oldCaseData[$checkField]) {
+            $newCaseData[$checkField] = $oldCaseData[$checkField];
+            $changed = TRUE;
+          }
+        }
+      }
+      // update if changed
+      if ($changed) {
+        self::fixParticipationData($newCaseId, $newCaseData);
+      }
+    }
+  }
+
+  /**
+   * Method to fix study id, study participation id and eligibility after reassign case
+   *
+   * @param $caseId
+   * @param $caseData
+   * @return false
+   */
+  public static function fixParticipationData($caseId, $caseData) {
+    if (!empty($caseId) && !empty($caseData)) {
+      $table = Civi::service('nbrBackbone')->getParticipationDataTableName();
+      $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+      $studyParticipantIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participant_id', 'column_name');
+      $eligibleColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
+      if (isset($caseData[$studyIdColumn]) && isset($caseData[$studyParticipantIdColumn]) && isset($caseData[$eligibleColumn])) {
+        $fixQuery = "UPDATE " . $table . " SET " . $studyIdColumn . " = %1, " . $studyParticipantIdColumn . " = %2, "
+          . $eligibleColumn . " = %3 WHERE entity_id = %4";
+        $fixParams = [
+          1 => [$caseData[$studyIdColumn], "String"],
+          2 => [$caseData[$studyParticipantIdColumn], "String"],
+          3 => [$caseData[$eligibleColumn], "String"],
+          4 => [(int) $caseId, "Integer"],
+        ];
+        CRM_Core_DAO::executeQuery($fixQuery, $fixParams);
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to get participation data
+   *
+   * @param $caseId
+   * @return array|false
+   */
+  public static function getParticipationData($caseId) {
+    if (!empty($caseId)) {
+      $table = Civi::service('nbrBackbone')->getParticipationDataTableName();
+      if ($table) {
+        $query = "SELECT * FROM " . $table . " WHERE entity_id = %1";
+        $dao = CRM_Core_DAO::executeQuery($query, [1 => [(int) $caseId, "Integer"]]);
+        if ($dao->fetch()) {
+          return CRM_Nihrbackbone_Utils::moveDaoToArray($dao);
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to check if case is a participation case
+   *
+   * @param $caseId
+   * @return bool
+   */
+  public static function isParticipationCase($caseId) {
+    $query = "SELECT case_type_id FROM civicrm_case WHERE id = %1";
+    $caseTypeId = CRM_Core_DAO::singleValueQuery($query, [1 => [(int) $caseId, "Integer"]]);
+    if ($caseTypeId) {
+      if ((int) $caseTypeId == (int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId()) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
 }
