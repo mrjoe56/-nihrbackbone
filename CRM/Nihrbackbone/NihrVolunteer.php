@@ -1155,4 +1155,52 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return FALSE;
   }
 
+  /**
+   * Method to check if volunteer has active guardian
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function hasActiveGuardian($volunteerId) {
+    if (!empty($volunteerId)) {
+      $query = "SELECT COUNT(*) FROM civicrm_relationship
+        WHERE relationship_type_id = %1 AND is_active = %2 AND contact_id_a = %3
+          AND (end_date IS NULL OR end_date > CURDATE())";
+      $count = CRM_Core_DAO::singleValueQuery($query, [
+        1 => [Civi::service('nbrBackbone')->getGuardianRelationshipTypeId(), "Integer"],
+        2 => [1, "Integer"],
+        3 => [(int) $volunteerId, "Integer"],
+      ]);
+      if ($count > 0) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to get email addresses of all active guardians of volunteer
+   *
+   * @param $volunteerId
+   * @return array
+   */
+  public static function getGuardianEmailAddresses($volunteerId) {
+    $emails = [];
+    if (!empty($volunteerId)) {
+      $query = "SELECT email
+        FROM civicrm_relationship AS a
+            JOIN civicrm_email AS b ON a.contact_id_b = b.contact_id AND b.is_primary = %1
+        WHERE a.relationship_type_id = %2 AND a.is_active = %1 AND a.contact_id_a = %3
+          AND (a.end_date IS NULL OR a.end_date > CURDATE())";
+      $dao = CRM_Core_DAO::executeQuery($query, [
+        1 => [1, "Integer"],
+        2 => [Civi::service('nbrBackbone')->getGuardianRelationshipTypeId(), "Integer"],
+        3 => [(int) $volunteerId, "Integer"],
+      ]);
+      while ($dao->fetch()) {
+        $emails[] = $dao->email;
+      }
+    }
+    return $emails;
+  }
+
 }
