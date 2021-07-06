@@ -1155,4 +1155,140 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return FALSE;
   }
 
+  /**
+   * Method to remove PID data
+   * @param int $contactId
+   */
+  public static function removePidData(int $contactId) {
+  try {
+    \Civi\Api4\Contact::update()
+      ->addWhere('id', '=', $contactId)
+      ->addValue('first_name', 'x')
+      ->addValue('last_name', 'x')
+      ->addValue('prefix_id', '')
+      ->addValue('display_name', '')
+      ->addValue('middle_name', '')
+      ->addValue('sort_name', '')
+      ->addValue('legal_name', '')
+      ->addValue('email_greeting_custom', '')
+      ->addValue('email_greeting_display', '')
+      ->addValue('postal_greeting_custom', '')
+      ->addValue('postal_greeting_display', '')
+      ->addValue('addressee_custom', '')
+      ->addValue('addressee_display', '')
+      ->addValue('deceased_date', '')
+      ->addValue('nick_name', '')
+      ->execute();
+  } catch (API_Exception $ex) {
+  }
+
+  try {
+    \Civi\Api4\Phone::delete()
+      ->addWhere('contact_id', '=', $contactId)
+      ->execute();
+  } catch (API_Exception $ex) {
+  }
+
+  try {
+    \Civi\Api4\Email::delete()
+      ->addWhere('contact_id', '=', $contactId)
+      ->execute();
+  } catch (API_Exception $ex) {
+  }
+
+  try {
+    \Civi\Api4\Address::delete()
+      ->addWhere('contact_id', '=', $contactId)
+      ->execute();
+  } catch (API_Exception $ex) {
+  }
+
+  try {
+    \Civi\Api4\CustomValue::delete('fcd_former_comm_data')
+      ->addWhere('entity_id', '=', $contactId)
+      ->execute();
+  } catch (API_Exception $ex) {
+  }
+
+  try {
+    \Civi\Api4\CustomValue::delete('contact_id_history')
+      ->addWhere('entity_id', '=', $contactId)
+      ->addClause('OR',
+        ['id_history_entry_type', '=', 'cih_type_former_surname'],
+        ['id_history_entry_type', '=', 'cih_type_nhs_number'],
+        ['id_history_entry_type', '=', 'cih_type_blood_donor_id'],
+        ['id_history_entry_type', '=', 'cih_type_hospital_number'])
+      ->execute();
+  } catch (API_Exception $ex) {
+  }
+
+  // *** if request_to_destroy_data is set, remove HLQ data as well
+    try {
+      \Civi\Api4\Contact::update()
+        ->addWhere('id', '=', $contactId)
+        ->addValue('gender_id', '')
+        ->addValue('birth_date', '')
+        ->addValue('nihr_volunteer_general_observations.nvgo_ethnicity_id', '')
+        ->addValue('nihr_volunteer_general_observations.nvgo_weight_kg', '')
+        ->addValue('nihr_volunteer_general_observations.nvgo_height_m', '')
+        ->addValue('nihr_volunteer_general_observations.nvgo_bmi', '')
+        ->addValue('nihr_volunteer_general_observations.nvgo_hand_preference', '')
+        ->addValue('nihr_volunteer_general_observations.nvgo_abo_group', '')
+        ->addValue('nihr_volunteer_general_observations.nvgo_rhesus_factor','')
+        ->addValue('nihr_volunteer_general_observations.nvgo_probably_consanguineous', '')
+        ->addValue('nihr_volunteer_general_observations.nvgo_proband', '')
+        ->addValue('nihr_volunteer_general_observations.nvgo_family_history', '')
+
+        ->addValue('nihr_volunteer_lifestyle.nvl_alcohol', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_alcohol_amount', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_alcohol_notes', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_smoker', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_smoker_amount', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_smoker_years', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_smoker_past', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_smoker_past_amount', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_smoker_past_years', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_smoker_gave_up', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_smoking_notes', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_diet', '')
+        ->addValue('nihr_volunteer_lifestyle.nvl_diet_notes', '')
+
+        ->addValue('nihr_volunteer_life_quality.nvlq_overall', '')
+        ->addValue('nihr_volunteer_life_quality.nvlq_happiness', '')
+        ->addValue('nihr_volunteer_life_quality.nvlq_energy', '')
+        ->addValue('nihr_volunteer_life_quality.nvlq_opportunity', '')
+        ->addValue('nihr_volunteer_life_quality.nvlq_money', '')
+        ->addValue('nihr_volunteer_life_quality.nvlq_employment_status', '')
+
+        ->addValue('nihr_volunteer_selection_eligibility.nvse_gender_at_birth', '')
+        ->execute();
+    } catch (API_Exception $ex) {
+    }
+
+    try {
+      \Civi\Api4\CustomValue::delete('nihr_volunteer_medication')
+        ->addWhere('entity_id', '=', $contactId)
+        ->execute();
+    } catch (API_Exception $ex) {
+    }
+
+    /*
+    try {
+      // &&& this table linked delete is only offered for 'table' (i.e. multiline) data under civi->support->developer
+      // - just a try if it can be used for other tables as well
+      \Civi\Api4\CustomValue::delete('nihr_volunteer_lifestyle')
+        ->addWhere('entity_id', '=', $contactId)
+        ->execute();
+    } catch (API_Exception $ex) {
+    }
+    */
+
+    try {
+      \Civi\Api4\CustomValue::delete('nihr_volunteer_disease')
+        ->addWhere('entity_id', '=', $contactId)
+        ->execute();
+    } catch (API_Exception $ex) {
+    }
+  }
+
 }
