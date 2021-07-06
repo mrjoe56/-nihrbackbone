@@ -30,10 +30,10 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * Method to check if the contact is a valid volunteer
    *
    * @param $contactId
-   * @param $type
+   * @param string $type
    * @return bool
    */
-  public function isValidVolunteer($contactId, $type = "volunteer") {
+  public function isValidVolunteer($contactId, string $type = "volunteer") {
     $valid = FALSE;
     if (!empty($contactId)) {
       try {
@@ -41,36 +41,24 @@ class CRM_Nihrbackbone_NihrVolunteer {
           ->addSelect('contact_sub_type')
           ->addWhere('id', '=', (int) $contactId)
           ->execute();
-        switch ($type) {
-          case "bioresource":
-            $validTypes = Civi::settings()->get('nbr_bioresource_subtypes');
-            foreach ($contacts as $contact) {
-              foreach ($contact['contact_sub_type'] as $subType) {
-                if (in_array($subType, $validTypes)) {
-                  $valid = TRUE;
-                }
+        if ($type == "bioresource") {
+          $validTypes = Civi::settings()->get('nbr_bioresource_subtypes');
+          foreach ($contacts as $contact) {
+            foreach ($contact['contact_sub_type'] as $subType) {
+              if (in_array($subType, $validTypes)) {
+                $valid = TRUE;
               }
             }
-            break;
-          case "participant":
-            $validTypes = Civi::settings()->get('nbr_participant_subtypes');
-            foreach ($contacts as $contact) {
-              foreach ($contact['contact_sub_type'] as $subType) {
-                if (in_array($subType, $validTypes)) {
-                  $valid = TRUE;
-                }
+          }
+        }
+        else {
+          foreach ($contacts as $contact) {
+            foreach ($contact['contact_sub_type'] as $subType) {
+              if ($subType == $this->_volunteerContactSubType['name']) {
+                $valid = TRUE;
               }
             }
-            break;
-          case "volunteer":
-            foreach ($contacts as $contact) {
-              foreach ($contact['contact_sub_type'] as $subType) {
-                if ($subType == $this->_volunteerContactSubType['name']) {
-                  $valid = TRUE;
-                }
-              }
-            }
-            break;
+          }
         }
       }
       catch (API_Exception $ex) {
@@ -1229,6 +1217,40 @@ class CRM_Nihrbackbone_NihrVolunteer {
       }
     }
     return $emails;
+  }
+
+  /**
+   * Method to check if volunteer has bioresource id
+   *
+   * @param int $volunteerId
+   * @return bool
+   */
+  public static function hasBioResourceId(int $volunteerId) {
+    $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomGroup('table_name');
+    $bioResourceColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomField('nva_bioresource_id', 'column_name');
+    $query = "SELECT " . $bioResourceColumn . " FROM " . $table . " WHERE entity_id = %1";
+    $bioResourceId = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, "Integer"]]);
+    if ($bioResourceId) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to check if volunteer has participant id
+   *
+   * @param int $volunteerId
+   * @return bool
+   */
+  public static function hasParticipantId(int $volunteerId) {
+    $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomGroup('table_name');
+    $participantColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerIdsCustomField('nva_participant_id', 'column_name');
+    $query = "SELECT " . $participantColumn . " FROM " . $table . " WHERE entity_id = %1";
+    $participantId = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, "Integer"]]);
+    if ($participantId) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
 }
