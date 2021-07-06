@@ -151,7 +151,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     if ($nbrStudy->studyExists($this->_apiParams['study_id'])) {
       // check if contact exists and has contact sub type Volunteer and does not have a case for this study yet
       $nihrVolunteer = new CRM_Nihrbackbone_NihrVolunteer();
-      if ($nihrVolunteer->isValidVolunteer($contactId) && !CRM_Nihrbackbone_NbrVolunteerCase::isAlreadyOnStudy($contactId, $this->_apiParams['study_id'])) {
+      if ($nihrVolunteer->isValidVolunteer($contactId, 'participant') && !CRM_Nihrbackbone_NbrVolunteerCase::isAlreadyOnStudy($contactId, $this->_apiParams['study_id'])) {
         // create new case linked to study
         try {
           $case = civicrm_api3('Case', 'create', $this->setCaseCreateData($contactId));

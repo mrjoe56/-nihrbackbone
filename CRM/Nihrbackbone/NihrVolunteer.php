@@ -30,25 +30,53 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * Method to check if the contact is a valid volunteer
    *
    * @param $contactId
+   * @param $type
    * @return bool
    */
-  public function isValidVolunteer($contactId) {
-    try {
-      $contactSubTypes = civicrm_api3('Contact', 'getvalue', [
-        'id' => $contactId,
-        'return' => 'contact_sub_type',
-      ]);
-      if (!empty($contactSubTypes)) {
-        foreach ($contactSubTypes as $contactSubTypeId => $contactSubTypeName) {
-          if ($contactSubTypeName == $this->_volunteerContactSubType['name']) {
-            return TRUE;
-          }
+  public function isValidVolunteer($contactId, $type = "volunteer") {
+    $valid = FALSE;
+    if (!empty($contactId)) {
+      try {
+        $contacts = \Civi\Api4\Contact::get()
+          ->addSelect('contact_sub_type')
+          ->addWhere('id', '=', (int) $contactId)
+          ->execute();
+        switch ($type) {
+          case "bioresource":
+            $validTypes = Civi::settings()->get('nbr_bioresource_subtypes');
+            foreach ($contacts as $contact) {
+              foreach ($contact['contact_sub_type'] as $subType) {
+                if (in_array($subType, $validTypes)) {
+                  $valid = TRUE;
+                }
+              }
+            }
+            break;
+          case "participant":
+            $validTypes = Civi::settings()->get('nbr_participant_subtypes');
+            foreach ($contacts as $contact) {
+              foreach ($contact['contact_sub_type'] as $subType) {
+                if (in_array($subType, $validTypes)) {
+                  $valid = TRUE;
+                }
+              }
+            }
+            break;
+          case "volunteer":
+            foreach ($contacts as $contact) {
+              foreach ($contact['contact_sub_type'] as $subType) {
+                if ($subType == $this->_volunteerContactSubType['name']) {
+                  $valid = TRUE;
+                }
+              }
+            }
+            break;
         }
       }
+      catch (API_Exception $ex) {
+      }
     }
-    catch (CiviCRM_API3_Exception $ex) {
-    }
-    return FALSE;
+    return $valid;
   }
 
   /**
