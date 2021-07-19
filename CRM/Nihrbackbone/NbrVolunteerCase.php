@@ -1181,11 +1181,13 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @param $oldCaseId
    */
   public static function resurrectParticipationData($newCaseId, $oldCaseId) {
+    Civi::log()->debug('EH - new case ID is ' . $newCaseId . ' and old case ID is ' . $oldCaseId);
     // check if both cases are participation cases
     if (self::isParticipationCase($newCaseId) && self::isParticipationCase($oldCaseId)) {
       // if so, check if new case has same data. If not, copy from old case
       $newCaseData = self::getParticipationData($newCaseId);
       $oldCaseData = self::getParticipationData($oldCaseId);
+      Civi::log()->debug('EH - new case data: ' . json_encode($newCaseData) . ' and old case data: ' . json_encode($oldCaseData));
       $changed = FALSE;
       $checkFields = [
         CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name'),
@@ -1201,6 +1203,8 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         }
       }
       // update if changed
+      Civi::log()->debug('EH - changed is: ' . $changed);
+
       if ($changed) {
         self::fixParticipationData($newCaseId, $newCaseData);
       }
@@ -1229,7 +1233,12 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
           3 => [$caseData[$eligibleColumn], "String"],
           4 => [(int) $caseId, "Integer"],
         ];
-        CRM_Core_DAO::executeQuery($fixQuery, $fixParams);
+        Civi::log()->debug('EH - fix query: ' . $fixQuery . ' and params: ' . json_encode($fixParams));
+        try {
+          CRM_Core_DAO::executeQuery($fixQuery, $fixParams);
+        } catch (Exception $ex) {
+          Civi::log()->debug('Error message is ' . $ex);
+        }
       }
     }
     return FALSE;

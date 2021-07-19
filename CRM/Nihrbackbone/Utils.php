@@ -199,5 +199,21 @@ class CRM_Nihrbackbone_Utils {
       }
     }
   }
+  private function explodeEmailTos($emailTo) {
+    $result = [];
+    if (!empty($emailTo)) {
+      // split elements on ,
+      $toParts = explode(",", $emailTo);
+      foreach ($toParts as $toPart) {
+        // separate contactId and emailAddress
+        $partBits = explode("::", $toPart);
+        $result['contact_id'] = $partBits[0];
+        if (isset($partBits[1])) {
+          $result['email'] = $partBits[1];
+        }
+      }
+    }
+    return $result;
+  }
 
 }

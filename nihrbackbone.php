@@ -5,6 +5,27 @@ use \Symfony\Component\DependencyInjection\ContainerBuilder;
 use \Symfony\Component\DependencyInjection\Definition;
 
 /**
+ * Implements hook_civicrm_alterMailParams
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_alterMailParams
+ */
+function nihrbackbone_civicrm_alterMailParams(&$mailParams, $context) {
+  if ($mailParams['toName'] && $mailParams['toEmail']) {
+    switch ($context) {
+      case "singleEmail":
+        if (isset($mailParams['contactId'])) {
+          $contactId = $mailParams['contactId'];
+        }
+        else {
+          $contactId = CRM_Utils_Request::retrieveValue('cid', "Integer");
+        }
+    }
+    $guardian = new CRM_Nihrbackbone_NbrGuardian();
+    $guardian->replaceEmailAddressWithGuardian($contactId, $mailParams);
+  }
+}
+
+/**
  * Implements hook_civicrm_pre
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_pre/
@@ -64,7 +85,6 @@ function nihrbackbone_civicrm_container(ContainerBuilder $container) {
   $container->addCompilerPass(new Civi\Nihrbackbone\NbrBackboneContainer());
 }
 
-
 /** Implements hook_civicrm_post 01/12/20 */
 function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 
@@ -105,11 +125,13 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 }
 /** Implements hook_civicrm_post_case_merge */
 function nihrbackbone_civicrm_post_case_merge($mainContactId, $mainCaseId, $otherContactId, $otherCaseId, $changeClient) {
+  Civi::log()->debug('EH - in the post_case_merge hook we have changeClient: ' . $changeClient . ', other ContactId: ' . $otherContactId . ' and main ContactId: ' . $mainContactId);
   // issue 7827 - resurrect participation data after case reassigned to new client
   if ($changeClient || $otherContactId != $mainContactId) {
     CRM_Nihrbackbone_NbrVolunteerCase::resurrectParticipationData($mainCaseId, $otherCaseId);
   }
 }
+
 /** Implements hook_civicrm_summary  27/01/20 */
 function nihrbackbone_civicrm_summary($contactID, &$content, &$contentPlacement) {
   CRM_Nihrbackbone_NihrContactSummary::nihrbackbone_civicrm_summary($contactID);
@@ -195,6 +217,13 @@ function writeBmi($entityID, $bmi) {
  * Implements hook civicrm_buildForm
  */
 function nihrbackbone_civicrm_buildForm($formName, &$form) {  # jb2
+  // check for guardian and warn (see link https://www.wrike.com/open.htm?id=712317179)
+  if ($form instanceof CRM_Contact_Form_Task_Email) {
+    $guardian = new CRM_Nihrbackbone_NbrGuardian();
+    if (isset($form->_contactIds) && isset($form->_toContactDetails)) {
+      $guardian->setAlertGuardianInBuildForm($form->_contactIds, $form->_toContactDetails);
+    }
+  }
   if ($form instanceof CRM_Case_Form_CustomData) {
     CRM_Nihrbackbone_NbrVolunteerCase::buildFormCustomData($form);
   }
