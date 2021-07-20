@@ -21,7 +21,6 @@ class CRM_Nihrbackbone_NbrGuardian {
     if (CRM_Nihrbackbone_NihrVolunteer::hasActiveGuardian($contactId)) {
       $guardianData = $this->getGuardianEmailAddressAndName($contactId);
       if ($guardianData) {
-        $mailParams['subject'] = $mailParams['subject'] . " (as guardian of ". $mailParams['toName'] . ")";
         $mailParams['toEmail'] = $guardianData['email'];
         $mailParams['toName'] = $guardianData['name'];
       }
@@ -76,4 +75,5 @@ class CRM_Nihrbackbone_NbrGuardian {
       }
     }
   }
+
 }

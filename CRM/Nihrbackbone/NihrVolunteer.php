@@ -1227,4 +1227,30 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return FALSE;
   }
 
+  /**
+   * Method to get guardian name, email and young persons email if volunteer has guardian
+   *
+   * @param int $volunteerId
+   * @return array|false
+   */
+  public static function getGuardianDetails(int $volunteerId) {
+    $query = "SELECT gc.display_name AS guardian_name, ge.email AS guardian_email, ye.email AS young_person_email
+        FROM civicrm_relationship AS cr
+            JOIN civicrm_contact AS gc ON cr.contact_id_b = gc.id
+            LEFT JOIN civicrm_email AS ge ON gc.id = ge.contact_id AND ge.is_primary = %1
+            JOIN civicrm_contact AS yc ON cr.contact_id_a = yc.id
+            LEFT JOIN civicrm_email AS ye ON yc.id = ye.contact_id AND ye.is_primary = %1
+        WHERE cr.relationship_type_id = %2 AND cr.contact_id_a = %3 AND (cr.end_date >= CURDATE() OR cr.end_date IS NULL)";
+    $queryParams = [
+      1 => [1, "Integer"],
+      2 => [Civi::service('nbrBackbone')->getGuardianRelationshipTypeId(), "Integer"],
+      3 => [$volunteerId, "Integer"],
+    ];
+    $dao = CRM_Core_DAO::executeQuery($query, $queryParams);
+    if ($dao->fetch()) {
+      return CRM_Nihrbackbone_Utils::moveDaoToArray($dao);
+    }
+    return FALSE;
+  }
+
 }
