@@ -172,9 +172,6 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_unsubscribeId = NULL;
   private $_welcomeId = NULL;
     // others
-  private $_guardianContactSubTypeId = NULL;
-  private $_guardianContactSubTypeName = NULL;
-  private $_guardianRelationshipTypeId = NULL;
   private $_participationCaseTypeName = NULL;
   private $_recruitmentCaseTypeName = NULL;
   private $_correctConsentStatusValue = NULL;
@@ -2505,48 +2502,6 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getRecruitmentCaseTypeName() {
     return $this->_recruitmentCaseTypeName  ;
-  }
-
-  /**
-   * @param string
-   */
-  public function setGuardianContactSubTypeName($name) {
-    $this->_guardianContactSubTypeName = $name;
-  }
-
-  /**
-   * @return string
-   */
-  public function getGuardianContactSubTypeName() {
-    return $this->_guardianContactSubTypeName  ;
-  }
-
-  /**
-   * @param int
-   */
-  public function setGuardianContactSubTypeId($id) {
-    $this->_guardianContactSubTypeId = $id;
-  }
-
-  /**
-   * @return int
-   */
-  public function getGuardianContactSubTypeId() {
-    return $this->_guardianContactSubTypeId  ;
-  }
-
-  /**
-   * @param int
-   */
-  public function setGuardianRelationshipTypeId($id) {
-    $this->_guardianRelationshipTypeId = $id;
-  }
-
-  /**
-   * @return int
-   */
-  public function getGuardianRelationshipTypeId() {
-    return $this->_guardianRelationshipTypeId  ;
   }
 
   /**

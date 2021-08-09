@@ -1,5 +1,9 @@
+## Version 2.4
+* wrike issue https://www.wrike.com/open.htm?id=712317179: remove methods to service for guardian contact sub type and guardian relationship type (moved to nbrguardian extension)
+
 ## Version 2.3
 * wrike issue https://www.wrike.com/open.htm?id=712317179: add methods to service for guardian contact sub type and guardian relationship type
+
 ## Version 2.2
 * issue 7827: ensure that change case to another client is re-enabled + resurrect participation data on activity create hook for activity of type Reassigned Case
 

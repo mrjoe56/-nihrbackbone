@@ -24,7 +24,6 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $this->setActivityStatus($definition);
     $this->setActivityTypes($definition);
     $this->setConsentStatus($definition);
-    $this->setContactSubTypes($definition);
     $this->setCustomGroups($definition);
     $this->setEligibilityStatus($definition);
     $this->setEncounterMedium($definition);
@@ -34,7 +33,6 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $this->setOptionGroups($definition);
     $this->setParticipationStatus($definition);
     $this->setPriority($definition);
-    $this->setRelationshipTypes($definition);
     $this->setTags($definition);
     $this->setVolunteerStatus($definition);
     $definition->addMethodCall('setVisitStage2Substring', ["nihr_visit_stage2"]);
@@ -47,37 +45,6 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition->addMethodCall('setParticipationCaseTypeName', ['nihr_participation']);
     $definition->addMethodCall('setRecruitmentCaseTypeName', ['nihr_recruitment']);
     $container->setDefinition('nbrBackbone', $definition);
-  }
-
-  /**
-   * Method to set contact sub types
-   *
-   * @param $definition
-   */
-  public function setContactSubTypes(&$definition) {
-    $guardianName = "nbr_guardian";
-    $definition->addMethodCall('setGuardianContactSubTypeName', [$guardianName]);
-    $query = "SELECT id FROM civicrm_contact_type WHERE name = %1";
-    $contactSubTypeId = \CRM_Core_DAO::singleValueQuery($query, [1 => [$guardianName, "String"]]);
-    if ($contactSubTypeId) {
-      $definition->addMethodCall('setGuardianContactSubTypeId', [(int) $contactSubTypeId]);
-    }
-  }
-
-  /**
-   * Method to set relationship type(s)
-   *
-   * @param $definition
-   */
-  public function setRelationshipTypes(&$definition) {
-    $query = "SELECT id FROM civicrm_relationship_type WHERE name_a_b = %1 AND name_b_a = %2";
-    $guardianId = \CRM_Core_DAO::singleValueQuery($query, [
-      1 => ["nbr_guardian_is", "String"],
-      2 => ["nbr_guardian_of", "String"],
-      ]);
-    if ($guardianId) {
-      $definition->addMethodCall('setGuardianRelationshipTypeId', [(int) $guardianId]);
-    }
   }
 
   /**
