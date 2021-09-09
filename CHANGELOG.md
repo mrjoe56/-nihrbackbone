@@ -1,3 +1,6 @@
+## Version 2.5
+* add container property for campaign status
+
 ## Version 2.4
 * wrike issue https://www.wrike.com/open.htm?id=712317179: remove methods to service for guardian contact sub type and guardian relationship type (moved to nbrguardian extension)
 

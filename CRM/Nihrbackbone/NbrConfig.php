@@ -147,6 +147,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_withdrawnParticipationStatusValue = NULL;
   // option group ids
   private $_bleedDifficultiesOptionGroupId = NULL;
+  private $_campaignStatusOptionGroupId = NULL;
   private $_participationConsentVersionOptionGroupId = NULL;
   private $_consentVersionOptionGroupId = NULL;
   private $_diseaseOptionGroupId = NULL;
@@ -2096,6 +2097,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getWithdrawnReasonOptionGroupId() {
     return $this->_withdrawnReasonOptionGroupId;
+  }
+
+  /**
+   * @param int
+   */
+  public function setCampaignStatusOptionGroupId($id) {
+    $this->_campaignStatusOptionGroupId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getCampaignStatusOptionGroupId() {
+    return $this->_campaignStatusOptionGroupId;
   }
 
   /**

@@ -616,31 +616,36 @@ class NbrBackboneContainer implements CompilerPassInterface {
    */
   private function setOptionGroups(&$definition) {
     $query = "SELECT id, name FROM civicrm_option_group WHERE name IN (%1, %2, %3, %4, %5, %6, %7, %8, %9,
-                 %10, %11, %12, %13, %14, %15, %16, %17)";
+                 %10, %11, %12, %13, %14, %15, %16, %17, %18)";
     $queryParams = [
       1 => ["activity_type", "String"],
-      2 => ["nbr_bleed_difficulties", "String"],
-      3 => ["nbr_visit_bleed_site", "String"],
-      4 => ["nbr_visit_participation_consent_version", "String"],
-      5 => ["nbr_visit_participation_questionnaire_version", "String"],
-      6 => ["nbr_visit_participation_study_payment", "String"],
-      7 => ["nbr_not_recruited_reason", "String"],
-      8 => ["nbr_redundant_reason", "String"],
-      9 => ["nbr_withdrawn_reason", "String"],
-      10 => ["nbr_volunteer_status", "String"],
-      11 => ["nbr_consent_version", "String"],
-      12 => ["nbr_information_leaflet_version", "String"],
-      13 => ["nbr_medication", "String"],
-      14 => ["nbr_drug_family", "String"],
-      15 => ["nihr_ethnicity", "String"],
-      16 => ["nbr_disease", "String"],
-      17 => ["nbr_family_member", "String"],
+      2 => ["campaign_status", "String"],
+      3 => ["nbr_bleed_difficulties", "String"],
+      4 => ["nbr_visit_bleed_site", "String"],
+      5 => ["nbr_visit_participation_consent_version", "String"],
+      6 => ["nbr_visit_participation_questionnaire_version", "String"],
+      7 => ["nbr_visit_participation_study_payment", "String"],
+      8 => ["nbr_not_recruited_reason", "String"],
+      9 => ["nbr_redundant_reason", "String"],
+      10 => ["nbr_withdrawn_reason", "String"],
+      11 => ["nbr_volunteer_status", "String"],
+      12 => ["nbr_consent_version", "String"],
+      13 => ["nbr_information_leaflet_version", "String"],
+      14 => ["nbr_medication", "String"],
+      15 => ["nbr_drug_family", "String"],
+      16 => ["nihr_ethnicity", "String"],
+      17 => ["nbr_disease", "String"],
+      18 => ["nbr_family_member", "String"],
     ];
     $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($dao->fetch()) {
       switch($dao->name) {
         case "activity_type":
           $definition->addMethodCall('setActivityTypeOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "campaign_status":
+          $definition->addMethodCall('setCampaignStatusOptionGroupId', [(int) $dao->id]);
           break;
 
         case "nbr_bleed_difficulties":
