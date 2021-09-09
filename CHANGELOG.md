@@ -1,3 +1,6 @@
+## Version 2.6
+* ensure no activity can be recorded on case or participation data changed when study status does not allow it
+
 ## Version 2.5
 * add container property for campaign status and add method to check if study has no action status to NbrStudy
 

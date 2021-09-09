@@ -740,6 +740,12 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     // add template to remove merge case and reassign case links from form
     CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_case_links.tpl',]);
     $caseId = $form->getVar('_caseID');
+    // add template to set all custom fields to readonly if study status has no action status
+    $studyId = CRM_Nihrbackbone_NbrVolunteerCase::getStudyId((int) $caseId);
+    if ($studyId && CRM_Nihrbackbone_NbrStudy::hasNoActionStatus((int) $studyId)) {
+      CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_hide_custom_edit_button.tpl',]);
+      CRM_Core_Session::setStatus("Edit of the participation data is not allowed because study status does not allow volunteer actions.");
+    }
     $studyNumber = CRM_Nihrbackbone_NbrVolunteerCase::getStudyNumberWithCaseId($caseId);
     if ($studyNumber) {
       $form->addElement('text', 'study_number', "Study Number", ['readonly' => 'readonly']);
@@ -794,6 +800,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    *
    * @param $studyId
    * @param $volunteerId
+   * @return array
    */
   public static function calculateEligibility($studyId, $volunteerId) {
     $eligibilities = [];

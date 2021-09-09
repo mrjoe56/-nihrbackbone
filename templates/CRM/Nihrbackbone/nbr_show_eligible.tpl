@@ -11,7 +11,6 @@
         }
       }
     });
-    console.log(hideEligible);
     if (hideEligible) {
       cj(".crm-info-panel td").each(function() {
         myClass = this.className;
