@@ -438,4 +438,32 @@ class CRM_Nihrbackbone_NbrStudy {
     return FALSE;
   }
 
+  /**
+   * Method to determine if the study has a status that does not allow any actions on volunteers
+   *
+   * @param $studyId
+   * @return bool
+   */
+  public static function hasNoActionStatus($studyId) {
+    $noActionStatusSetting = Civi::settings()->get('nbr_study_status_no_actions');
+    if ($noActionStatusSetting) {
+      $noActionStatuses = explode(",", $noActionStatusSetting);
+      try {
+        $campaigns = \Civi\Api4\Campaign::get()
+          ->addSelect('status_id')
+          ->addWhere('id', '=', (int) $studyId)
+          ->setLimit(1)
+          ->execute();
+        $campaign = $campaigns->first();
+        if (in_array((string) $campaign['status_id'], $noActionStatuses)) {
+          return TRUE;
+        }
+      }
+      catch (API_Exception $ex) {
+        Civi::log()->error('Could not retrieve status of study/campaign with id ' . $studyId . ', error from API4 Campaign get: ' . $ex->getMessage());
+      }
+    }
+    return FALSE;
+  }
+
 }
