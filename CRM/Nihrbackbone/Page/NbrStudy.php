@@ -34,6 +34,7 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
         'sequential' => 1,
         'campaign_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCampaignTypeId(),
         'is_active' => 1,
+        'options' => ['limit' => 0],
       ];
       $result = civicrm_api3('Campaign', 'get', $apiParams);
       foreach ($result['values'] as $apiStudy) {

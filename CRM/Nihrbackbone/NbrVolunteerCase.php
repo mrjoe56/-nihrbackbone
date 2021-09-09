@@ -1181,13 +1181,11 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @param $oldCaseId
    */
   public static function resurrectParticipationData($newCaseId, $oldCaseId) {
-    Civi::log()->debug('EH - new case ID is ' . $newCaseId . ' and old case ID is ' . $oldCaseId);
     // check if both cases are participation cases
     if (self::isParticipationCase($newCaseId) && self::isParticipationCase($oldCaseId)) {
       // if so, check if new case has same data. If not, copy from old case
       $newCaseData = self::getParticipationData($newCaseId);
       $oldCaseData = self::getParticipationData($oldCaseId);
-      Civi::log()->debug('EH - new case data: ' . json_encode($newCaseData) . ' and old case data: ' . json_encode($oldCaseData));
       $changed = FALSE;
       $checkFields = [
         CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name'),
