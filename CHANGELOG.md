@@ -1,3 +1,6 @@
+## Version 2.7
+* add new methods for new face to face recall only custom field, method to check if volunteer is face to face recall only and change eligibility calculation to reflect this (https://www.wrike.com/open.htm?id=728028509)
+
 ## Version 2.6
 * ensure no activity can be recorded on case or participation data changed when study status does not allow it
 

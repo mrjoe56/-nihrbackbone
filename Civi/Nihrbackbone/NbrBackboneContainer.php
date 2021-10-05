@@ -297,6 +297,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
           $this->setPanelCustomFields($dao, $definition);
           break;
 
+        case "nihr_volunteer_selection_eligibility":
+          $this->setVolunteerSelectionCustomFields($dao, $definition);
+          break;
+
         case "nihr_visit_data":
           $this->setVisitCustomFields($dao, $definition);
           break;
@@ -485,6 +489,19 @@ class NbrBackboneContainer implements CompilerPassInterface {
   }
 
   /**
+   * Method to set the custom field properties for selection eligibility of volunteer data
+   *
+   * @param $dao
+   * @param $definition
+   */
+  private function setVolunteerSelectionCustomFields($dao, &$definition) {
+    if ($dao->name =="nvse_no_online_studies") {
+      $definition->addMethodCall('setNoOnlineStudiesColumnName', [$dao->column_name]);
+      $definition->addMethodCall('setNoOnlineStudiesCustomFieldId', [(int) $dao->id]);
+    }
+  }
+
+  /**
    * Method to set the custom field properties for visit data
    *
    * @param $dao
@@ -538,7 +555,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setCustomGroups(&$definition) {
-    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14)";
+    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15)";
     $queryParams = [
       1 => ["contact_id_history", "String"],
       2 => ["nbr_participation_data", "String"],
@@ -554,6 +571,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
       12 => ["nihr_volunteer_withdrawn", "String"],
       13 => ["nihr_volunteer_status", "String"],
       14 => ["nihr_volunteer_medication", "String"],
+      15 => ["nihr_volunteer_selection_eligibility", "String"],
     ];
     $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($dao->fetch()) {
@@ -585,6 +603,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
         case "nihr_volunteer_panel":
           $definition->addMethodCall('setVolunteerPanelTableName', [$dao->table_name]);
+          break;
+
+        case "nihr_volunteer_selection_eligibility":
+          $definition->addMethodCall('setVolunteerSelectionTableName', [$dao->table_name]);
           break;
 
         case "nihr_visit_data":

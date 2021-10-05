@@ -1204,5 +1204,8 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     return FALSE;
   }
+  public static function isFaceToFaceRecallOnly($volunteerId) {
+
+  }
 
 }

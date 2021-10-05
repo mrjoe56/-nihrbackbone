@@ -82,6 +82,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_visitStage2TableName = NULL;
   private $_volunteerPanelTableName = NULL;
   private $_volunteerStatusTableName = NULL;
+  private $_volunteerSelectionTableName = NULL;
   // custom fields
   private $_attemptsCustomFieldId = NULL;
   private $_bleedDifficultiesCustomFieldId = NULL;
@@ -132,6 +133,8 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_volunteerSourceColumnName = NULL;
   private $_volunteerSourceCustomFieldId = NULL;
   private $_volunteerStatusColumnName = NULL;
+  private $_noOnlineStudiesColumnName = NULL;
+  private $_noOnlineStudiesCustomFieldId = NULL;
    // study participation status
   private $_acceptedParticipationStatusValue = NULL;
   private $_declinedParticipationStatusValue = NULL;
@@ -1388,6 +1391,20 @@ class CRM_Nihrbackbone_NbrConfig {
   /**
    * @param string
    */
+  public function setVolunteerSelectionTableName($name) {
+    $this->_volunteerSelectionTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getVolunteerSelectionTableName() {
+    return $this->_volunteerSelectionTableName;
+  }
+
+  /**
+   * @param string
+   */
   public function setVolunteerStatusTableName($name) {
     $this->_volunteerStatusTableName = $name;
   }
@@ -1537,6 +1554,34 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getVolunteerSourceCustomFieldId() {
     return $this->_volunteerSourceCustomFieldId;
+  }
+
+  /**
+   * @param string
+   */
+  public function setNoOnlineStudiesColumnName($name) {
+    $this->_noOnlineStudiesColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getNoOnlineStudiesColumnName() {
+    return $this->_noOnlineStudiesColumnName;
+  }
+
+  /**
+   * @param int
+   */
+  public function setNoOnlineStudiesCustomFieldId($id) {
+    $this->_noOnlineStudiesCustomFieldId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getNoOnlineStudiesCustomFieldId() {
+    return $this->_noOnlineStudiesCustomFieldId;
   }
 
   /**
