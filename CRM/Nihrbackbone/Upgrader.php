@@ -342,6 +342,38 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
   }
 
   /**
+   * Upgrade 1120 - add excl. online to eligibility statuses
+   *
+   * @return bool
+   */
+  public function upgrade_1120() {
+    $this->ctx->log->info(E::ts('Applying update 1120 - add excl. online to eligibility statuses'));
+    CRM_Core_DAO::disableFullGroupByMode();
+    try {
+      $exclOnlineName = "nihr_excluded_online";
+      $optionValues = \Civi\Api4\OptionValue::get()
+        ->addSelect('COUNT(*) AS count')
+        ->addWhere('option_group_id', '=', (int) CRM_Nihrbackbone_BackboneConfig::singleton()->getEligibleStatusOptionGroupId())
+        ->addWhere('name', '=', $exclOnlineName)
+        ->execute();
+      $optionValue = $optionValues->first();
+      if ($optionValue['count'] == 0) {
+        \Civi\Api4\OptionValue::create()
+          ->addValue('option_group_id', (int) CRM_Nihrbackbone_BackboneConfig::singleton()->getEligibleStatusOptionGroupId())
+          ->addValue('label', 'Excl. Online')
+          ->addValue('name', $exclOnlineName)
+          ->addValue('is_reserved', TRUE)
+          ->addValue('is_active', TRUE)
+          ->execute();
+      }
+    }
+    catch (API_Exception $ex) {
+      Civi::log()->error("Could not find or create eligibility status excl. online in " . __METHOD__ . ', error from API: ' . $ex->getMessage());
+    }
+    return TRUE;
+  }
+
+  /**
    * Swap values for unable to willing columns
    *
    * @param $columns

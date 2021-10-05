@@ -38,6 +38,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_panelEligibilityStatusValue = NULL;
   private $_recallableEligibilityStatusValue = NULL;
   private $_travelEligibilityStatusValue = NULL;
+  private $_exclOnlineEligibilityStatusValue = NULL;
   // encounter medium
   private $_emailMediumId = NULL;
   private $_inPersonMediumId = NULL;
@@ -546,6 +547,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getTravelEligibilityStatusValue() {
     return $this->_travelEligibilityStatusValue;
+  }
+
+  /**
+   * @param string $value
+   */
+  public function setExclOnlineEligibilityStatusValue($value) {
+    $this->_exclOnlineEligibilityStatusValue = $value;
+  }
+
+  /**
+   * @return string
+   */
+  public function getExclOnlineEligibilityStatusValue() {
+    return $this->_exclOnlineEligibilityStatusValue;
   }
 
   /**

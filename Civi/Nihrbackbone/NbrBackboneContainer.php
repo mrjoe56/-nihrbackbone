@@ -495,7 +495,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setVolunteerSelectionCustomFields($dao, &$definition) {
-    if ($dao->name =="nvse_no_online_studies") {
+    if ($dao->name == "nvse_no_online_studies") {
       $definition->addMethodCall('setNoOnlineStudiesColumnName', [$dao->column_name]);
       $definition->addMethodCall('setNoOnlineStudiesCustomFieldId', [(int) $dao->id]);
     }
@@ -957,6 +957,9 @@ class NbrBackboneContainer implements CompilerPassInterface {
           break;
         case "nihr_excluded_mri":
           $definition->addMethodCall('setMriEligibilityStatusValue', [$dao->value]);
+          break;
+        case "nihr_excluded_online":
+          $definition->addMethodCall('setExclOnlineEligibilityStatusValue', [$dao->value]);
           break;
         case "nihr_excluded_panel":
           $definition->addMethodCall('setPanelEligibilityStatusValue', [$dao->value]);

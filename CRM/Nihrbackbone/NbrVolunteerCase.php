@@ -826,6 +826,10 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     if (CRM_Nihrbackbone_NbrStudy::isFaceToFace($studyId) && CRM_Nihrbackbone_NihrVolunteer::hasMaxFaceToFaceInvitesNow($volunteerId)) {
       $eligibilities[] = Civi::service('nbrBackbone')->getOnlineOnlyEligibilityStatusValue();
     }
+    // is study online and volunteer excluded online studies?
+    if (CRM_Nihrbackbone_NbrStudy::isOnline($studyId) && CRM_Nihrbackbone_NihrVolunteer::isFaceToFaceRecallOnly((int) $volunteerId)) {
+      $eligibilities[] = Civi::service('nbrBackbone')->getExclOnlineEligibilityStatusValue();
+    }
     // does study require age range and is volunteer outside?
     if (!CRM_Nihrbackbone_NbrVolunteerCase::isInAgeRange($volunteerId, $studyId)) {
       $eligibilities[] = Civi::service('nbrBackbone')->getAgeEligibilityStatusValue();

@@ -1204,8 +1204,22 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     return FALSE;
   }
-  public static function isFaceToFaceRecallOnly($volunteerId) {
 
+  /**
+   * Method to determine if volunteer is face to face recall only
+   *
+   * @param int $volunteerId
+   * @return bool
+   */
+  public static function isFaceToFaceRecallOnly(int $volunteerId) {
+    $table = Civi::service('nbrBackbone')->getVolunteerSelectionTableName();
+    $column = Civi::service('nbrBackbone')->getNoOnlineStudiesColumnName();
+    $query = "SELECT " . $column . " FROM " . $table . " WHERE entity_id = %1";
+    $faceToFaceOnly = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, "Integer"]]);
+    if ($faceToFaceOnly) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
 }
