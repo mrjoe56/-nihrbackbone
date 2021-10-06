@@ -466,4 +466,50 @@ class CRM_Nihrbackbone_NbrStudy {
     return FALSE;
   }
 
+  /**
+   * Delete participation cases from studies where status_id = Not Progressed
+   *
+   * @return false|void
+   */
+  public static function deleteParticipationNotProgressed() {
+    $result = [];
+    try {
+      $optionValues = \Civi\Api4\OptionValue::get()
+        ->addSelect('value')
+        ->addWhere('option_group_id:name', '=', 'campaign_status')
+        ->addWhere('name', '=', 'Not Progressed')
+        ->execute();
+      $notProgressed = $optionValues->first();
+    }
+    catch (API_Exception $ex) {
+      Civi::log()->error(E::ts("Could not find a campaign (study) status with name Not Progressed in")
+        . __METHOD__ . E::ts(", error from API4 OptionValue get: ") . $ex->getMessage());
+      return FALSE;
+    }
+    if ($notProgressed['value']) {
+      $query = "SELECT DISTINCT(cc.id) AS case_id, st.id AS study_id
+          FROM civicrm_case AS cc
+            JOIN civicrm_value_nbr_participation_data AS pd ON cc.id = pd.entity_id
+            JOIN civicrm_campaign AS st ON pd.nvpd_study_id = st.id
+          WHERE st.status_id = %1 AND cc.case_type_id = %2 AND cc.is_deleted = %3";
+      $dao = CRM_Core_DAO::executeQuery($query, [
+        1 => [(int) $notProgressed['value'], "Integer"],
+        2 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+        3 => [0, "Integer"],
+      ]);
+      while ($dao->fetch()) {
+        try {
+          civicrm_api3('Case', 'delete', ['id' => $dao->case_id]);
+          $result[] = "Participation case with ID " . $dao->case_id . " from study with ID " . $dao->study_id . " deleted.";
+        }
+        catch (CiviCRM_API3_Exception $ex) {
+          Civi::log()->error(E::ts("Could not delete participation case with ID ") . $dao->case_id . E::ts(" on study ")
+            . $dao->study_id . E::ts(" in ") . __METHOD__
+            . E::ts(", error message from API3 Case delete: ") . $ex->getMessage());
+        }
+      }
+    }
+    return $result;
+  }
+
 }
