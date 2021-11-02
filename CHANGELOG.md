@@ -1,3 +1,6 @@
+## Version 2.8
+* api to remove selected participation cases from study not progressed (see https://www.wrike.com/open.htm?id=753789895)
+
 ## Version 2.6
 * ensure no activity can be recorded on case or participation data changed when study status does not allow it
 

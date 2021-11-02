@@ -467,9 +467,9 @@ class CRM_Nihrbackbone_NbrStudy {
   }
 
   /**
-   * Delete participation cases from studies where status_id = Not Progressed
+   * Delete participation cases from studies where study status_id = Not Progressed and study participant status = selected
    *
-   * @return false|void
+   * @return false|array
    */
   public static function deleteParticipationNotProgressed() {
     $result = [];
@@ -491,11 +491,12 @@ class CRM_Nihrbackbone_NbrStudy {
           FROM civicrm_case AS cc
             JOIN civicrm_value_nbr_participation_data AS pd ON cc.id = pd.entity_id
             JOIN civicrm_campaign AS st ON pd.nvpd_study_id = st.id
-          WHERE st.status_id = %1 AND cc.case_type_id = %2 AND cc.is_deleted = %3";
+          WHERE st.status_id = %1 AND cc.case_type_id = %2 AND pd.nvpd_study_participation_status = %3 AND cc.is_deleted = %4";
       $dao = CRM_Core_DAO::executeQuery($query, [
         1 => [(int) $notProgressed['value'], "Integer"],
         2 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
-        3 => [0, "Integer"],
+        3 => [Civi::service('nbrBackbone')->getSelectedParticipationStatusValue(), "String"],
+        4 => [0, "Integer"],
       ]);
       while ($dao->fetch()) {
         try {

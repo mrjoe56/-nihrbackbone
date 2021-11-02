@@ -103,7 +103,6 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
 }
 /** Implements hook_civicrm_post_case_merge */
 function nihrbackbone_civicrm_post_case_merge($mainContactId, $mainCaseId, $otherContactId, $otherCaseId, $changeClient) {
-  Civi::log()->debug('EH - in the post_case_merge hook we have changeClient: ' . $changeClient . ', other ContactId: ' . $otherContactId . ' and main ContactId: ' . $mainContactId);
   // issue 7827 - resurrect participation data after case reassigned to new client
   if ($changeClient || $otherContactId != $mainContactId) {
     CRM_Nihrbackbone_NbrVolunteerCase::resurrectParticipationData($mainCaseId, $otherCaseId);
