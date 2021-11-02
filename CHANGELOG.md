@@ -1,3 +1,6 @@
+## Version 2.8
+* api to remove selected participation cases from study not progressed (see https://www.wrike.com/open.htm?id=753789895)
+
 ## Version 2.7
 * add new methods for new face to face recall only custom field, excl online eligibility status,  method to check if volunteer is face to face recall only and change eligibility calculation to reflect this (https://www.wrike.com/open.htm?id=728028509)
 
