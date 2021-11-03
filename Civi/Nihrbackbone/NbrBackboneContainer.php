@@ -44,6 +44,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition->addMethodCall('setParticipantIdIdentifierType', ["cih_type_bioresource_id"]);
     $definition->addMethodCall('setParticipationCaseTypeName', ['nihr_participation']);
     $definition->addMethodCall('setRecruitmentCaseTypeName', ['nihr_recruitment']);
+    $definition->setPublic(TRUE);
     $container->setDefinition('nbrBackbone', $definition);
   }
 

@@ -1,3 +1,7 @@
+## Version 2.9
+* set defintion public in service container (required for Drupal 9, no functional change)
+
+
 ## Version 2.8
 * api to remove selected participation cases from study not progressed (see https://www.wrike.com/open.htm?id=753789895)
 
