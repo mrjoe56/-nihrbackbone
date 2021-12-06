@@ -374,6 +374,48 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
   }
 
   /**
+   * Upgrade 1130 - add scheduled job to generate study participant ID's
+   *
+   * @return bool
+   */
+  public function upgrade_1130() {
+    $this->ctx->log->info(E::ts('Applying update 1130 - add scheduled job to generate study participant IDs'));
+    // remove "old" generate job if it still exists
+    $jobQuery = "SELECT id FROM civicrm_job WHERE api_entity = %1 AND api_action = %2";
+    $jobs = CRM_Core_DAO::executeQuery($jobQuery, [
+      1 => ["NbrParticipation", "String"],
+      2 => ["createid", "String"]
+    ]);
+    while ($jobs->fetch()) {
+      CRM_Core_DAO::executeQuery("DELETE FROM civicrm_job_log WHERE job_id = %1", [1 => [$jobs->id, "Integer"]]);
+    }
+    CRM_Core_DAO::executeQuery("DELETE FROM civicrm_job WHERE api_entity = %1 AND api_action = %2", [
+      1 => ["NbrParticipation", "String"],
+      2 => ["createid", "String"]
+    ]);
+    $countQuery = "SELECT * FROM civicrm_job WHERE api_entity = %1 AND api_action = %2";
+    $count = CRM_Core_DAO::singleValueQuery($countQuery, [
+      1 => ["NbrStudy", "String"],
+      2 => ["generateids", "String"],
+    ]);
+    if ($count == 0) {
+      $insert = "INSERT INTO civicrm_job (domain_id, run_frequency, name, description, api_entity, api_action, parameters, is_active)
+        VALUES(%1, %2, %3, %4, %5, %6, %7, %8)";
+      CRM_Core_DAO::executeQuery($insert, [
+        1 => [1, "Integer"],
+        2 => ["Yearly", "String"],
+        3 => ["Generate Study Participant IDs for data only study", "String"],
+        4 => ["This job generates study participant ID's to selected volunteers that are on a data only study", "String"],
+        5 => ["NbrStudy", "String"],
+        6 => ["generateids", "String"],
+        7 => ["study_number=", "String"],
+        8 => [0, "Integer"],
+      ]);
+    }
+    return TRUE;
+  }
+
+  /**
    * Swap values for unable to willing columns
    *
    * @param $columns
