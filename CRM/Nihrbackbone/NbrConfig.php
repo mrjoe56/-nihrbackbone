@@ -84,6 +84,9 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_volunteerPanelTableName = NULL;
   private $_volunteerStatusTableName = NULL;
   private $_volunteerSelectionTableName = NULL;
+  private $_redundantTableName = NULL;
+  private $_withdawnTableName = NULL;
+
   // custom fields
   private $_attemptsCustomFieldId = NULL;
   private $_bleedDifficultiesCustomFieldId = NULL;
@@ -115,6 +118,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_redundantReasonCustomFieldId = NULL;
   private $_redundantDestroySamplesCustomFieldId = NULL;
   private $_redundantDestroyDataCustomFieldId = NULL;
+  private $_redundantDestroyDataColumnName = NULL;
   private $_sampleSiteCustomFieldId = NULL;
   private $_siteAliasColumnName = NULL;
   private $_siteAliasTypeColumnName = NULL;
@@ -125,6 +129,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_withdrawnReasonCustomFieldId = NULL;
   private $_withdrawnDestroySamplesCustomFieldId = NULL;
   private $_withdrawnDestroyDataCustomFieldId = NULL;
+  private $_withdrawnDestroyDataColumnName = NULL;
   private $_volunteerCentreColumnName = NULL;
   private $_volunteerCentreCustomFieldId = NULL;
   private $_volunteerPanelColumnName = NULL;
@@ -1810,6 +1815,34 @@ class CRM_Nihrbackbone_NbrConfig {
   }
 
   /**
+   * @param string
+   */
+  public function setRedundantDestroyDataColumnName(string $name) {
+    $this->_redundantDestroyDataColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getRedundantDestroyDataColumnName() {
+    return $this->_redundantDestroyDataColumnName;
+  }
+
+  /**
+   * @param string
+   */
+  public function setWithdrawnDestroyDataColumnName(string $name) {
+    $this->_withdrawnDestroyDataColumnName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getWithdrawnDestroyDataColumnName() {
+    return $this->_withdrawnDestroyDataColumnName;
+  }
+
+  /**
    * @param int
    */
   public function setRedundantDestroySamplesCustomFieldId($id) {
@@ -2451,6 +2484,34 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getDiseaseTableName() {
     return $this->_diseaseTableName  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setRedundantTableName($name) {
+    $this->_redundantTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getRedundantTableName() {
+    return $this->_redundantTableName  ;
+  }
+
+  /**
+   * @param string
+   */
+  public function setWithdrawnTableName($name) {
+    $this->_withdawnTableName = $name;
+  }
+
+  /**
+   * @return string
+   */
+  public function getWithdrawnTableName() {
+    return $this->_withdawnTableName  ;
   }
 
   /**

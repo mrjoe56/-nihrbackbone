@@ -1224,4 +1224,47 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return FALSE;
   }
 
+  /**
+   * Method to check if the volunteer has selected to destroy data either on redundant or on withdrawn
+   *
+   * @param int $volunteerId
+   * @return bool
+   */
+  public static function wantsDataDestroyed(int $volunteerId) {
+    if (!empty($volunteerId)) {
+      $withdrawnTable = Civi::service('nbrBackbone')->getWithdrawnTableName();
+      $withdrawnDestroyCheck = Civi::service('nbrBackbone')->getWithdrawnDestroyDataColumnName();
+      $redundantTable = Civi::service('nbrBackbone')->getRedundantTableName();
+      $redundantDestroyCheck = Civi::service('nbrBackbone')->getRedundantDestroyDataColumnName();
+      $query = "SELECT COUNT(*)
+        FROM civicrm_activity_contact AS cac
+            JOIN civicrm_activity AS ac ON cac.activity_id = ac.id
+            JOIN " . $redundantTable . " AS red ON ac.id = red.entity_id
+        WHERE ac.is_deleted = %1 AND ac.is_test = %1 AND ac.is_current_revision = %2 AND ac.activity_type_id = %3 AND cac.contact_id = %4
+        AND red." . $redundantDestroyCheck . " = TRUE";
+      $queryParams = [
+        1 => [0, "Integer"],
+        2 => [1, "Integer"],
+        3 => [Civi::service('nbrBackbone')->getRedundantActivityTypeId(), "Integer"],
+        4 => [$volunteerId, "Integer"],
+      ];
+      $redundantCount = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+      if ($redundantCount > 0) {
+        return TRUE;
+      }
+      $query = "SELECT COUNT(*)
+        FROM civicrm_activity_contact AS cac
+            JOIN civicrm_activity AS ac ON cac.activity_id = ac.id
+            JOIN " . $withdrawnTable . " AS wdr ON ac.id = wdr.entity_id
+        WHERE ac.is_deleted = %1 AND ac.is_test = %1 AND ac.is_current_revision = %2 AND ac.activity_type_id = %3 AND cac.contact_id = %4
+        AND wdr." . $withdrawnDestroyCheck . " = TRUE";
+      $queryParams[3] = [Civi::service('nbrBackbone')->getWithdrawnActivityTypeId(), "Integer"];
+      $withdrawnCount = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+      if ($withdrawnCount > 0) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
 }

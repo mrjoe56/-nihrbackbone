@@ -373,6 +373,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
       case "avr_request_to_destroy_data":
         $definition->addMethodCall('setRedundantDestroyDataCustomFieldId', [(int) $dao->id]);
+        $definition->addMethodCall('setRedundantDestroyDataColumnName', [$dao->column_name]);
         break;
 
       case "avr_request_to_destroy_samples":
@@ -395,6 +396,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
       case "avw_request_to_destroy_data":
         $definition->addMethodCall('setWithdrawnDestroyDataCustomFieldId', [(int) $dao->id]);
+        $definition->addMethodCall('setWithdrawnDestroyDataColumnName', [$dao->column_name]);
         break;
 
       case "avw_request_to_destroy_samples":
@@ -622,8 +624,16 @@ class NbrBackboneContainer implements CompilerPassInterface {
           $definition->addMethodCall('setConsentStage2TableName', [$dao->table_name]);
           break;
 
+        case "nihr_volunteer_redundant":
+          $definition->addMethodCall('setRedundantTableName', [$dao->table_name]);
+          break;
+
         case "nihr_volunteer_status":
           $definition->addMethodCall('setVolunteerStatusTableName', [$dao->table_name]);
+          break;
+
+        case "nihr_volunteer_withdrawn":
+          $definition->addMethodCall('setWithdrawnTableName', [$dao->table_name]);
           break;
 
       }

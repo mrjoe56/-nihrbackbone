@@ -1289,4 +1289,39 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     }
     return FALSE;
   }
+
+  /**
+   * Method to generate study particpant id for relevant volunteers on data only study
+   *
+   * @param string $studyNumber
+   * @return array
+   */
+  public static function generateIdForDataOnlyParticipants(string $studyNumber) {
+    $result = [];
+    if (!empty($studyNumber)) {
+      $query = "SELECT b.entity_id AS participation_id, d.contact_id AS volunteer_id
+        FROM civicrm_value_nbr_study_data AS a
+            JOIN civicrm_value_nbr_participation_data AS b ON a.entity_id = b.nvpd_study_id
+            JOIN civicrm_case AS c ON b.entity_id = c.id
+            JOIN civicrm_case_contact AS d ON c.id = d.case_id
+        WHERE a.nsd_study_number = %1 AND a.nsd_data_only = TRUE AND (b.nvpd_study_participant_id IS NULL OR b.nvpd_study_participant_id = %2)
+            AND b.nvpd_study_participation_status = %3 AND c.is_deleted = %4 AND c.case_type_id = %5";
+      $queryParams = [
+        1 => [$studyNumber, "String"],
+        2 => ["", "String"],
+        3 => [Civi::service('nbrBackbone')->getSelectedParticipationStatusValue(), "String"],
+        4 => [0, "Integer"],
+        5 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"]
+      ];
+      $dao = CRM_Core_DAO::executeQuery($query, $queryParams);
+      while ($dao->fetch()) {
+        if (CRM_Nihrbackbone_NihrVolunteer::hasValidCorrectConsent((int) $dao->volunteer_id) && !CRM_Nihrbackbone_NihrVolunteer::wantsDataDestroyed((int) $dao->volunteer_id)) {
+          CRM_Nihrnumbergenerator_StudyParticipantNumberGenerator::createNewNumberForCase((int) $dao->participation_id);
+          $result[] = "Generated Study Participant ID for participation case ID: " . $dao->participation_id . " belonging to volunteer ID: " . $dao->volunteer_id . " on study " . $studyNumber;
+        }
+      }
+    }
+    return $result;
+  }
+
 }
