@@ -229,8 +229,71 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
    *
    */
   public function addRules() {
-    $this->addFormRule(array('CRM_Nihrbackbone_Form_NbrStudy', 'validateStartEndDate'));
-    $this->addFormRule(array('CRM_Nihrbackbone_Form_NbrStudy', 'validateFromTo'));
+    $this->addFormRule(['CRM_Nihrbackbone_Form_NbrStudy', 'validateStartEndDate']);
+    $this->addFormRule(['CRM_Nihrbackbone_Form_NbrStudy', 'validateFromTo']);
+    $this->addFormRule(['CRM_Nihrbackbone_Form_NbrStudy', 'validateStudyType']);
+  }
+
+  /**
+   * Method to validate if study types are exclusive
+   * see https://www.wrike.com/open.htm?id=806555844
+   *
+   * @param $fields
+   * @return array|bool
+   */
+  public static function validateStudyType($fields) {
+    // if sample only is on make sure face to face, data only and online only are not also on
+    if (isset($fields['nsd_sample_only']) && $fields['nsd_sample_only']) {
+      if (isset($fields['nsd_recall']) && $fields['nsd_recall']) {
+        $errors['nsd_recall'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+      if (isset($fields['nsd_online_study']) && $fields['nsd_online_study']) {
+        $errors['nsd_online_study'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+      if (isset($fields['nsd_data_only']) && $fields['nsd_data_only']) {
+        $errors['nsd_data_only'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+    }
+    // if data only on make sure face to face, sample only and online only are not also on
+    if (isset($fields['nsd_data_only']) && $fields['nsd_data_only']) {
+      if (isset($fields['nsd_recall']) && $fields['nsd_recall']) {
+        $errors['nsd_recall'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+      if (isset($fields['nsd_online_study']) && $fields['nsd_online_study']) {
+        $errors['nsd_online_study'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+      if (isset($fields['nsd_sample_only']) && $fields['nsd_sample_only']) {
+        $errors['nsd_sample_only'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+    }
+    // if face to face is on make sure sample/data and online only are not also on
+    if (isset($fields['nsd_recall']) && $fields['nsd_recall']) {
+      if (isset($fields['nsd_sample_only']) && $fields['nsd_sample_only']) {
+        $errors['nsd_sample_only'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+      if (isset($fields['nsd_data_only']) && $fields['nsd_data_only']) {
+        $errors['nsd_data_only'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+      if (isset($fields['nsd_online_study']) && $fields['nsd_online_study']) {
+        $errors['nsd_online_study'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+    }
+    // if online only on make sure sample/data and face to face are not also on
+    if (isset($fields['nsd_online_study']) && $fields['nsd_online_study']) {
+      if (isset($fields['nsd_sample_only']) && $fields['nsd_sample_only']) {
+        $errors['nsd_sample_only'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+      if (isset($fields['nsd_data_only']) && $fields['nsd_data_only']) {
+        $errors['nsd_data_only'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+      if (isset($fields['nsd_recall']) && $fields['nsd_recall']) {
+        $errors['nsd_recall'] = E::ts("Sample/data only, face-to-face and online are exclusive study types, more than one is not allowed.");
+      }
+    }
+    if (!empty($errors)) {
+      return $errors;
+    }
+    return TRUE;
   }
 
   /**

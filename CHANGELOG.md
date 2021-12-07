@@ -1,3 +1,6 @@
+## Version 2.10
+* ensure study types are exclusive (see https://www.wrike.com/open.htm?id=806555844)
+
 ## Version 2.9
 * set definition public in service container (required for Drupal 9, no functional change)
 * add API NbrStudy generateids to generate study participant IDs for data only studies (see https://www.wrike.com/open.htm?id=706388658)
