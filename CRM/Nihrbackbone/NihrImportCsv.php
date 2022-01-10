@@ -207,24 +207,6 @@ class CRM_Nihrbackbone_NihrImportCsv
       CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
       return FALSE;
     }
-    if (CRM_Nihrbackbone_NihrVolunteer::isWithdrawn($volunteerId)) {
-      $this->_failed++;
-      $message = E::ts('Volunteer with participantID ') . $participantId . E::ts(' has status Withdrawn, not imported.');
-      CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
-      return FALSE;
-    }
-    if (CRM_Nihrbackbone_NihrVolunteer::isRedundant($volunteerId)) {
-      $this->_failed++;
-      $message = E::ts('Volunteer with participantID ') . $participantId . E::ts(' has status Redundant, not imported.');
-      CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
-      return FALSE;
-    }
-    if (CRM_Nihrbackbone_NihrVolunteer::isDeceased($volunteerId)) {
-      $this->_failed++;
-      $message = E::ts('Volunteer with participantID ') . $participantId . E::ts(' has status Deceased, not imported.');
-      CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
-      return FALSE;
-    }
     return TRUE;
   }
 }
