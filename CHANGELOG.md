@@ -1,3 +1,6 @@
+## 2.11
+* ensure all volunteers can be imported as long as participant ID exists (see https://www.wrike.com/open.htm?id=706383875)
+
 ## Version 2.10
 * ensure study types are exclusive (see https://www.wrike.com/open.htm?id=806555844)
 
