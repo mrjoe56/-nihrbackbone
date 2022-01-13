@@ -1185,37 +1185,66 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   }
 
   /**
+   * Method to find the deleted participation cases of a contact for the merge process
+   *
+   * @param int $contactId
+   * @return array
+   */
+  public static function getParticipationCasesMergeData(int $contactId) {
+    $cases = [];
+    $participationTable = Civi::service('nbrBackbone')->getParticipationDataTableName();
+    $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+    $studyParticipantIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participant_id', 'column_name');
+    $eligibleStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
+    $query = "SELECT DISTINCT(a.case_id), c." . $studyIdColumn . " AS study_id, c.". $studyParticipantIdColumn . " AS study_participant_id, c."
+      . $eligibleStatusColumn . " AS eligible_status, b.start_date, b.subject, b.created_date
+        FROM civicrm_case_contact a
+            JOIN civicrm_case b ON a.case_id = b.id
+            LEFT JOIN " . $participationTable . " c ON a.case_id = c.entity_id
+        WHERE contact_id = %1 AND b.case_type_id = %2";
+    $dao = CRM_Core_DAO::executeQuery($query, [
+      1 => [$contactId, 'Integer'],
+      2 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), 'Integer'],
+    ]);
+    while ($dao->fetch()) {
+      $cases[$dao->case_id] = CRM_Nihrbackbone_Utils::moveDaoToArray($dao);
+    }
+    return $cases;
+  }
+
+  /**
    * Method to resurrect participation data after case merge
    * @link https://www.wrike.com/open.htm?id=692748431 or https://issues.civicoop.org/issues/7827
    *
-   * @param $newCaseId
-   * @param $oldCaseId
+   * @param int $newContactId
+   * @param int $oldContactId
+   * @param int $newCaseId
+   * @param int $oldCaseId
    */
-  public static function resurrectParticipationData($newCaseId, $oldCaseId) {
-    // check if both cases are participation cases
-    if (self::isParticipationCase($newCaseId) && self::isParticipationCase($oldCaseId)) {
-      // if so, check if new case has same data. If not, copy from old case
-      $newCaseData = self::getParticipationData($newCaseId);
-      $oldCaseData = self::getParticipationData($oldCaseId);
-      $changed = FALSE;
-      $checkFields = [
-        CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name'),
-        CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participant_id', 'column_name'),
-        CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name'),
-      ];
-      if ($newCaseData && $oldCaseData) {
-        foreach ($checkFields as $checkField) {
-          if ($newCaseData[$checkField] != $oldCaseData[$checkField]) {
-            $newCaseData[$checkField] = $oldCaseData[$checkField];
-            $changed = TRUE;
-          }
-        }
-      }
-      // update if changed
-      Civi::log()->debug('EH - changed is: ' . $changed);
-
-      if ($changed) {
-        self::fixParticipationData($newCaseId, $newCaseData);
+  public static function resurrectParticipationData(int $newContactId, int $oldContactId, int $newCaseId, int $oldCaseId) {
+    // get all participation cases from old contact
+    $oldCases = self::getParticipationCasesMergeData($oldContactId);
+    // for all old cases, check if there is one and only case for the same study on the new volunteer and if so, send
+    // participation data there
+    foreach ($oldCases as $oldCaseId => $caseData) {
+      // find new case (this is complicated as the study_id in the new case is empty but the combination of contact_id, subject, start_date
+      // and creation date should identify uniquely IF the study participant id is empty in the new case
+      $participationTable = Civi::service('nbrBackbone')->getParticipationDataTableName();
+      $studyParticipantIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participant_id', 'column_name');
+      $query = "SELECT a.case_id
+        FROM civicrm_case_contact a
+            JOIN civicrm_case b ON a.case_id = b.id
+            LEFT JOIN " . $participationTable . " c ON a.case_id = c.entity_id
+        WHERE a.contact_id = %1 AND b.case_type_id = %2 AND b.is_deleted = FALSE AND b.subject = %3 AND c." . $studyParticipantIdColumn . " IS NULL
+        ORDER BY a.case_id DESC LIMIT 1";
+      $newCase = CRM_Core_DAO::executeQuery($query, [
+        1 => [$newContactId, "Integer"],
+        2 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+        3 => [$caseData['subject'], "String"],
+      ]);
+      if ($newCase->fetch()) {
+        // fix participation data if data found
+        self::fixParticipationData((int) $oldCaseId, (int) $newCase->case_id, $caseData);
       }
     }
   }
@@ -1223,30 +1252,55 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   /**
    * Method to fix study id, study participation id and eligibility after reassign case
    *
-   * @param $caseId
-   * @param $caseData
-   * @return false
+   * @param int $oldCaseId
+   * @param int $newCaseId
+   * @param array $caseData
+   * @return bool
    */
-  public static function fixParticipationData($caseId, $caseData) {
-    if (!empty($caseId) && !empty($caseData)) {
+  public static function fixParticipationData(int $oldCaseId, int $newCaseId, array $caseData) {
+    if (!empty($oldCaseId) && !empty($newCaseId)) {
       $table = Civi::service('nbrBackbone')->getParticipationDataTableName();
-      $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
-      $studyParticipantIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participant_id', 'column_name');
-      $eligibleColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
-      if (isset($caseData[$studyIdColumn]) && isset($caseData[$studyParticipantIdColumn]) && isset($caseData[$eligibleColumn])) {
-        $fixQuery = "UPDATE " . $table . " SET " . $studyIdColumn . " = %1, " . $studyParticipantIdColumn . " = %2, "
-          . $eligibleColumn . " = %3 WHERE entity_id = %4";
+      // first check if there already is a record in participation data for case and if so, update with data from old case. If not, update old
+      // record with new case id
+      $checkQuery = "SELECT COUNT(*) FROM civicrm_value_nbr_participation_data WHERE entity_id = %1 AND nvpd_study_participant_id IS NULL";
+      $count = CRM_Core_DAO::singleValueQuery($checkQuery, [1 => [$newCaseId, "Integer"]]);
+      if ($count == 0) {
+        $fixQuery = "UPDATE " . $table . " SET entity_id = %1 WHERE entity_id = %2";
         $fixParams = [
-          1 => [$caseData[$studyIdColumn], "String"],
-          2 => [$caseData[$studyParticipantIdColumn], "String"],
-          3 => [$caseData[$eligibleColumn], "String"],
-          4 => [(int) $caseId, "Integer"],
+          1 => [$newCaseId, "Integer"],
+          2 => [$oldCaseId, "Integer"],
         ];
-        Civi::log()->debug('EH - fix query: ' . $fixQuery . ' and params: ' . json_encode($fixParams));
-        try {
+        CRM_Core_DAO::executeQuery($fixQuery, $fixParams);
+        return TRUE;
+      }
+      else {
+        $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
+        $studyParticipantIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participant_id', 'column_name');
+        $eligibleStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
+        $fixParams = [];
+        $fixElements = [];
+        $i = 0;
+        if (isset($caseData['study_id']) && !empty($caseData['study_id'])) {
+          $i++;
+          $fixElements[] = $studyIdColumn . " = %" . $i;
+          $fixParams[$i] = [(int) $caseData['study_id'], "Integer"];
+        }
+        if (isset($caseData['study_participant_id']) && !empty($caseData['study_participant_id'])) {
+          $i++;
+          $fixElements[] = $studyParticipantIdColumn . " = %" . $i;
+          $fixParams[$i] = [$caseData['study_participant_id'], "String"];
+        }
+        if (isset($caseData['eligible_status']) && !empty($caseData['eligible_status'])) {
+          $i++;
+          $fixElements[] = $eligibleStatusColumn . " = %" . $i;
+          $fixParams[$i] = [$caseData['eligible_status'], "String"];
+        }
+        if (!empty($fixElements)) {
+          $i++;
+          $fixQuery = "UPDATE " . $table . " SET " . implode(', ', $fixElements) . " WHERE entity_id = %" . $i;
+          $fixParams[$i] = [$newCaseId, "Integer"];
           CRM_Core_DAO::executeQuery($fixQuery, $fixParams);
-        } catch (Exception $ex) {
-          Civi::log()->debug('Error message is ' . $ex);
+          return TRUE;
         }
       }
     }

@@ -99,13 +99,18 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
       CRM_Nihrbackbone_NihrAddress::set_distance_to_studysite_study($objectRef->id);
     }
   }
-
 }
+function nihrbackbone_civicrm_postCommit($op, $objectName, $objectId, $objectRef) {
+  if ($objectName == "Case") {
+    Civi::log()->debug('wat zien ik?');
+  }
+}
+
 /** Implements hook_civicrm_post_case_merge */
 function nihrbackbone_civicrm_post_case_merge($mainContactId, $mainCaseId, $otherContactId, $otherCaseId, $changeClient) {
   // issue 7827 - resurrect participation data after case reassigned to new client
   if ($changeClient || $otherContactId != $mainContactId) {
-    CRM_Nihrbackbone_NbrVolunteerCase::resurrectParticipationData($mainCaseId, $otherCaseId);
+    CRM_Nihrbackbone_NbrVolunteerCase::resurrectParticipationData((int) $mainContactId, (int) $otherContactId, (int) $mainCaseId, (int) $otherCaseId);
   }
 }
 
