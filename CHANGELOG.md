@@ -1,3 +1,6 @@
+## 2.12
+* make sure participant case data (study participant id, eligible status) stays intact when contacts are merged (see https://www.wrike.com/open.htm?id=692748431)
+
 ## 2.11
 * ensure all volunteers can be imported as long as participant ID exists (see https://www.wrike.com/open.htm?id=706383875)
 
