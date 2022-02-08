@@ -841,6 +841,27 @@ class CRM_Nihrbackbone_NihrVolunteer {
   }
 
   /**
+   * Check if volunteer allows postal mail
+   *
+   * @param $volunteerId
+   * @return bool
+   */
+  public static function allowsPostalMail($volunteerId) {
+    try {
+      $result = civicrm_api3('Contact', 'getvalue', [
+        'return' => "do_not_mail",
+        'id' => (int) $volunteerId,
+      ]);
+      if ($result == "1") {
+        return FALSE;
+      }
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+    }
+    return TRUE;
+  }
+
+  /**
    * Method to set the eligibility other on all cases where volunteer is selected and study is
    * not the current one
    *
