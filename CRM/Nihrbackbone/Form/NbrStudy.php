@@ -242,6 +242,27 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
    * @return array|bool
    */
   public static function validateStudyType($fields) {
+    $availableStudyTypes = [
+      'nsd_commercial',
+      'nsd_recall',
+      'nsd_sample_only',
+      'nsd_data_only',
+      'nsd_online_study',
+      'nsd_multiple_visits',
+    ];
+    $atleastOneTypeSelected = false;
+    foreach($availableStudyTypes as $studyType) {
+      if (isset($fields[$studyType]) && $fields[$studyType]) {
+        $atleastOneTypeSelected = true;
+        break;
+      }
+    }
+    if (!$atleastOneTypeSelected) {
+      foreach($availableStudyTypes as $studyType) {
+        $errors[$studyType] = E::ts('Select at least one study type.');
+      }
+    }
+
     // if sample only is on make sure face to face, data only and online only are not also on
     if (isset($fields['nsd_sample_only']) && $fields['nsd_sample_only']) {
       if (isset($fields['nsd_recall']) && $fields['nsd_recall']) {
