@@ -108,8 +108,10 @@ function nihrbackbone_civicrm_postCommit($op, $objectName, $objectId, $objectRef
 
 /** Implements hook_civicrm_post_case_merge */
 function nihrbackbone_civicrm_post_case_merge($mainContactId, $mainCaseId, $otherContactId, $otherCaseId, $changeClient) {
-  // issue 7827 - resurrect participation data after case reassigned to new client
   if ($changeClient || $otherContactId != $mainContactId) {
+    // issue 9003 - merge recruitment cases into one (see https://www.wrike.com/open.htm?id=692748431)
+    CRM_Nihrbackbone_NbrRecruitmentCase::mergeRecruitmentCases((int) $mainContactId);
+    // issue 7827 - resurrect participation data after case reassigned to new client
     CRM_Nihrbackbone_NbrVolunteerCase::resurrectParticipationData((int) $mainContactId, (int) $otherContactId, (int) $mainCaseId, (int) $otherCaseId);
   }
 }

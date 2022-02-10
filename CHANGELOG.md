@@ -1,3 +1,6 @@
+## 2.13
+* when merging contacts, keep all activities of all recruitment cases on the oldest as active case (see https://www.wrike.com/open.htm?id=692748431). Note that for this change some functions from NbrVolunteerCase where moved to the new class NbrRecruitmentCase.
+
 ## 2.12
 * make sure participant case data (study participant id, eligible status) stays intact when contacts are merged (see https://www.wrike.com/open.htm?id=692748431)
 
