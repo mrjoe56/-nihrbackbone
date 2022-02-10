@@ -1,3 +1,6 @@
+## 2.14
+* alphabetize template list for invite by email (see https://www.wrike.com/open.htm?id=837076881)
+
 ## 2.12
 * make sure participant case data (study participant id, eligible status) stays intact when contacts are merged (see https://www.wrike.com/open.htm?id=692748431)
 
