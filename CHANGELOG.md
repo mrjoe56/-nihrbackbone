@@ -1,3 +1,6 @@
+## 2.14
+* alphabetize template list for invite by email (see https://www.wrike.com/open.htm?id=837076881)
+
 ## 2.13
 * study type can not be empty (see https://www.wrike.com/open.htm?id=806555844)
 
