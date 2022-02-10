@@ -1288,4 +1288,75 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return FALSE;
   }
 
+  /**
+   * Method to clean the contact identifiers of a contact (see https://www.wrike.com/open.htm?id=827910828)
+   *
+   * @param int $contactId
+   * @return void
+   */
+  public static function cleanIdentifiers(int $contactId) {
+    // retrieve all identifiers of contact
+    $identifiers = self::getDuplicateContactIdentifiers($contactId);
+    // remove any duplicates
+    foreach ($identifiers as $identifierId => $identifierData) {
+      $query = "DELETE FROM civicrm_value_contact_id_history WHERE entity_id = %1 AND identifier_type = %2 AND identifier = %3 AND id != %4";
+      CRM_Core_DAO::executeQuery($query, [
+        1 => [$contactId, "Integer"],
+        2 => [$identifierData['identifier_type'], "String"],
+        3 => [$identifierData['identifier'], "String"],
+        4 => [$identifierId, "Integer"],
+      ]);
+    }
+    self::removeDeprecatedIdentifiers($contactId);
+  }
+
+  /**
+   * Method to remove deprecated identifiers if same value exists as participant ID
+   * (see see https://www.wrike.com/open.htm?id=827910828)
+   *
+   * @param int $contactId
+   * @return void
+   */
+  public static function removeDeprecatedIdentifiers(int $contactId) {
+    // remove old deprecated identifiers
+    $query = "SELECT identifier, id FROM civicrm_value_contact_id_history WHERE identifier_type IN(%1, %2) AND entity_id = %3";
+    $deprecated = CRM_Core_DAO::executeQuery($query, [
+      1 => ["cih_type_duplicate_invalid", "String"],
+      2 => ["cih_type_duplicate_live_entry", "String"],
+      3 => [$contactId, "Integer"],
+    ]);
+    // delete if the same value exists as a participant ID on the contact
+    $countQuery = "SELECT COUNT(*) FROM civicrm_value_contact_id_history WHERE entity_id = %1 AND identifier_type = %2 AND identifier = %3";
+    while ($deprecated->fetch()) {
+      $participantCount = CRM_Core_DAO::singleValueQuery($countQuery, [
+        1 => [$contactId, "Integer"],
+        2 => ["cih_type_participant_id", "String"],
+        3 => [$deprecated->identifier, "String"],
+      ]);
+      if ($participantCount > 0) {
+        CRM_Core_DAO::executeQuery("DELETE FROM civicrm_value_contact_id_history WHERE id = %1", [1 => [$deprecated->id, "Integer"]]);
+      }
+    }
+  }
+
+  /**
+   * Method to get duplicate contact identifiers of contact
+   *
+   * @param int $contactId
+   * @return array
+   */
+  public static function getDuplicateContactIdentifiers(int $contactId) {
+    $identifiers = [];
+    if (!empty($contactId)) {
+      CRM_Core_DAO::disableFullGroupByMode();
+      $query = "SELECT * FROM civicrm_value_contact_id_history WHERE entity_id = %1 GROUP BY identifier_type, identifier HAVING COUNT(*) > 1";
+      $identifier = CRM_Core_DAO::executeQuery($query, [1 => [$contactId, "Integer"]]);
+      while ($identifier->fetch()) {
+        $identifiers[$identifier->id] = CRM_Nihrbackbone_Utils::moveDaoToArray($identifier);
+      }
+      CRM_Core_DAO::reenableFullGroupByMode();
+    }
+    return $identifiers;
+  }
+
 }

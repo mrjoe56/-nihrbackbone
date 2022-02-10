@@ -101,8 +101,9 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
   }
 }
 function nihrbackbone_civicrm_postCommit($op, $objectName, $objectId, $objectRef) {
-  if ($objectName == "Case") {
-    Civi::log()->debug('wat zien ik?');
+  // check contact identifiers after contact merge, see https://www.wrike.com/open.htm?id=827910828
+  if ($objectName == "Contact" && $op == "merge") {
+    CRM_Nihrbackbone_NihrVolunteer::cleanIdentifiers((int) $objectId);
   }
 }
 
