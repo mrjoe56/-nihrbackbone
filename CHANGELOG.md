@@ -1,3 +1,6 @@
+## 2.13
+* study type can not be empty (see https://www.wrike.com/open.htm?id=806555844)
+
 ## 2.12
 * make sure participant case data (study participant id, eligible status) stays intact when contacts are merged (see https://www.wrike.com/open.htm?id=692748431)
 
