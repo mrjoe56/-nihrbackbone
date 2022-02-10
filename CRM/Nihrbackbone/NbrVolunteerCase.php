@@ -124,7 +124,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   public function createVolunteerCase($contactId) {
     // todo use switch
     if ($this->_apiParams['case_type'] == 'recruitment') {
-      $result = $this->createRecruitmentVolunteerCase($contactId);
+      $result = CRM_Nihrbackbone_NbrRecruitmentCase::createRecruitmentVolunteerCase($contactId);
       return $result;
   }
     elseif ($this->_apiParams['case_type'] == 'participation') {
@@ -166,27 +166,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   }
 
 
-  /**
-   * Method to create case of type Recruitment
-   *
-   * @param $contactId
-   * @throws API_Exception
-   * @return array
-   */
-  public function createRecruitmentVolunteerCase($contactId) {
-    if (empty($contactId)) {
-      throw new API_Exception(E::ts('Trying to create a NIHR project volunteer with an empty or missing param contactId in ') . __METHOD__, 3003);
-    }
-    try {
-      $case = civicrm_api3('Case', 'create', $this->setRecruitmentCaseCreateData($contactId));
-      return ['case_id' => $case['id']];
-    }
-    catch (CiviCRM_API3_Exception $ex) {
-      throw new API_Exception('Could not create a Recruitment case for contact ID ' . $contactId
-        . ' in ' . __METHOD__ . ', error code from API Case create:'  . $ex->getMessage(), 3004);
-    }
-  }
-
 
 
   /**
@@ -218,27 +197,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       $caseCreateData[$recallGroupCustomFieldId] = $this->_apiParams['recall_group'];
     }
     if (isset($this->_apiParams['start_date'])) {
-      $caseCreateData['start_date'] = $this->_apiParams['start_date'];
-    }
-    return $caseCreateData;
-  }
-
-  /**
-   * @param $contactId
-   * @return array
-   */
-  private function setRecruitmentCaseCreateData($contactId) {
-    $subject = "Recruitment";
-    if (isset($this->_apiParams['subject'])) {
-      $subject = $this->_apiParams['subject'];
-    }
-    $caseCreateData =  [
-      'contact_id' => $contactId,
-      'case_type_id' => CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitmentCaseTypeId(),
-      'subject' => $subject,
-      'status_id' => "Open",
-    ];
-    if (isset($this->_apiParams['start_date']) && !empty($this->_apiParams['start_date'])) {
       $caseCreateData['start_date'] = $this->_apiParams['start_date'];
     }
     return $caseCreateData;
@@ -1081,31 +1039,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   }
 
 
-  /**
-   * Get recruitment case id for contact (there should only be one!)
-   *
-   * @param $contactId
-   * @return bool|string
-   */
-  public static function getActiveRecruitmentCaseId($contactId) {
-    if (empty($contactId)) {
-      return FALSE;
-    }
-    $query = "SELECT ccc.case_id
-        FROM civicrm_case AS cc
-            JOIN civicrm_case_contact AS ccc ON cc.id = ccc.case_id
-        WHERE cc.is_deleted = %1 AND cc.case_type_id = %2 AND ccc.contact_id = %3
-        ORDER BY cc.start_date DESC LIMIT 1";
-    $caseId = CRM_Core_DAO::singleValueQuery($query, [
-      1 => [0, "Integer"],
-      2 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getRecruitmentCaseTypeId(), "Integer"],
-      3 => [(int) $contactId, "Integer"],
-    ]);
-    if ($caseId) {
-      return $caseId;
-    }
-    return FALSE;
-  }
 
   /**
    * Method to create query for daily calculate of eligibility

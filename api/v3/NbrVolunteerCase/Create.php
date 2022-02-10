@@ -61,7 +61,7 @@ function civicrm_api3_nbr_volunteer_case_Create($params) {
   $pv = new CRM_Nihrbackbone_NbrVolunteerCase($params);
   switch ($type) {
     case 'recruitment':
-      $newCaseId = $pv->createRecruitmentVolunteerCase($params['contact_id']);
+      $newCaseId = CRM_Nihrbackbone_NbrRecruitmentCase::createRecruitmentVolunteerCase($params);
       break;
     case 'participation':
       $newCaseId = $pv->createParticipationVolunteerCase($params['contact_id']);
