@@ -1,3 +1,6 @@
+## 2.17
+* when merging contacts remove duplicate panel data (see https://www.wrike.com/open.htm?id=827910828)
+
 ## 2.16
 * when merging contacts remove unnecessary contact identifiers (see https://www.wrike.com/open.htm?id=827910828)
 

@@ -1359,4 +1359,75 @@ class CRM_Nihrbackbone_NihrVolunteer {
     return $identifiers;
   }
 
+  /**
+   * Method to clear duplicate panel data for contact (see https://www.wrike.com/open.htm?id=827910828)
+   *
+   * @param int $contactId
+   * @return void
+   */
+  public static function cleanPanelData(int $contactId) {
+    if ($contactId) {
+      $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomGroup('table_name');
+      $columns = [
+        CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_panel', 'column_name'),
+        CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_centre', 'column_name'),
+        CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_site', 'column_name'),
+        CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerPanelCustomField('nvp_source', 'column_name'),
+      ];
+      $panels = self::getDuplicatePanelData($contactId, $table, $columns);
+      foreach ($panels as $panelId => $panelData) {
+        $query = "DELETE FROM " . $table . " WHERE entity_id = %1";
+        $queryParams = [1 => [$contactId, "Integer"]];
+        $index = 1;
+        foreach ($columns as $column) {
+          if ($panelData[$column]) {
+            $index++;
+            $query .= " AND " . $column . " = %" . $index;
+            $queryParams[$index] = [$panelData[$column], "String"];
+          }
+          else {
+            if (is_null($panelData[$column])) {
+              $query .= " AND " . $column . " IS NULL";
+            }
+            else {
+              $index++;
+              $query .= " AND " . $column . " = %" . $index;
+              $queryParams[$index] = ["", "String"];
+            }
+          }
+        }
+        if ($index > 1) {
+          $index++;
+          $query .= " AND id != %" . $index;
+          $queryParams[$index] = [(int) $panelId, 'Integer'];
+          CRM_Core_DAO::executeQuery($query, $queryParams);
+        }
+      }
+    }
+  }
+
+  /**
+   * Method to get the duplicate panel data for contact
+   *
+   * @param int $contactId
+   * @param string $table
+   * @param array $columns
+   *
+   * @return array
+   */
+  public static function getDuplicatePanelData(int $contactId, string $table, array $columns) {
+    $panelData = [];
+    if ($contactId) {
+      CRM_Core_DAO::disableFullGroupByMode();
+      $query = "SELECT * FROM " . $table . " WHERE entity_id = %1
+        GROUP BY " . implode(",", $columns) . "  HAVING COUNT(*) > 1";
+      $panel = CRM_Core_DAO::executeQuery($query, [1 => [$contactId, "Integer"]]);
+      while ($panel->fetch()) {
+        $panelData[$panel->id] = CRM_Nihrbackbone_Utils::moveDaoToArray($panel);
+      }
+      CRM_Core_DAO::reenableFullGroupByMode();
+    }
+    return $panelData;
+  }
+
 }

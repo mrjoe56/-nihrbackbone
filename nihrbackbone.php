@@ -101,9 +101,10 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
   }
 }
 function nihrbackbone_civicrm_postCommit($op, $objectName, $objectId, $objectRef) {
-  // check contact identifiers after contact merge, see https://www.wrike.com/open.htm?id=827910828
+  // check contact identifiers and panel data after contact merge, see https://www.wrike.com/open.htm?id=827910828
   if ($objectName == "Contact" && $op == "merge") {
     CRM_Nihrbackbone_NihrVolunteer::cleanIdentifiers((int) $objectId);
+    CRM_Nihrbackbone_NihrVolunteer::cleanPanelData((int) $objectId);
   }
 }
 
