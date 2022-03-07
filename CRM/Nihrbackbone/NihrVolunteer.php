@@ -1429,5 +1429,34 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     return $panelData;
   }
+  public static function buildFormMerge(&$form) {
+    $elementIndex = $form->getVar('_elementIndex');
+    foreach ($elementIndex as $eName => $eIndex) {
+      if (strpos($eName, "location_blocks[") !== FALSE || strpos($eName, "move_location_") !== FALSE) {
+        $element = &$form->getElement($eName);
+        if (isset($element->_attributes['type']) && $element->_attributes['type'] == "checkbox") {
+          if (strpos($eName, "move_location_") !== FALSE) {
+            $element->setChecked(TRUE);
+            $element->freeze();
+          }
+          else {
+            $text = $element->getText();
+            switch ($text) {
+              case "Add new":
+                $element->setChecked(TRUE);
+                $element->freeze();
+                break;
+              case "Set as primary":
+                $element->setChecked(FALSE);
+                $element->freeze();
+                break;
+            }
+          }
+        }
+      }
+
+    }
+
+  }
 
 }

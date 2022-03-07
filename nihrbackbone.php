@@ -203,6 +203,11 @@ function writeBmi($entityID, $bmi) {
  * Implements hook civicrm_buildForm
  */
 function nihrbackbone_civicrm_buildForm($formName, &$form) {  # jb2
+  // set add new flag to yes and freeze for address/email/phone, see https://www.wrike.com/open.htm?id=692748431
+  if ($form instanceof CRM_Contact_Form_Merge) {
+    CRM_Nihrbackbone_NihrVolunteer::buildFormMerge($form);
+  }
+
   if ($form instanceof CRM_Case_Form_CustomData) {
     CRM_Nihrbackbone_NbrVolunteerCase::buildFormCustomData($form);
   }
