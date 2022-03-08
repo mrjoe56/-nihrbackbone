@@ -1,3 +1,6 @@
+## 2.19
+* fix update of study status invite in manage case screen (see https://www.wrike.com/open.htm?id=753781734)
+
 ## 2.18
 * when merging, force checked boxes and add new for address/email/phone (see https://www.wrike.com/open.htm?id=827910828)
     * use buildForm hook to set all the relevant checkboxes and default values
