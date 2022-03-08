@@ -734,13 +734,20 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     if ($groupId == CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('id')) {
       // if volunteer is not eligible, remove the invited study statuses from options
       $caseId = (int) $form->getVar("_entityID");
-      if (!CRM_Nihrbackbone_NbrVolunteerCase::isEligible($caseId)) {
-        $elementPartName = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
-        $index = $form->getVar("_elementIndex");
-        foreach ($index as $elementName => $elementId) {
-          if (strpos($elementName, $elementPartName) !== FALSE) {
-            $element = $form->getElement($elementName);
-            $options = &$element->_options;
+      $elementPartName = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
+      $index = $form->getVar("_elementIndex");
+      foreach ($index as $elementName => $elementId) {
+        if (strpos($elementName, $elementPartName) !== FALSE) {
+          $element = $form->getElement($elementName);
+          $options = &$element->_options;
+          if (!self::shouldIncludeInvitedStatusOption($caseId)) {
+            foreach($options as $optionId => $option) {
+              if (isset($option['attr']['value']) && $option['attr']['value'] == 'study_participation_status_invited') {
+                unset($options[$optionId]);
+              }
+            }
+          }
+          if (!CRM_Nihrbackbone_NbrVolunteerCase::isEligible($caseId)) {
             $invited = explode(",", Civi::settings()->get('nbr_invited_study_status'));
             foreach ($options as $optionId => $option) {
               if (isset($option['attr']['value']) && in_array($option['attr']['value'], $invited)) {
@@ -933,6 +940,33 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       }
     }
     return $studyId;
+  }
+
+  /**
+   * Returns whether a should include the invited option or not.
+   *
+   * @param $caseId
+   *
+   * @return bool
+   */
+  public static function shouldIncludeInvitedStatusOption($caseId) {
+    $includeInvitedOption = FALSE;
+    $studyId = self::getStudyId($caseId);
+    if (!empty($studyId)) {
+      try {
+        $studyStatus = civicrm_api3('Campaign', 'getvalue', [
+          'return' => 'status_id',
+          'id' => $studyId,
+        ]);
+        $invitateStatuses = explode(",", Civi::settings()->get('nbr_invite_campaign_status'));
+        if (in_array($studyStatus, $invitateStatuses) && (CRM_Nihrbackbone_NbrStudy::isFaceToFace($studyId) || CRM_Nihrbackbone_NbrStudy::isOnline($studyId))) {
+          $includeInvitedOption = TRUE;
+        }
+      } catch (\Exception $e) {
+        // Do nothing
+      }
+    }
+    return $includeInvitedOption;
   }
 
   /**
