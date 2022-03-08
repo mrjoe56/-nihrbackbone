@@ -1,3 +1,10 @@
+## 2.18
+* when merging, force checked boxes and add new for address/email/phone (see https://www.wrike.com/open.htm?id=827910828)
+    * use buildForm hook to set all the relevant checkboxes and default values
+    * hide relevant location elements in template with jQuery
+    * save original address(es) of main contact in $_SESSION
+    * once merge is complete reinstate original address(es) of main contact retrieved from $_SESSION
+
 ## 2.17
 * when merging contacts remove duplicate panel data (see https://www.wrike.com/open.htm?id=827910828)
 

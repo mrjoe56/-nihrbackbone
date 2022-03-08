@@ -100,11 +100,13 @@ function nihrbackbone_civicrm_post($op, $objectName, $objectID, &$objectRef) {
     }
   }
 }
+/** implements hook postCommit */
 function nihrbackbone_civicrm_postCommit($op, $objectName, $objectId, $objectRef) {
   // check contact identifiers and panel data after contact merge, see https://www.wrike.com/open.htm?id=827910828
   if ($objectName == "Contact" && $op == "merge") {
     CRM_Nihrbackbone_NihrVolunteer::cleanIdentifiers((int) $objectId);
     CRM_Nihrbackbone_NihrVolunteer::cleanPanelData((int) $objectId);
+    CRM_Nihrbackbone_NihrAddress::resurrectOverwrittenAddressDuringMerge((int) $objectId);
   }
 }
 
@@ -206,6 +208,8 @@ function nihrbackbone_civicrm_buildForm($formName, &$form) {  # jb2
   // set add new flag to yes and freeze for address/email/phone, see https://www.wrike.com/open.htm?id=692748431
   if ($form instanceof CRM_Contact_Form_Merge) {
     CRM_Nihrbackbone_NihrVolunteer::buildFormMerge($form);
+    // add template to hide location blocks
+    CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_merge_location_hide.tpl',]);
   }
 
   if ($form instanceof CRM_Case_Form_CustomData) {

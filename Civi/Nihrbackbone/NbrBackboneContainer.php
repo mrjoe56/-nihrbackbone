@@ -73,6 +73,9 @@ class NbrBackboneContainer implements CompilerPassInterface {
         case "Home":
           $definition->addMethodCall('setHomeLocationTypeId', [(int) $dao->id]);
           break;
+        case "Other":
+          $definition->addMethodCall('setOtherLocationTypeId', [(int) $dao->id]);
+          break;
         case "Work":
           $definition->addMethodCall('setWorkLocationTypeId', [(int) $dao->id]);
           break;

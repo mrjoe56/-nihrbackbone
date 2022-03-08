@@ -1429,17 +1429,35 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     return $panelData;
   }
+
+  /**
+   * Method to process the buildForm hook (specifically for CRM_Contact_Form_Merge)
+   *
+   * @param $form
+   * @return void
+   */
   public static function buildFormMerge(&$form) {
+    // save addresses of main contact in session as it will be overwritten after successfull merge!
+    $mainDetails = $form->getVar("_mainDetails");
+    if ($mainDetails['location_blocks']['address']) {
+      $session = CRM_Core_Session::singleton();
+      $session->nbr_address_merging_contact = $mainDetails['location_blocks']['address'];
+    }
     $elementIndex = $form->getVar('_elementIndex');
     foreach ($elementIndex as $eName => $eIndex) {
+      // process the elements for location
       if (strpos($eName, "location_blocks[") !== FALSE || strpos($eName, "move_location_") !== FALSE) {
         $element = &$form->getElement($eName);
+        // if element is a checkbox
         if (isset($element->_attributes['type']) && $element->_attributes['type'] == "checkbox") {
+          // if element name contains move_location_ it is the main checkbox to decide if the item is merged or ignored.
+          // This will be set to TRUE so the email/address/phone is ALWAYS selected and the element is frozen so the user can not change.
           if (strpos($eName, "move_location_") !== FALSE) {
             $element->setChecked(TRUE);
             $element->freeze();
           }
           else {
+            // In other cases the checkbox can be the add new (which has to be TRUE) and the set as primary (which has to be FALSE)
             $text = $element->getText();
             switch ($text) {
               case "Add new":
@@ -1453,10 +1471,16 @@ class CRM_Nihrbackbone_NihrVolunteer {
             }
           }
         }
+        else {
+          // if the element is for the location type then set to location type merged and do not allow the user to change
+          if (strpos($eName, 'locTypeId') !== FALSE) {
+            $defaults[$eName] = Civi::service('nbrBackbone')->getOtherLocationTypeId();
+            $form->setDefaults($defaults);
+            $element->freeze();
+          }
+        }
       }
-
     }
-
   }
 
 }

@@ -120,6 +120,103 @@ class CRM_Nihrbackbone_NihrAddress {
     return FALSE;
   }
 
+  /**
+   * After a contact merge, the original address(es) of the remaining contact will be overwritten with the
+   * address from the removed contact. This method will now reinstate those original addresses
+   *
+   * @param int $contactId
+   * @return void
+   */
+  public static function resurrectOverwrittenAddressDuringMerge(int $contactId) {
+    $addresses = CRM_Core_Session::singleton()->nbr_address_merging_contact;
+    foreach ($addresses as $addressId => $address) {
+      // if one of the original ones was primary, make sure the new ones are not!
+      if ($address['is_primary'] == TRUE) {
+        CRM_Core_DAO::executeQuery("UPDATE civicrm_address SET is_primary = FALSE WHERE contact_id = %1", [1 => [$contactId, "Integer"]]);
+      }
+      try {
+        $results = \Civi\Api4\Address::create();
+        foreach ($address as $fieldName => $fieldValue) {
+          // remove id so the create api does not do an update and remove location type
+          if ($fieldName != 'location_type_id' && $fieldName != 'id') {
+            $results->addValue($fieldName, $fieldValue);
+          }
+        }
+        // use a location type that does not exist yet on the contact, preferably the one it already had. If no location type is available, create a new one
+        $locationTypeId = self::getAvailableLocationTypeId($contactId, (int) $address['location_type_id']);
+        if ($locationTypeId) {
+          $results->addValue('location_type_id', $locationTypeId);
+          $results->execute();
+        }
+        else {
+          // if we have no location type available we add this address to the former communication data if possible
+          if (method_exists("CRM_Formercommunicationdata_Utils", "getLocationTypeLabelWithId")) {
+            self::storeInFcd($contactId, $address);
+          }
+        }
+      }
+      catch (API_Exception $ex) {
+      }
+    }
+  }
+
+  /**
+   * Method to add address to fcd
+   *
+   * @param int $contactId
+   * @param array $address
+   * @return void
+   */
+  private static function storeInFcd(int $contactId, array $address) {
+    $query = "INSERT INTO civicrm_value_fcd_former_comm_data (entity_id, fcd_communication_type, fcd_location_type, fcd_date_deactivated, fcd_deactivated_by, fcd_details)
+        VALUES(%1, %2, %3, %4, %5, %6)";
+    $locType = CRM_Formercommunicationdata_Utils::getLocationTypeLabelWithId($address['location_type_id']) . " ( id: " . $address['location_type_id'] . ")";
+    $nowDate = CRM_DateTime('now');
+    $addressDetails = [];
+    foreach ($address as $field => $value) {
+      $addressDetails[] = $field . ":&nbsp;".$value;
+    }
+    $queryParams = [
+      1 => [$contactId, "Integer"],
+      2 => ["address", "String"],
+      3 => [$locType, "String"],
+      4 => [$nowDate->format("Y-m-d"), "String"],
+      5 => [(int) CRM_Core_Session::getLoggedInContactID(), "Integer"],
+      6 => [implode(", ", $addressDetails), "String"],
+    ];
+    CRM_Core_DAO::executeQuery($query, $queryParams);
+  }
+
+  /**
+   * Method to get the location type id we can use for the new address
+   *
+   * @param int $contactId
+   * @param int $originalLocTypeId
+   * @return int|null
+   */
+  public static function getAvailableLocationTypeId(int $contactId, int $originalLocTypeId) {
+    // first check if the original location type can be used
+    if (!empty($originalLocTypeId)) {
+      $query = "SELECT COUNT(*) FROM civicrm_address WHERE contact_id = %1 AND location_type_id = %2";
+      $count = CRM_Core_DAO::singleValueQuery($query, [
+        1 => [$contactId, "Integer"],
+        2 => [$originalLocTypeId, "Integer"],
+      ]);
+      if ($count == 0) {
+        return $originalLocTypeId;
+      }
+    }
+    // if we get here the original one can not be used so we need to find another one that is available
+    $query = "SELECT id FROM civicrm_location_type clt
+        WHERE id NOT IN (SELECT location_type_id FROM civicrm_address WHERE contact_id = %1) LIMIT 1";
+    $foundLocTypeId = CRM_Core_DAO::singleValueQuery($query, [1 => [$contactId, "Integer"]]);
+    if ($foundLocTypeId) {
+      return (int) $foundLocTypeId;
+    }
+    // if we get here we could not use any so we return NULL
+    return NULL;
+  }
+
 }
 
 

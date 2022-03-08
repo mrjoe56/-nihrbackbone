@@ -194,6 +194,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_sourceRecordTypeId = NULL;
   private $_targetRecordTypeId = NULL;
   private $_homeLocationTypeId = NULL;
+  private $_otherLocationTypeId = NULL;
   private $_workLocationTypeId = NULL;
   private $_bioResourcersGroupId = NULL;
   private $_ukCountryId = NULL;
@@ -2414,6 +2415,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getHomeLocationTypeId() {
     return $this->_homeLocationTypeId  ;
+  }
+
+  /**
+   * @param int
+   */
+  public function setOtherLocationTypeId($id) {
+    $this->_otherLocationTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getOtherLocationTypeId() {
+    return $this->_otherLocationTypeId  ;
   }
 
   /**
