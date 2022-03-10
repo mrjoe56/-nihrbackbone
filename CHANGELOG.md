@@ -1,3 +1,6 @@
+## 2.20
+* rearrange fields (study type) on study form (see https://www.wrike.com/open.htm?id=806555844)
+
 ## 2.19
 * fix update of study status invite in manage case screen (see https://www.wrike.com/open.htm?id=753781734)
 

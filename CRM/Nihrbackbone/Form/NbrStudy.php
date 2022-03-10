@@ -75,18 +75,18 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
       'placeholder' => '- select investigator -',
     ], FALSE);
+    $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Multiple visits'), [], FALSE);
     $this->add('wysiwyg', 'nsd_scientific_info', E::ts('Scientific Information'), ['rows' => 4, 'cols' => 100], FALSE);
     $this->add('wysiwyg', 'nsd_lay_summary', E::ts('Lay summary'), ['rows' => 4, 'cols' => 100], FALSE);
     $this->add('text', 'nsd_study_long_name', E::ts("Long Name"), ['size' => 100], FALSE);
     $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [], FALSE);
     $this->add('advcheckbox', 'nsd_ethics_approved', E::ts('Ethics approved?'), [], FALSE);
     $this->add('textarea', 'nsd_study_notes', E::ts('Notes'), ['rows' => 4, 'cols' => 100], FALSE);
-    $this->add('advcheckbox', 'nsd_commercial', E::ts('Commercial'), [], FALSE);
     $this->add('advcheckbox', 'nsd_recall', E::ts('Recall: Face-to-Face'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_online_study', E::ts('Recall: Online'), [], FALSE);
     $this->add('advcheckbox', 'nsd_sample_only', E::ts('Stored Sample'), [], FALSE);
     $this->add('advcheckbox', 'nsd_data_only', E::ts('Data'), [], FALSE);
-    $this->add('advcheckbox', 'nsd_online_study', E::ts('Recall: Online'), [], FALSE);
-    $this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Recall: Multiple visits'), [], FALSE);
+    $this->add('advcheckbox', 'nsd_commercial', E::ts('Commercial'), [], FALSE);
     $this->addEntityRef('nsc_panel', E::ts('Panel(s)'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_panel']],
       'placeholder' => '- select panel(s) -',

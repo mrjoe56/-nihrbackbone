@@ -3,10 +3,15 @@
   {include file="CRM/common/formButtons.tpl" location="top"}
   </div>
   {foreach from=$elementNames item=elementName}
-    {if $elementName eq "nsc_panel"}
+    {if $elementName eq "nsd_commercial"}
       <div class="crm-accordion-wrapper nbr_selection_criteria-block">
         <div class = "crm-accordion-header">Selection criteria</div>
         <div class="crm-accordion-body nbr_selection_criteria-body">
+    {/if}
+    {if $elementName eq "nsd_recall"}
+      <div class="crm-accordion-wrapper nbr_study type-block">
+        <div class = "crm-accordion-header">Study type</div>
+        <div class="crm-accordion-body nbr_study_type_criteria-body">
     {/if}
     <div class="crm-section">
       <div class="label">{$form.$elementName.label}</div>
