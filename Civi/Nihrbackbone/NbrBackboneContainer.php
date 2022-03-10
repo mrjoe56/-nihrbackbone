@@ -41,7 +41,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition->addMethodCall('setDefaultNbrMailingType', ["invite"]);
     $definition->addMethodCall('setUkCountryId', [1226]);
     $definition->addMethodCall('setParticipantIdIdentifierType', ["cih_type_participant_id"]);
-    $definition->addMethodCall('setParticipantIdIdentifierType', ["cih_type_bioresource_id"]);
+    $definition->addMethodCall('setBioresourceIdIdentifierType', ["cih_type_bioresource_id"]);
     $definition->addMethodCall('setParticipationCaseTypeName', ['nihr_participation']);
     $definition->addMethodCall('setRecruitmentCaseTypeName', ['nihr_recruitment']);
     $definition->setPublic(TRUE);

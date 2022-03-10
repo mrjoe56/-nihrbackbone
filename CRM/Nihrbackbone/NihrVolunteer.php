@@ -78,10 +78,11 @@ class CRM_Nihrbackbone_NihrVolunteer {
       $query = "SELECT entity_id
         FROM civicrm_value_contact_id_history
         WHERE identifier_type = %1 AND identifier = %2";
-      $contactId = CRM_Core_DAO::singleValueQuery($query, [
+      $queryParams = [
         1 => [Civi::service('nbrBackbone')->getParticipantIdIdentifierType(), "String"],
         2 => [$participantId, "String"],
-      ]);
+      ];
+      $contactId = CRM_Core_DAO::singleValueQuery($query, $queryParams);
       if ($contactId) {
         return $contactId;
       }

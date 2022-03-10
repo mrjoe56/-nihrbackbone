@@ -1,3 +1,6 @@
+## 2.21
+* fix error in container with bioresourceIdIdentifierType (found when dealing with issue 9126)
+
 ## 2.20
 * rearrange fields (study type) on study form (see https://www.wrike.com/open.htm?id=806555844)
 
