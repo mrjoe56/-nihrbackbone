@@ -10,7 +10,7 @@
     {/if}
     {if $elementName eq "nsd_recall"}
       <div class="crm-accordion-wrapper nbr_study type-block">
-        <div class = "crm-accordion-header">Study type</div>
+        <div class = "crm-accordion-header">Study type (must select one)</div>
         <div class="crm-accordion-body nbr_study_type_criteria-body">
     {/if}
     <div class="crm-section">
