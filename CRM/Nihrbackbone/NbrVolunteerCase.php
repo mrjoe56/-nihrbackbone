@@ -742,15 +742,14 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
           $options = &$element->_options;
           if (!self::shouldIncludeInvitedStatusOption($caseId)) {
             foreach($options as $optionId => $option) {
-              if (isset($option['attr']['value']) && $option['attr']['value'] == 'study_participation_status_invited') {
+              if (isset($option['attr']['value']) && CRM_Nihrbackbone_NbrInvitation::isInviteOption($option['attr']['value'])) {
                 unset($options[$optionId]);
               }
             }
           }
           if (!CRM_Nihrbackbone_NbrVolunteerCase::isEligible($caseId)) {
-            $invited = explode(",", Civi::settings()->get('nbr_invited_study_status'));
             foreach ($options as $optionId => $option) {
-              if (isset($option['attr']['value']) && in_array($option['attr']['value'], $invited)) {
+              if (isset($option['attr']['value']) && CRM_Nihrbackbone_NbrInvitation::isInviteOption($option['attr']['value'])) {
                 unset($options[$optionId]);
               }
             }

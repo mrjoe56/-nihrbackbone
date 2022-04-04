@@ -98,5 +98,17 @@ class CRM_Nihrbackbone_NbrInvitation {
     CRM_Nihrbackbone_NbrVolunteerCase::addCaseActivity($caseId, $contactId, CRM_Nihrbackbone_BackboneConfig::singleton()->getInviteProjectActivityTypeId(), $activityData);;
   }
 
+  /**
+   * Method to check if participant status is one of the invitation ones
+   *
+   * @param $optionValue
+   * @return bool
+   */
+  public static function isInviteOption($optionValue) {
+    if ($optionValue == "study_participation_status_invited" || $optionValue == "study_participation_status_invitation_pending") {
+      return TRUE;
+    }
+    return FALSE;
+  }
 
 }

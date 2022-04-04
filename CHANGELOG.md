@@ -1,4 +1,7 @@
-# 2.22
+##2.23
+* fix issue with invitation pending status on manage case screen (see https://www.wrike.com/open.htm?id=753781734)
+
+## 2.22
 * fix error recall group and invite date not merged (see https://www.wrike.com/open.htm?id=868104357)
 
 ## 2.21
