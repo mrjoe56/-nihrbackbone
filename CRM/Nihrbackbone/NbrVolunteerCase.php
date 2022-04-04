@@ -1163,8 +1163,11 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
     $studyParticipantIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participant_id', 'column_name');
     $eligibleStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
+    $recallGroupColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'column_name');
+    $dateInvitedColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_date_invited', 'column_name');
     $query = "SELECT DISTINCT(a.case_id), c." . $studyIdColumn . " AS study_id, c.". $studyParticipantIdColumn . " AS study_participant_id, c."
-      . $eligibleStatusColumn . " AS eligible_status, b.start_date, b.subject, b.created_date
+      . $eligibleStatusColumn . " AS eligible_status, c." . $recallGroupColumn ." AS recall_group, c." . $dateInvitedColumn . " AS date_invited,
+       b.start_date, b.subject, b.created_date
         FROM civicrm_case_contact a
             JOIN civicrm_case b ON a.case_id = b.id
             LEFT JOIN " . $participationTable . " c ON a.case_id = c.entity_id
@@ -1244,6 +1247,8 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
         $studyParticipantIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participant_id', 'column_name');
         $eligibleStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
+        $recallGroupColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'column_name');
+        $dateInvitedColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_date_invited', 'column_name');
         $fixParams = [];
         $fixElements = [];
         $i = 0;
@@ -1261,6 +1266,16 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
           $i++;
           $fixElements[] = $eligibleStatusColumn . " = %" . $i;
           $fixParams[$i] = [$caseData['eligible_status'], "String"];
+        }
+        if (isset($caseData['recall_group']) && !empty($caseData['recall_group'])) {
+          $i++;
+          $fixElements[] = $recallGroupColumn . " = %" . $i;
+          $fixParams[$i] = [$caseData['recall_group'], "String"];
+        }
+        if (isset($caseData['date_invited']) && !empty($caseData['date_invited'])) {
+          $i++;
+          $fixElements[] = $dateInvitedColumn . " = %" . $i;
+          $fixParams[$i] = [$caseData['date_invited'], "String"];
         }
         if (!empty($fixElements)) {
           $i++;

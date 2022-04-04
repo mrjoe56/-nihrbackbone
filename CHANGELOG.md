@@ -1,3 +1,6 @@
+# 2.22
+* fix error recall group and invite date not merged (see https://www.wrike.com/open.htm?id=868104357)
+
 ## 2.21
 * fix error in container with bioresourceIdIdentifierType (found when dealing with issue 9126)
 
