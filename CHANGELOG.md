@@ -1,4 +1,7 @@
-##2.23
+## 2.24
+* add function isDataOnly to NbrStudy, which is needed for the generation of DAA study number
+
+## 2.23
 * fix issue with invitation pending status on manage case screen (see https://www.wrike.com/open.htm?id=753781734)
 
 ## 2.22

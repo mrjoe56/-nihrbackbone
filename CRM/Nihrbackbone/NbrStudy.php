@@ -439,6 +439,30 @@ class CRM_Nihrbackbone_NbrStudy {
   }
 
   /**
+   * Method to check if the study is data only
+   *
+   * @param int $studyId
+   * @return bool
+   */
+  public static function isDataOnly(int $studyId) {
+    if (!empty($studyId)) {
+      try {
+        $campaigns = \Civi\Api4\Campaign::get()
+          ->addSelect('nbr_study_data.nsd_data_only')
+          ->addWhere('id', '=', $studyId)
+          ->execute();
+        $study = $campaigns->first();
+        if ($study['nbr_study_data.nsd_data_only']) {
+          return TRUE;
+        }
+      }
+      catch (API_Exception $ex) {
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Method to determine if the study has a status that does not allow any actions on volunteers
    *
    * @param $studyId
