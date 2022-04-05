@@ -451,7 +451,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
     $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerSelectionEligibilityCustomGroup('table_name');
     $query = "SELECT " . $columnName . " FROM " . $tableName . " WHERE entity_id = %1";
     $willingCommercial = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, 'Integer']]);
-    if ($willingCommercial) {
+    if (is_null($willingCommercial) || $willingCommercial) {
       return TRUE;
     }
     return FALSE;
@@ -1239,7 +1239,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
     if ($table && $column) {
       $query = "SELECT " . $column . " FROM " . $table . " WHERE entity_id = %1";
       $faceToFaceOnly = CRM_Core_DAO::singleValueQuery($query, [1 => [$volunteerId, "Integer"]]);
-      if ($faceToFaceOnly) {
+      if ($faceToFaceOnly || is_null($faceToFaceOnly)) {
         return TRUE;
       }
     }

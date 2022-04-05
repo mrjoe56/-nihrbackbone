@@ -1,3 +1,6 @@
+## 2.25
+* fix checks for commercial and online to not treat NULL as a yes value (see https://www.wrike.com/open.htm?id=729447726)
+
 ## 2.24
 * add function isDataOnly to NbrStudy, which is needed for the generation of DAA study number
 
