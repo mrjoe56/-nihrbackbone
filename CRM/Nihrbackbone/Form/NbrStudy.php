@@ -243,12 +243,10 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
    */
   public static function validateStudyType($fields) {
     $availableStudyTypes = [
-      'nsd_commercial',
       'nsd_recall',
       'nsd_sample_only',
       'nsd_data_only',
       'nsd_online_study',
-      'nsd_multiple_visits',
     ];
     $atleastOneTypeSelected = false;
     foreach($availableStudyTypes as $studyType) {
