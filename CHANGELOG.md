@@ -1,6 +1,6 @@
 ## 2.26
 * fix validation of study type (see https://www.wrike.com/open.htm?id=806555844)
-* remove multiple visit from study form
+* remove multiple visit from study form and from DB (in upgrader)
 
 ## 2.25
 * fix checks for commercial and online to not treat NULL as a yes value (see https://www.wrike.com/open.htm?id=729447726)

@@ -414,6 +414,31 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     }
     return TRUE;
   }
+  /**
+   * Upgrade 1140 - delete multiple_visit custom field
+   *
+   * @return bool
+   */
+  public function upgrade_1140() {
+    $this->ctx->log->info(E::ts('Applying update 1140 - delete multiple_visit custom field'));
+    $tableName = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyDataCustomGroup('table_name');
+    $customGroupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyDataCustomGroup('id');
+    $customFieldName = "nsd_multiple_visits";
+    if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists($tableName, $customFieldName)) {
+      try {
+        \Civi\Api4\CustomField::delete()
+          ->addWhere('custom_group_id', '=', $customGroupId)
+          ->addWhere('name', '=', $customFieldName)
+          ->execute();
+      }
+      catch (API_Exception $ex) {
+      }
+      CRM_Core_DAO::executeQuery("ALTER TABLE " . $tableName . " DROP COLUMN " . $customFieldName);
+      $logSchema = new CRM_Logging_Schema();
+      $logSchema->fixSchemaDifferencesFor($tableName, [$customFieldName]);
+    }
+    return TRUE;
+  }
 
   /**
    * Swap values for unable to willing columns

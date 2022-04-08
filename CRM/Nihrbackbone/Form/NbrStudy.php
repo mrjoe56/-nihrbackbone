@@ -75,7 +75,6 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
       'placeholder' => '- select investigator -',
     ], FALSE);
-    //$this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Multiple visits'), [], FALSE);
     $this->add('wysiwyg', 'nsd_scientific_info', E::ts('Scientific Information'), ['rows' => 4, 'cols' => 100], FALSE);
     $this->add('wysiwyg', 'nsd_lay_summary', E::ts('Lay summary'), ['rows' => 4, 'cols' => 100], FALSE);
     $this->add('text', 'nsd_study_long_name', E::ts("Long Name"), ['size' => 100], FALSE);
@@ -173,7 +172,6 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     $this->add('advcheckbox', 'nsd_sample_only', E::ts('Stored Sample'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsd_data_only', E::ts('Data'), ['disabled' => 'disabled'], FALSE);
     $this->add('advcheckbox', 'nsd_online_study', E::ts('Recall: Online'), ['disabled' => 'disabled'], FALSE);
-    //$this->add('advcheckbox', 'nsd_multiple_visits', E::ts('Recall: Multiple visits'), ['disabled' => 'disabled'], FALSE);
     $this->addEntityRef('nsc_panel', E::ts('Panel(s)'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_panel']],
       'placeholder' => '- select panel(s) -',

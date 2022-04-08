@@ -59,7 +59,6 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
     $studyNumber = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_study_number', 'id');
     $site = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_site', 'id');
     $dataOnly = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_data_only', 'id');
-    //$multiVisit = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_multiple_visits', 'id');
     $recall = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_recall', 'id');
     $sampleOnly = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_sample_only', 'id');
     $online = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField('nsd_online_project', 'id');
@@ -74,7 +73,6 @@ class CRM_Nihrbackbone_Page_NbrStudy extends CRM_Core_Page {
       $studyNumber => 'study_number',
       $site => 'site',
       $dataOnly => 'data_only',
-      //$multiVisit => 'multi_visit',
       $recall => 'recall',
       $sampleOnly => 'sample_only',
       $online => 'online',
