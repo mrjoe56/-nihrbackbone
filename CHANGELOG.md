@@ -1,3 +1,6 @@
+## 2.27
+* add field for lay title to study data (see https://www.wrike.com/open.htm?id=905311011)
+
 ## 2.26
 * fix validation of study type (see https://www.wrike.com/open.htm?id=806555844)
 * remove multiple visit from study form and from DB (in upgrader)

@@ -441,6 +441,33 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
   }
 
   /**
+   * Upgrade 1150 - add lay title field (see https://www.wrike.com/open.htm?id=905311011)
+   *
+   * @return bool
+   */
+  public function upgrade_1150() {
+    $this->ctx->log->info(E::ts('Applying update 1150 - add lay title to study data'));
+    // only if custom group for study data is present
+    if (CRM_Core_DAO::checkTableExists("civicrm_value_nbr_study_data")) {
+      // add custom field scientific info
+      if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists("civicrm_value_nbr_study_data", "nsd_lay_title")) {
+        \Civi\Api4\CustomField::create()
+          ->addValue('custom_group_id:name', 'nbr_study_data')
+          ->addValue('label', 'Lay Title')
+          ->addValue('html_type', 'Text')
+          ->addValue('data_type', 'String')
+          ->addValue('is_active', TRUE)
+          ->addValue('is_searchable', TRUE)
+          ->addValue('in_selector', TRUE)
+          ->addValue('name', 'nsd_lay_title')
+          ->addValue('column_name', 'nsd_lay_title')
+          ->execute();
+      }
+    }
+    return TRUE;
+  }
+
+  /**
    * Swap values for unable to willing columns
    *
    * @param $columns

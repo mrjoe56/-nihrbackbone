@@ -76,6 +76,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'placeholder' => '- select investigator -',
     ], FALSE);
     $this->add('wysiwyg', 'nsd_scientific_info', E::ts('Scientific Information'), ['rows' => 4, 'cols' => 100], FALSE);
+    $this->add('text', 'nsd_lay_title', E::ts('Lay title'), ['size' => 100], FALSE);
     $this->add('wysiwyg', 'nsd_lay_summary', E::ts('Lay summary'), ['rows' => 4, 'cols' => 100], FALSE);
     $this->add('text', 'nsd_study_long_name', E::ts("Long Name"), ['size' => 100], FALSE);
     $this->add('text', 'nsd_ethics_number', E::ts("Ethics Number"), [], FALSE);
@@ -131,6 +132,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       'cols' => 100,
       'disabled' => 'disabled',
       ], FALSE);
+    $this->add('text', 'nsd_lay_title', E::ts('Lay title'), ['size' => 100,'disabled' => 'disabled'], FALSE);
     $this->add('textarea', 'nsd_lay_summary', E::ts('Lay summary'), [
       'rows' => 4,
       'cols' => 100,
