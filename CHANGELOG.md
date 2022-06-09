@@ -1,3 +1,5 @@
+## 2.28
+* fix function to check for excl online for volunteers (see https://www.wrike.com/open.htm?id=897604243)
 ## 2.27
 * add field for lay title to study data (see https://www.wrike.com/open.htm?id=905311011)
 
