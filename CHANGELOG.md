@@ -1,5 +1,9 @@
+## 2.29
+* fix the counter for case activities so bulk mail activities for other contacts are not taken into account (see https://www.wrike.com/open.htm?id=692748479)
+
 ## 2.28
 * fix function to check for excl online for volunteers (see https://www.wrike.com/open.htm?id=897604243)
+
 ## 2.27
 * add field for lay title to study data (see https://www.wrike.com/open.htm?id=905311011)
 

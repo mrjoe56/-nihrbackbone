@@ -30,4 +30,10 @@
     <title>NbrStudy</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/ajax/activity</path>
+    <page_callback>CRM_Nihrbackbone_NbrVolunteerCase::getAjaxParticipationActivities</page_callback>
+    <title>Participation Activities</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
