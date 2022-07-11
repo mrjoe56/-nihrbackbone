@@ -444,6 +444,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
    * Upgrade 1150 - add lay title field (see https://www.wrike.com/open.htm?id=905311011)
    *
    * @return bool
+   * @throws
    */
   public function upgrade_1150() {
     $this->ctx->log->info(E::ts('Applying update 1150 - add lay title to study data'));
