@@ -1,3 +1,6 @@
+## 2.30
+* add prevent upload to portal field to study form and option values to container (see https://www.wrike.com/open.htm?id=906177216 and https://www.wrike.com/open.htm?id=923547349)
+
 ## 2.29
 * fix the counter for case activities so bulk mail activities for other contacts are not taken into account (see https://www.wrike.com/open.htm?id=692748479)
 
