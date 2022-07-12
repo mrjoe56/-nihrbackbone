@@ -200,8 +200,6 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_ukCountryId = NULL;
   private $_participantIdIdentifierType = NULL;
   private $_bioresourceIdIdentifierType = NULL;
-  private $_preventUploadOptionValue = NULL;
-  private $_withdrawnPortalOptionValue = NULL;
 
   /**
    * CRM_Nihrbackbone_NbrConfig constructor.
@@ -2656,34 +2654,6 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getRecruitmentCaseTypeName() {
     return $this->_recruitmentCaseTypeName  ;
-  }
-
-  /**
-   * @param string
-   */
-  public function setPreventUploadOptionValue($name) {
-    $this->_preventUploadOptionValue = $name;
-  }
-
-  /**
-   * @return string
-   */
-  public function getPreventUploadOptionValue() {
-    return $this->_preventUploadOptionValue  ;
-  }
-
-  /**
-   * @param string
-   */
-  public function setWithdrawnPortalOptionValue($name) {
-    $this->_withdrawnPortalOptionValue = $name;
-  }
-
-  /**
-   * @return string
-   */
-  public function getWithdrawnPortalOptionValue() {
-    return $this->_withdrawnPortalOptionValue  ;
   }
 
   /**
