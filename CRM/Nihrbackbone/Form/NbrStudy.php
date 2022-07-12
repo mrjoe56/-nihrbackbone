@@ -220,14 +220,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       case CRM_Core_Action::UPDATE:
       case CRM_Core_Action::VIEW:
         foreach ($this->_studyData as $key => $value) {
-          if ($key == "nsd_prevent_upload_portal") {
-            if ($value[0] == Civi::service('nbrBackbone')->getPreventUploadOptionValue()) {
-              $defaults[$key] = "1";
-            }
-          }
-          else {
-            $defaults[$key] = $value;
-          }
+          $defaults[$key] = $value;
         }
         break;
     }
@@ -461,12 +454,6 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
           $submitValues = $ethnicities;
         }
         $campaignParameters[$this->_customFieldIdsAndColumns[$submitKey]] = $submitValues;
-        if ($submitKey == 'nsd_prevent_upload_portal' && $submitValues == "1") {
-          $campaignParameters[$this->_customFieldIdsAndColumns[$submitKey]] = Civi::service('nbrBackbone')->getPreventUploadOptionValue();
-        }
-        else {
-          $campaignParameters[$this->_customFieldIdsAndColumns[$submitKey]] = NULL;
-        }
       }
     }
     return $campaignParameters;
