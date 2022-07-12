@@ -31,7 +31,6 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $this->setLocationTypes($definition);
     $this->setMailingDefaultIds($definition);
     $this->setOptionGroups($definition);
-    $this->setPortalValues($definition);
     $this->setParticipationStatus($definition);
     $this->setPriority($definition);
     $this->setTags($definition);
@@ -47,34 +46,6 @@ class NbrBackboneContainer implements CompilerPassInterface {
     $definition->addMethodCall('setRecruitmentCaseTypeName', ['nihr_recruitment']);
     $definition->setPublic(TRUE);
     $container->setDefinition('nbrBackbone', $definition);
-  }
-
-  /**
-   * Method to set the portal specific option values
-   *
-   * @param $definition
-   * @return void
-   */
-  public function setPortalValues(&$definition) {
-    $withdrawn = "nbr_portal_withdrawn";
-    $prevent = "nbr_prevent_upload";
-    $query = "SELECT cov.value, cov.name
-        FROM civicrm_option_group cog JOIN civicrm_option_value cov ON cog.id = cov.option_group_id
-        WHERE cog.name = %1 OR cog.name = %2";
-    $dao = \CRM_Core_DAO::executeQuery($query, [
-      1 => [$prevent, "String"],
-      2 => [$withdrawn, "String"],
-    ]);
-    while ($dao->fetch()) {
-      switch ($dao->name) {
-        case $prevent:
-          $definition->addMethodCall('setPreventUploadOptionValue', [$dao->value]);
-          break;
-        case $withdrawn:
-          $definition->addMethodCall('setWithdrawnPortalOptionValue', [ $dao->value]);
-          break;
-      }
-    }
   }
 
   /**
