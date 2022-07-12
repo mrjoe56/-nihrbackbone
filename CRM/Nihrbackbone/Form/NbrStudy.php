@@ -220,6 +220,13 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       case CRM_Core_Action::UPDATE:
       case CRM_Core_Action::VIEW:
         foreach ($this->_studyData as $key => $value) {
+          if ($key == "nsd_prevent_upload_portal" && is_array($value)) {
+            foreach ($value as $preventValue) {
+              if ($preventValue == "1") {
+                $value = "1";
+              }
+            }
+          }
           $defaults[$key] = $value;
         }
         break;
