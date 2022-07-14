@@ -760,7 +760,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
   private function setActivityTypes(&$definition) {
     $query = "SELECT cov.value, cov.name FROM civicrm_option_group AS cog
         JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
-        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16, %17)";
+        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16, %17, %18)";
     $dao = \CRM_Core_DAO::executeQuery($query, [
       1 => ["activity_type", "String"],
       2 => ["nihr_consent", "String"],
@@ -770,15 +770,16 @@ class NbrBackboneContainer implements CompilerPassInterface {
       6 => ["Phone Call", "String"],
       7 => ["Print PDF Letter", "String"],
       8 => ["SMS", "String"],
-      9 => ["nbr_sample_received", "String"],
-      10 => ["nihr_visit_stage1", "String"],
-      11 => ["nihr_visit_stage2", "String"],
-      12 => ["nihr_consent_stage2", "String"],
-      13 => ["nihr_volunteer_not_recruited", "String"],
-      14 => ["nihr_volunteer_redundant", "String"],
-      15 => ["nihr_volunteer_withdrawn", "String"],
-      16 => ["Open Case", "String"],
-      17 => ["Bulk Email", "String"],
+      9 => ["nbr_follow_up", "String"],
+      10 => ["nbr_sample_received", "String"],
+      11 => ["nihr_visit_stage1", "String"],
+      12 => ["nihr_visit_stage2", "String"],
+      13 => ["nihr_consent_stage2", "String"],
+      14 => ["nihr_volunteer_not_recruited", "String"],
+      15 => ["nihr_volunteer_redundant", "String"],
+      16 => ["nihr_volunteer_withdrawn", "String"],
+      17 => ["Open Case", "String"],
+      18 => ["Bulk Email", "String"],
     ]);
     while ($dao->fetch()) {
       switch ($dao->name) {
@@ -792,6 +793,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
         case "Meeting":
           $definition->addMethodCall('setMeetingActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nbr_follow_up":
+          $definition->addMethodCall('setFollowUpActivityTypeId', [(int) $dao->value]);
           break;
 
         case "nbr_incoming_communication":

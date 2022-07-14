@@ -53,6 +53,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_consentActivityTypeId = NULL;
   private $_consentStage2ActivityTypeId = NULL;
   private $_emailActivityTypeId = NULL;
+  private $_followUpActivityTypeId = NULL;
   private $_incomingCommunicationActivityTypeId = NULL;
   private $_letterActivityTypeId = NULL;
   private $_meetingActivityTypeId = NULL;
@@ -806,6 +807,20 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getEmailActivityTypeId() {
     return $this->_emailActivityTypeId;
+  }
+
+  /**
+   * @param int $id
+   */
+  public function setFollowUpActivityTypeId($id) {
+    $this->_followUpActivityTypeId = $id;
+  }
+
+  /**
+   * @return int
+   */
+  public function getFollowUpActivityTypeId() {
+    return $this->_followUpActivityTypeId;
   }
 
   /**

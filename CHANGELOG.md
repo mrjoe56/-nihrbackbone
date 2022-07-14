@@ -1,3 +1,6 @@
+## 2.31
+* add property to config container for follow up activity (required for https://www.wrike.com/open.htm?id=709984945)
+
 ## 2.30
 * add prevent upload to portal field to study form and option values to container (see https://www.wrike.com/open.htm?id=906177216 and https://www.wrike.com/open.htm?id=923547349)
 
