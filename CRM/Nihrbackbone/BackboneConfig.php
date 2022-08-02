@@ -27,6 +27,10 @@ class CRM_Nihrbackbone_BackboneConfig {
   // property for study campaign type
   private $_studyCampaignTypeId = NULL;
 
+  // property for study participant status
+  private $_studyParticipationStatusInvitationPendingOptionValue = NULL;
+  private $_studyParticipationStatusInvitedOptionValue = NULL;
+
   // properties for study (campaign) status
   private $_recruitingStudyStatus = NULL;
   private $_completedStudyStatus = NULL;
@@ -81,6 +85,7 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function __construct() {
     $this->setOptionGroups();
+    $this->setOptionValues();
     $this->setCampaignTypes();
     $this->setCampaignStatus();
     $this->setCaseTypes();
@@ -671,6 +676,24 @@ class CRM_Nihrbackbone_BackboneConfig {
   }
 
   /**
+   * Getter for pending invitation study participant status.
+   *
+   * @return mixed
+   */
+  public function getStudyParticipationStatusInvitationPending() {
+    return $this->_studyParticipationStatusInvitationPendingOptionValue;
+  }
+
+  /**
+   * Getter for pending invitation study participant status.
+   *
+   * @return mixed
+   */
+  public function getStudyParticipationStatusInvited() {
+    return $this->_studyParticipationStatusInvitedOptionValue;
+  }
+
+  /**
    * Getter for case status option group id
    *
    * @return null
@@ -796,6 +819,32 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
     catch (CiviCRM_API3_Exception $ex) {
       Civi::log()->error(E::ts('Could not find a unique option group with name gender in ') . __METHOD__);
+    }
+  }
+
+  /**
+   * Method to set the relevant option values
+   */
+  private function setOptionValues() {
+    $optionValueNames['nbr_study_participation_status'] = [
+      'study_participation_status_invitation_pending',
+      'study_participation_status_invited'
+    ];
+    foreach($optionValueNames as $optionGroupName => $optionValues) {
+      try {
+        $foundOptionValues = civicrm_api3('OptionValue', 'get', [
+          'return' => ["value", "name"],
+          'name' => ['IN' => $optionValues],
+          'option_group_id' => $optionGroupName,
+          'options' => ['limit' => 0],
+        ])['values'];
+        foreach ($foundOptionValues as $foundOptionGroup) {
+          $property = $this->getPropertyFromName($foundOptionGroup['name']) . 'OptionValue';
+          $this->$property = $foundOptionGroup['value'];
+        }
+      } catch (CiviCRM_API3_Exception $ex) {
+        Civi::log()->error(E::ts('Could not find a unique option values in group '.$optionGroupName.' in ') . __METHOD__);
+      }
     }
   }
 
