@@ -1,3 +1,7 @@
+## 2.32
+
+* cannot send an invite via PDF to someone who has the status invite pending (see https://www.wrike.com/open.htm?id=918982877)
+
 ## 2.31
 * add property to config container for follow up activity (required for https://www.wrike.com/open.htm?id=709984945)
 
