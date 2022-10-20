@@ -1,7 +1,7 @@
 <?php
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
-/* Distance.Calculate API specification (optional)  JB 18/12/19 */
+/* Distance.Calculate API specification (optional)  JB 17/10/22 */
 function _civicrm_api3_distance_Calculate(&$spec) {
   $spec['postcode'] = [
     'api.required' =>1,
@@ -23,61 +23,37 @@ function _civicrm_api3_distance_Calculate(&$spec) {
 function civicrm_api3_distance_Calculate($params) {
   $from = str_replace(' ', '', $params['postcode_from']);
   $to = str_replace(' ', '', $params['postcode_to']);
-  $url = 'http://www.mapquestapi.com/directions/v2/route?key=ge1sXrGxbNAcYEreGTxWFV8PAT0m7UWA&from='.$from.'&to='.$to.'&outFormat=json&unit=Miles&routeType=shortest&locale=en_GB';
-  $data = file_get_contents($url);
-  $data = json_decode($data);
-  $max_uk = 700;
-
-  $distance = round($data->route->distance);
-  $distance = ($distance>$max_uk?0:$distance);
-  $m = 'from pcode '.$from.' to pcode '.$to;
-
-  // it would seem that some postcodes are unknown to mapquest - if so try with general area of 'from' postcode ..
-  if ($distance == 0) {
-    $from_area = getPostCodeArea($from);
-    $url = 'http://www.mapquestapi.com/directions/v2/route?key=ge1sXrGxbNAcYEreGTxWFV8PAT0m7UWA&from='.$from_area.'&to='.$to.'&outFormat=json&unit=Miles&routeType=shortest&locale=en_GB';
-    $data = file_get_contents($url);
-    $data = json_decode($data);
-    $distance = round($data->route->distance);
-    $distance = ($distance>$max_uk?0:$distance);
-    $m = 'from area '.$from_area.' to pcode '.$to;
+  if (postcode_valid($from) && postcode_valid($to)) {
+    $mapApiKey = (string) Civi::settings()->get('nbr_distance_lookup_api_key');
+    $geoloc_from = getGeolocation($from, $mapApiKey);
+    $geoloc_to = getGeolocation($to, $mapApiKey);
+    $distance = round(getDistance($geoloc_from, $geoloc_to, $mapApiKey));
   }
-  // if that does not work - try general area of 'to' postcode ..
-  if ($distance == 0) {
-    $to_area = getPostCodeArea($to);
-    $url = 'http://www.mapquestapi.com/directions/v2/route?key=ge1sXrGxbNAcYEreGTxWFV8PAT0m7UWA&from='.$from.'&to='.$to_area.'&outFormat=json&unit=Miles&routeType=shortest&locale=en_GB';
-    $data = file_get_contents($url);
-    $data = json_decode($data);
-    $distance = round($data->route->distance);
-    $distance = ($distance>$max_uk?0:$distance);
-    $m = 'from pcode '.$from.' to area '.$to_area;
+  else {
+    $distance = '0';
   }
-  // finally - try general area of 'from'  and 'to' postcodes ..
-  if ($distance == 0) {
-    $url = 'http://www.mapquestapi.com/directions/v2/route?key=ge1sXrGxbNAcYEreGTxWFV8PAT0m7UWA&from='.$from_area.'&to='.$to_area.'&outFormat=json&unit=Miles&routeType=shortest&locale=en_GB';
-    $data = file_get_contents($url);
-    $data = json_decode($data);
-    $distance = round($data->route->distance);
-    $distance = ($distance>$max_uk?0:$distance);
-    $m = 'from area '.$from_area.' to area '.$to_area;
-  }
-  #Civi::log()->debug('dist calc by method : '.$m);
   return $distance;
 }
 
-/* return general area of a postcode */
-function getPostCodeArea($pcode){
+function postcode_valid($postcode) {
+  return preg_match('/^([A-Za-z][A-Ha-hJ-Yj-y]?[0-9][A-Za-z0-9]? ?[0-9][A-Za-z]{2}|[Gg][Ii][Rr] ?0[Aa]{2})$/', $postcode);
+}
+
+function getDistance($geoloc_from, $geoloc_to, $mapApiKey) {
+  $url = 'http://dev.virtualearth.net/REST/v1/Routes/DistanceMatrix?origins='.implode(',',$geoloc_from).'&destinations='.implode(',',$geoloc_to).'&travelMode=driving&DistanceUnit=mile&key='.$mapApiKey;
+  $apidata = file_get_contents($url);
+  $dataArray = json_decode($apidata, true);
+  $distance = $dataArray['resourceSets'][0]['resources'][0]['results'][0]['travelDistance'];
+  return($distance);
+}
+
+function getGeolocation($pcode, $mapApiKey) {
   $pcode = str_replace(' ', '', $pcode);
-  if(strlen($pcode) > 4){
-    if(is_numeric($pcode{strlen($pcode)-1})){
-      $pcode = substr($pcode, 0, 4);
-    }else{
-      $pcode = substr($pcode, 0, strlen($pcode)-3);
-    }
-    return $pcode;
-  }else{
-    return $pcode;
-  }
+  $url = 'http://dev.virtualearth.net/REST/v1/locations?countryRegion=UK&postalcode='.$pcode.'&maxResults=1&key='.$mapApiKey;
+  $apidata = file_get_contents($url);
+  $dataArray = json_decode($apidata, true);
+  $coords = $dataArray['resourceSets'][0]['resources'][0]['point']['coordinates'];
+  return($coords);
 }
 
 ?>
