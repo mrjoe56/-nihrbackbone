@@ -1,5 +1,7 @@
-## 2.32
+## 2.33
+* replace API3 (with error) with API4 in NbStudy isOnline and isFaceToFace
 
+## 2.32
 * cannot send an invite via PDF to someone who has the status invite pending (see https://www.wrike.com/open.htm?id=918982877)
 
 ## 2.31

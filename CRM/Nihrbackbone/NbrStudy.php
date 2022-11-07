@@ -398,17 +398,18 @@ class CRM_Nihrbackbone_NbrStudy {
    */
   public static function isFaceToFace($studyId) {
     if (!empty($studyId)) {
-      $recallField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField("nsd_recall", "id");
       try {
-        $faceToFace = civicrm_api3('Campaign', 'getvalue', [
-          'return' => $recallField,
-          'id' => $studyId,
-        ]);
-        if ($faceToFace == TRUE) {
+        $campaigns = \Civi\Api4\Campaign::get()
+          ->addSelect('nbr_study_data.nsd_recall')
+          ->addWhere('id', '=', $studyId)
+          ->setLimit(1)
+          ->execute();
+        $campaign = $campaigns->first();
+        if ($campaign['nbr_study_data.nsd_recall']) {
           return TRUE;
         }
       }
-      catch (CiviCRM_API3_Exception $ex) {
+      catch (API_Exception $ex) {
       }
     }
     return FALSE;
@@ -422,17 +423,18 @@ class CRM_Nihrbackbone_NbrStudy {
    */
   public static function isOnline($studyId) {
     if (!empty($studyId)) {
-      $onlineField = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getStudyCustomField("nsd_online_study", "id");
       try {
-        $online = civicrm_api3('Campaign', 'getvalue', [
-          'return' => $onlineField,
-          'id' => $studyId,
-        ]);
-        if ($online == TRUE) {
+        $campaigns = \Civi\Api4\Campaign::get()
+          ->addSelect('nbr_study_data.nsd_online_study')
+          ->addWhere('id', '=', $studyId)
+          ->setLimit(1)
+          ->execute();
+        $campaign = $campaigns->first();
+        if ($campaign['nbr_study_data.nsd_online_study']) {
           return TRUE;
         }
       }
-      catch (CiviCRM_API3_Exception $ex) {
+      catch (API_Exception $ex) {
       }
     }
     return FALSE;
