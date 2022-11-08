@@ -1,3 +1,6 @@
+## 2.34
+* validation for contact types that can not be merged (see https://www.wrike.com/open.htm?id=977530860)
+
 ## 2.33
 * replace API3 (with error) with API4 in NbStudy isOnline and isFaceToFace
 
