@@ -199,6 +199,11 @@ class CRM_Nihrbackbone_Utils {
       }
     }
   }
+
+  /**
+   * @param $emailTo
+   * @return array
+   */
   private function explodeEmailTos($emailTo) {
     $result = [];
     if (!empty($emailTo)) {

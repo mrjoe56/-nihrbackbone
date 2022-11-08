@@ -235,6 +235,11 @@ function nihrbackbone_civicrm_buildForm($formName, &$form) {  # jb2
  */
 
 function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  // validate if contact types can be merged
+  if ($form instanceof CRM_Contact_Form_Merge) {
+    CRM_Nihrbackbone_NbrContactType::validateForm($fields, $form, $errors);
+  }
+
   // validate Case Form
   if ($form instanceof CRM_Case_Form_Case) {
     CRM_Nihrbackbone_NbrVolunteerCase::validateForm($fields, $form, $errors);
