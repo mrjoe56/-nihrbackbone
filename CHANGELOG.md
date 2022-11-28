@@ -1,3 +1,6 @@
+## 2.35
+* 5118 update distance calculation
+
 ## 2.32
 
 * cannot send an invite via PDF to someone who has the status invite pending (see https://www.wrike.com/open.htm?id=918982877)
