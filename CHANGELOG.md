@@ -1,3 +1,6 @@
+## 2.36
+* add new study field for study outcome (see https://www.wrike.com/open.htm?id=1013253659)
+
 ## 2.35
 * 5118 update distance calculation
 

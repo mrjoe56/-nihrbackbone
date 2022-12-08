@@ -469,6 +469,34 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
   }
 
   /**
+   * Upgrade 1160 - add study outcome field (see https://www.wrike.com/open.htm?id=1013253659)
+   *
+   * @return bool
+   * @throws
+   */
+  public function upgrade_1160() {
+    $this->ctx->log->info(E::ts('Applying update 1160 - add study outcome to study data'));
+    // only if custom group for study data is present
+    if (CRM_Core_DAO::checkTableExists("civicrm_value_nbr_study_data")) {
+      // add custom field scientific info
+      if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists("civicrm_value_nbr_study_data", "nsd_study_outcome")) {
+        \Civi\Api4\CustomField::create()
+          ->addValue('custom_group_id:name', 'nbr_study_data')
+          ->addValue('label', 'Study Outcome')
+          ->addValue('html_type', 'RichTextEditor')
+          ->addValue('data_type', 'Memo')
+          ->addValue('is_active', TRUE)
+          ->addValue('is_searchable', FALSE)
+          ->addValue('in_selector', TRUE)
+          ->addValue('name', 'nsd_study_outcome')
+          ->addValue('column_name', 'nsd_study_outcome')
+          ->execute();
+      }
+    }
+    return TRUE;
+  }
+
+  /**
    * Swap values for unable to willing columns
    *
    * @param $columns
