@@ -40,6 +40,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
         $contacts = \Civi\Api4\Contact::get()
           ->addSelect('contact_sub_type')
           ->addWhere('id', '=', (int) $contactId)
+          ->setCheckPermissions(FALSE)
           ->execute();
         if ($type == "bioresource") {
           $validTypes = Civi::settings()->get('nbr_bioresource_subtypes');

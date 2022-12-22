@@ -65,6 +65,7 @@ class CRM_Nihrbackbone_NbrContactType {
         ->addSelect('contact_type', 'contact_sub_type')
         ->addWhere('id', '=', $contactId)
         ->setLimit(1)
+        ->setCheckPermissions(FALSE)
         ->execute();
       $contact = $contacts->first();
       $contactTypes[] = self::getContactTypeId($contact['contact_type']);
@@ -90,6 +91,7 @@ class CRM_Nihrbackbone_NbrContactType {
         ->addSelect('id')
         ->addWhere('name', '=', $contactTypeName)
         ->setLimit(1)
+        ->setCheckPermissions(FALSE)
         ->execute();
       $contactType = $contactTypes->first();
       $contactTypeId = (int) $contactType['id'];

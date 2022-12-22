@@ -1,3 +1,6 @@
+## 2.37
+* set permissions check to false in API4 calls
+
 ## 2.36
 * add new study field for study outcome (see https://www.wrike.com/open.htm?id=1013253659)
 

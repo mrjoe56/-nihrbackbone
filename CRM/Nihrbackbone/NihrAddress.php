@@ -136,6 +136,7 @@ class CRM_Nihrbackbone_NihrAddress {
       }
       try {
         $results = \Civi\Api4\Address::create();
+        $results->setCheckPermissions(FALSE);
         foreach ($address as $fieldName => $fieldValue) {
           // remove id so the create api does not do an update and remove location type
           if ($fieldName != 'location_type_id' && $fieldName != 'id') {
