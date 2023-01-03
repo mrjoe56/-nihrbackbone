@@ -8,6 +8,7 @@
   <div id="nbr_centre" class="nbr_data location_data"></div>
   <div id="nbr_site" class="nbr_data location_data"></div>
 </div>
+<div id="nbr_subtype" ></div>
 
 {literal}
   <script type="text/javascript">
@@ -42,12 +43,34 @@
           var $hdr_colour = '#badbae';                                           // green
       }
       CRM.$("#nbr_hdr").css('background-color', $hdr_colour);
+
+      var $subtype = ''                                                          // set contact subtype indicator
+      switch(nbr_data[7]) {
+        case 'nbr_guardian':
+          $subtype = 'G'
+          break;
+        case 'nihr_researcher':
+          $subtype = 'R'
+      } 
+      CRM.$("#nbr_subtype").html($subtype)
+
     });
   </script>
 {/literal}
 
 {literal}
   <style type="text/css">
+
+    #nbr_subtype {
+      position:absolute;
+      top:5px;
+      right:100px;
+      color:darkred;
+      font-family: Arial;
+      font-size: 60px;
+      font-weight: bold;
+    }
+
     #nbr_hdr {
       display:block;
       width:100%;
