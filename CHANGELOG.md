@@ -1,3 +1,6 @@
+## 2.38
+* add study clone processing to nbrstudy form (see https://www.wrike.com/open.htm?id=952816806)
+
 ## 2.37
 * set permissions check to false in API4 calls
 

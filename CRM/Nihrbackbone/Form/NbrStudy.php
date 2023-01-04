@@ -38,6 +38,11 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
         ['type' => 'cancel', 'name' => E::ts('Done'), 'isDefault' => TRUE],
       ]);
     }
+    // check the study clone information if relevant
+    if (class_exists('CRM_Nbrclonestudy_BAO_NbrStudyClone')) {
+      $this->assign('clone_of', CRM_Nbrclonestudy_BAO_NbrStudyClone::setCloneOfStudyForm((int) $this->_studyId));
+      $this->assign('has_clones', CRM_Nbrclonestudy_BAO_NbrStudyClone::setHasClonesStudyForm((int) $this->_studyId));
+    }
     // export form elements
     $this->assign('elementNames', $this->getRenderableElementNames());
     parent::buildQuickForm();
