@@ -1,17 +1,17 @@
 <div class="crm-block crm-form-block">
+    {if !empty($clone_of)}
+      <div class="help-block" id="help">
+        This study is a clone of {$clone_of}
+      </div>
+    {/if}
+    {if !empty($has_clones)}
+      <div class="help-block" id="help">
+        This study has clones: <br />{$has_clones}
+      </div>
+    {/if}
   <div class="crm-submit-buttons">
   {include file="CRM/common/formButtons.tpl" location="top"}
   </div>
-  {if !empty($clone_of)}
-    <div class="help-block" id="help">
-      This study is a clone of {$clone_of}
-    </div>
-  {/if}
-  {if !empty($has_clones)}
-    <div class="help-block" id="help">
-      This study has clones: {$has_clones}
-    </div>
-  {/if}
   {foreach from=$elementNames item=elementName}
     {if $elementName eq "nsd_commercial"}
       <div class="crm-accordion-wrapper nbr_selection_criteria-block">
