@@ -1,4 +1,4 @@
-## 2.38
+## 2.39
 * add study clone processing to nbrstudy form (see https://www.wrike.com/open.htm?id=952816806)
 
 ## 2.37
