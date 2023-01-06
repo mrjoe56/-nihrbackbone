@@ -44,14 +44,14 @@
       }
       CRM.$("#nbr_hdr").css('background-color', $hdr_colour);
 
-      var $subtype = ''                                                          // set contact subtype indicator
+      var $subtype = ''                                                          // set contact subtype indicator= ''
       switch(nbr_data[7]) {
         case 'nbr_guardian':
-          $subtype = 'G'
+          $subtype = '<span id="nbr_subtype1">G</span><span id="nbr_subtype2">uardian</span>'
           break;
         case 'nihr_researcher':
-          $subtype = 'R'
-      } 
+          $subtype = '<span id="nbr_subtype1">R</span><span id="nbr_subtype2">esearcher</span>'
+      }
       CRM.$("#nbr_subtype").html($subtype)
 
     });
@@ -69,6 +69,13 @@
       font-family: Arial;
       font-size: 60px;
       font-weight: bold;
+    }
+
+    #nbr_subtype1 {
+      font-size: 60px;
+    }
+    #nbr_subtype2 {
+      font-size: 25px;
     }
 
     #nbr_hdr {
