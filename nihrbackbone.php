@@ -218,6 +218,9 @@ function nihrbackbone_civicrm_buildForm($formName, &$form) {  # jb2
   if ($form instanceof CRM_Case_Form_CaseView) {
     CRM_Nihrbackbone_NbrVolunteerCase::buildFormCaseView($form);
   }
+  if($form instanceof CRM_Contact_Form_Inline_Phone) {
+    CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'templates/CRM/Nihrbackbone/nbr_phone.js');
+  }
 
   if ($formName == 'CRM_Contact_Form_CustomData') {
     // validate custom data form
