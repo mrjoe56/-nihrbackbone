@@ -10,7 +10,7 @@ CRM.$(function ($) {
       $(".crm-form-submit").removeAttr('disabled');
     }
     else {
-      CRM.alert('Invalid phone number','Error');
+      CRM.alert('Invalid phone number.<br><br>Please enter a valid phone number <br>and press enter.<br>','Input Error');
     }
   });
 
