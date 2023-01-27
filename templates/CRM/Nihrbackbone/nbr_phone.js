@@ -6,24 +6,23 @@ CRM.$(function ($) {
   var $valid_uk_phone_pattern = /^(?:(?:\(?(?:0(?:0|11)\)?[\s-]?\(?|\+)44\)?[\s-]?(?:\(?0\)?[\s-]?)?)|(?:\(?0))(?:(?:\d{5}\)?[\s-]?\d{4,5})|(?:\d{4}\)?[\s-]?(?:\d{5}|\d{3}[\s-]?\d{3}))|(?:\d{3}\)?[\s-]?\d{3}[\s-]?\d{3,4})|(?:\d{2}\)?[\s-]?\d{4}[\s-]?\d{4}))(?:[\s-]?(?:x|ext\.?|\#)\d{3,4})?$/;
   var $nbr_confirm_msg = "Invalid UK phone number\nEnter 'Yes' to accept input and override.";
 
-  CRM.$(document).keyup(function(e) {                                                              // remove user prompt if escaping back to main form
+  CRM.$(document).keyup(function(e) {                                                              // EVENT HANDLERS
     if (e.which==27) {
-      CRM.$("#crm-phone-content-msg").css("display", "none");
+      CRM.$("#crm-phone-content-msg").css("display", "none");                                      // escape keyup : remove user prompt
     }
   });
-
-  CRM.$(".crm-delete-inline, .crm-hover-button").click(function() {                                // 'delete' button click event handler :
+  CRM.$("#_qf_Phone_cancel").click(function() {                                                    // 'cancel' button click :
+    CRM.$("#crm-phone-content-msg").css("display", "none");                                        //  remove user prompt
     $(".crm-form-submit").removeAttr('disabled');                                                  //  allow form submission
   });
-
-  $(".crm_phone, .twelve, .crm-form-text, .valid").keypress(function (e){                          // phone number elements keypress event handler :
-    var charCode = (e.which) ? e.which : e.keyCode;                                                // allow numeric input only
+  $(".crm_phone, .twelve, .crm-form-text, .valid").keypress(function (e){                          // phone number elements keypress :
+    var charCode = (e.which) ? e.which : e.keyCode;                                                //  allow numeric input only
     if (charCode != 13 && (charCode > 31 && (charCode < 48 || charCode > 57))) {
       return false;
     }
   });
 
-  $(".crm_phone, .twelve, .crm-form-text, .valid").change(function() {                             // phone number elements onchange event handler :
+  $(".crm_phone, .twelve, .crm-form-text, .valid").change(function() {                             // phone number elements onchange :
 
     $(".crm-form-submit").attr('disabled','disabled');                                             // disable form submit
     var $nbr_phonenumber = $(this).val();
@@ -56,8 +55,10 @@ CRM.$(function ($) {
       else {                                                                                       //   else
         if (['Yes', 'yes'].includes(prompt($nbr_confirm_msg, ''))) {                       //     prompt for override
           $(".crm-form-submit").removeAttr('disabled');                                            //     if yes submit form
+          console.log('yes');
         }
         else {                                                                                     //     else throw civicrm error
+          console.log('not yes');
           CRM.alert('Invalid phone number.<br><br>Please enter a valid phone number <br>and press enter.<br>', 'Input Error');
         }
       }
