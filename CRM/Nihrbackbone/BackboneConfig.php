@@ -45,6 +45,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_volunteerGeneralObservationsCustomGroup = [];
   private $_volunteerLifestyleCustomGroup = [];
   private $_volunteerSelectionEligibilityCustomGroup = [];
+  private $_volunteerLifeQualityCustomGroup = [];
   private $_selectionCriteriaCustomGroup = [];
   private $_volunteerIdsCustomGroup = [];
   private $_volunteerPanelCustomGroup = [];
@@ -299,6 +300,15 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
   }
 
+  public function getVolunteerLifeQualityCustomGroup($key = NULL) {
+    if ($key && isset($this->_volunteerLifeQualityCustomGroup[$key])) {
+      return $this->_volunteerLifeQualityCustomGroup[$key];
+    }
+    else {
+      return $this->_volunteerLifeQualityCustomGroup;
+    }
+  }
+
   /**
    * Getter for volunteer panel custom group
    *
@@ -526,6 +536,20 @@ class CRM_Nihrbackbone_BackboneConfig {
 
   public function getVolunteerSelectionEligibilityCustomField($customFieldName, $key = NULL) {
     foreach ($this->_volunteerSelectionEligibilityCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  public function getVolunteerLifeQualityCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_volunteerLifeQualityCustomGroup['custom_fields'] as $customField) {
       if ($customField['name'] == $customFieldName) {
         if ($key && isset($customField[$key])) {
           return $customField[$key];
