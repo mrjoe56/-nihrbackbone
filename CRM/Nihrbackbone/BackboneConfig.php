@@ -46,6 +46,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_volunteerLifestyleCustomGroup = [];
   private $_volunteerSelectionEligibilityCustomGroup = [];
   private $_volunteerLifeQualityCustomGroup = [];
+  private $_participationInStudiesCustomGroup = [];
   private $_selectionCriteriaCustomGroup = [];
   private $_volunteerIdsCustomGroup = [];
   private $_volunteerPanelCustomGroup = [];
@@ -309,6 +310,15 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
   }
 
+  public function getParticipationInStudiesCustomGroup($key = NULL) {
+    if ($key && isset($this->_participationInStudiesCustomGroup[$key])) {
+      return $this->_participationInStudiesCustomGroup[$key];
+    }
+    else {
+      return $this->_participationInStudiesCustomGroup;
+    }
+  }
+
   /**
    * Getter for volunteer panel custom group
    *
@@ -561,6 +571,21 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
     return FALSE;
   }
+
+  public function getParticipationInStudiesCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_participationInStudiesCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
 
   /**
    * Getter for site alias data custom field
@@ -833,6 +858,8 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nbr_life_quality_general',
       'nbr_life_quality_happiness',
       'nbr_life_quality_overall',
+      'nbr_type_of_study',
+      'nbr_yes_no_dontknow'
     ];
     try {
       $foundOptionGroups = civicrm_api3('OptionGroup', 'get', [
@@ -1043,6 +1070,7 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_volunteer_general_observations',
       'nihr_volunteer_lifestyle',
       'nihr_volunteer_life_quality',
+      'nihr_participation_in_studies',
       'nihr_volunteer_selection_eligibility',
       'nbr_selection_criteria',
       'nihr_volunteer_alias',
