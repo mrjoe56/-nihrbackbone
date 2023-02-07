@@ -829,6 +829,10 @@ class CRM_Nihrbackbone_BackboneConfig {
       'gender',
       'nbr_consent_version',
       'case_status',
+      'nbr_employment_status',
+      'nbr_life_quality_general',
+      'nbr_life_quality_happiness',
+      'nbr_life_quality_overall',
     ];
     try {
       $foundOptionGroups = civicrm_api3('OptionGroup', 'get', [
@@ -1038,6 +1042,7 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_volunteer_status',
       'nihr_volunteer_general_observations',
       'nihr_volunteer_lifestyle',
+      'nihr_volunteer_life_quality',
       'nihr_volunteer_selection_eligibility',
       'nbr_selection_criteria',
       'nihr_volunteer_alias',
