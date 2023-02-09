@@ -1,3 +1,6 @@
+## 2.41
+* added getVolunteerLifeQualityCustomGroup/Field and getParticipationInStudiesCustomGroup/Field
+
 ## 2.40
 * create separate class and functin for pack id validation (validation itself has not changed)
 
