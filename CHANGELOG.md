@@ -1,6 +1,9 @@
 ## 2.41
 * added getVolunteerLifeQualityCustomGroup/Field and getParticipationInStudiesCustomGroup/Field
 
+## 2.40
+* create separate class and functin for pack id validation (validation itself has not changed)
+
 ## 2.39
 * add study clone processing to nbrstudy form (see https://www.wrike.com/open.htm?id=952816806)
 
