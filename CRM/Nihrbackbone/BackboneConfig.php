@@ -39,6 +39,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_pendingStudyStatus = NULL;
 
   // properties for custom groups
+  private $_customGroupArray=[];
   private $_studyDataCustomGroup = [];
   private $_participationDataCustomGroup = [];
   private $_volunteerStatusCustomGroup = [];
@@ -375,6 +376,41 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function getPhonePhoneTypeId() {
     return $this->_phonePhoneTypeId;
+  }
+
+
+  public function getGenericCustomGroup($customGroupName, $key = NULL) {
+    $customGroup=(isset($this->_customGroupArray[$customGroupName])) ?$this->_customGroupArray[$customGroupName] :0;
+    if($customGroup){
+      if ($key && isset($customGroup[$key])) {
+        return $customGroup[$key];
+      }
+      else {
+        return $customGroup;
+      }
+    }
+    else{
+      return false;
+    }
+  }
+
+  // Gets custom field from customn group
+  public function getGenericCustomField($customGroupName, $customFieldName, $key = NULL) {
+
+    $customGroup=(isset($this->_customGroupArray[$customGroupName])) ?$this->_customGroupArray[$customGroupName] :0;
+    if($customGroup){
+    foreach ($customGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+  }
+    return FALSE;
   }
 
   /**
@@ -1051,6 +1087,7 @@ class CRM_Nihrbackbone_BackboneConfig {
           ]);
           $customGroup['custom_fields'] = $customFields['values'];
           $this->$property = $customGroup;
+          $this->_customGroupArray[$customGroup['name']]=$customGroup;
         }
       }
     }
