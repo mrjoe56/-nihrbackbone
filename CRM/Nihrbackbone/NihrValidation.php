@@ -26,8 +26,10 @@ class CRM_Nihrbackbone_NihrValidation {
 
     $sqlParams = [1 => [$alias_type, 'String'], 2 => [intval($contact_id), 'Integer'], 3 => [$alias_value, 'String'], ];
     $query = "select count(*) as dup from civicrm_value_contact_id_history where identifier_type = %1 and entity_id = %2 and identifier = %3";
-    $duplicateCount = CRM_Core_DAO::singleValueQuery($query, $sqlParams);                                                                  #
-    if ($duplicateCount>0) {$errors[$errorField] = $msg."This identity already exists or has not been updated - please cancel or update";}
+    $duplicateCount = CRM_Core_DAO::singleValueQuery($query, $sqlParams);
+
+
+    if ($duplicateCount>0) {$errors[$errorField] = $alias_type." - This identity already exists or has not been updated - please cancel or update";}
 
     if ($alias_type == 'cih_type_packid') {                                                                            # pack ID validation
       $msg = 'Error in Pack ID - ';
@@ -49,7 +51,7 @@ class CRM_Nihrbackbone_NihrValidation {
         $errors[$errorField] = $msg."2nd to 7th characters must be numeric";
       }
       elseif ($chk_chr != $last) {                                                                                     # check digit is correct
-        $errors[$errorField] = $msg."Check character incorrect (".$chk_chr.")";
+                $errors[$errorField] = "Pack ID is invalid";
       }
     }
 
@@ -77,11 +79,9 @@ class CRM_Nihrbackbone_NihrValidation {
       elseif (! preg_match( '/[0-9]{10}/', $alias_value)) {                                                            #  all chars are numeric
         $errors[$errorField] = $msg."all characters must be numeric";
       }
-      elseif ($calc_cd == 10) {                                                                                        #  invalid check digit
-        $errors[$errorField] = $msg."Check digit cannot be calculated";
-      }
-      elseif ($cd !== $calc_cd) {                                                                                      # check digit is correct
-        $errors[$errorField] = $msg."Check digit incorrect (".strval($calc_cd).")";
+      // Check digit calculations
+      elseif ($calc_cd == 10 || $cd !== $calc_cd ) {                                                                                        #  invalid check digit
+        $errors[$errorField] = "NHS Number is invalid";
       }
 
     }
