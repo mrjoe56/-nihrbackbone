@@ -692,12 +692,14 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    *
    * @param $form
    */
-  public static function buildFormCaseView(&$form) {
+  public static function buildFormCaseView(CRM_Core_Form &$form) {
     // add template to show or not show eligibility depending on status
     CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_show_eligible.tpl',]);
     // add template to remove merge case and reassign case links from form
     CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_case_links.tpl',]);
+    $caseType = $form->getVar('_caseType');
     $caseId = $form->getVar('_caseID');
+    $contactId = $form->getVar('_contactID');
     // add template to set all custom fields to readonly if study status has no action status
     $studyId = CRM_Nihrbackbone_NbrVolunteerCase::getStudyId((int) $caseId);
     if ($studyId && CRM_Nihrbackbone_NbrStudy::hasNoActionStatus((int) $studyId)) {
@@ -710,7 +712,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       $form->setDefaults(['study_number' => $studyNumber]);
       CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_study_number.tpl',]);
     }
-    CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_case_links.tpl',]);
     // if volunteer on case is not eligible, do not allow the invite activity
     if (!CRM_Nihrbackbone_NbrVolunteerCase::isEligible($caseId)) {
       $activityElement = $form->getElement('add_activity_type_id');
@@ -719,6 +720,37 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
         if (isset($option['text']) && $option["text"] == "Invited") {
           unset($activityTypeOptions[$optionId]);
         }
+      }
+    }
+    /** @var \CRM_Nihrbackbone_NbrConfig $config */
+    $config = \Civi::service('nbrBackbone');
+    $form->assign('hideCaseMerge', true);
+    $form->assign('mergeCases', false);
+    if ($config->getRecruitmentCaseTypeName() == $caseType) {
+      $form->assign('hideCaseMerge', false);
+
+      $otherCases = [];
+      $result = civicrm_api3('Case', 'get', [
+        'check_permissions' => TRUE,
+        'contact_id' => $contactId,
+        'is_deleted' => 0,
+        'option.limit' => 0,
+        'id' => ['!=' => $caseId],
+        'case_type_id' => $caseType,
+        'return' => ['id', 'start_date', 'case_type_id.title'],
+      ]);
+      foreach ($result['values'] as $id => $case) {
+        $otherCases[$id] = "#$id: {$case['case_type_id.title']} " . ts('(opened %1)', [1 => $case['start_date']]);
+      }
+      //$form->setVar('_mergeCases', (bool) $otherCases);
+      $form->assign('mergeCases', (bool) $otherCases);
+      if ($otherCases) {
+        $otherCases = ['' => E::ts(' - Select Case - ')] + $otherCases;
+        /** @var HTML_QuickForm_select $mergeCaseIdDropdown */
+        $mergeCaseIdDropdown = $form->getElement('merge_case_id');
+        $mergeCaseIdDropdown->unfreeze();
+        $mergeCaseIdDropdown->_options = NULL;
+        $mergeCaseIdDropdown->load($otherCases);
       }
     }
   }
