@@ -1,376 +1,474 @@
 <?php
 
 // AUTO-GENERATED FILE -- Civix may overwrite any changes made to this file
+
+/**
+ * The ExtensionUtil class provides small stubs for accessing resources of this
+ * extension.
+ */
+class CRM_Nihrbackbone_ExtensionUtil {
+  const SHORT_NAME = 'nihrbackbone';
+  const LONG_NAME = 'nihrbackbone';
+  const CLASS_PREFIX = 'CRM_Nihrbackbone';
+
+  /**
+   * Translate a string using the extension's domain.
+   *
+   * If the extension doesn't have a specific translation
+   * for the string, fallback to the default translations.
+   *
+   * @param string $text
+   *   Canonical message text (generally en_US).
+   * @param array $params
+   * @return string
+   *   Translated text.
+   * @see ts
+   */
+  public static function ts($text, $params = []) {
+    if (!array_key_exists('domain', $params)) {
+      $params['domain'] = [self::LONG_NAME, NULL];
+    }
+    return ts($text, $params);
+  }
+
+  /**
+   * Get the URL of a resource file (in this extension).
+   *
+   * @param string|NULL $file
+   *   Ex: NULL.
+   *   Ex: 'css/foo.css'.
+   * @return string
+   *   Ex: 'http://example.org/sites/default/ext/org.example.foo'.
+   *   Ex: 'http://example.org/sites/default/ext/org.example.foo/css/foo.css'.
+   */
+  public static function url($file = NULL) {
+    if ($file === NULL) {
+      return rtrim(CRM_Core_Resources::singleton()->getUrl(self::LONG_NAME), '/');
+    }
+    return CRM_Core_Resources::singleton()->getUrl(self::LONG_NAME, $file);
+  }
+
+  /**
+   * Get the path of a resource file (in this extension).
+   *
+   * @param string|NULL $file
+   *   Ex: NULL.
+   *   Ex: 'css/foo.css'.
+   * @return string
+   *   Ex: '/var/www/example.org/sites/default/ext/org.example.foo'.
+   *   Ex: '/var/www/example.org/sites/default/ext/org.example.foo/css/foo.css'.
+   */
+  public static function path($file = NULL) {
+    // return CRM_Core_Resources::singleton()->getPath(self::LONG_NAME, $file);
+    return __DIR__ . ($file === NULL ? '' : (DIRECTORY_SEPARATOR . $file));
+  }
+
+  /**
+   * Get the name of a class within this extension.
+   *
+   * @param string $suffix
+   *   Ex: 'Page_HelloWorld' or 'Page\\HelloWorld'.
+   * @return string
+   *   Ex: 'CRM_Foo_Page_HelloWorld'.
+   */
+  public static function findClass($suffix) {
+    return self::CLASS_PREFIX . '_' . str_replace('\\', '_', $suffix);
+  }
+
+}
+
 use CRM_Nihrbackbone_ExtensionUtil as E;
 
 /**
- * Base class which provides helpers to execute upgrade logic
+ * (Delegated) Implements hook_civicrm_config().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_config
  */
-class CRM_Nihrbackbone_Upgrader_Base {
+function _nihrbackbone_civix_civicrm_config(&$config = NULL) {
+  static $configured = FALSE;
+  if ($configured) {
+    return;
+  }
+  $configured = TRUE;
 
-  /**
-   * @var varies, subclass of this
-   */
-  static $instance;
+  $template =& CRM_Core_Smarty::singleton();
 
-  /**
-   * @var CRM_Queue_TaskContext
-   */
-  protected $ctx;
+  $extRoot = dirname(__FILE__) . DIRECTORY_SEPARATOR;
+  $extDir = $extRoot . 'templates';
 
-  /**
-   * @var string, eg 'com.example.myextension'
-   */
-  protected $extensionName;
+  if (is_array($template->template_dir)) {
+    array_unshift($template->template_dir, $extDir);
+  }
+  else {
+    $template->template_dir = [$extDir, $template->template_dir];
+  }
 
-  /**
-   * @var string, full path to the extension's source tree
-   */
-  protected $extensionDir;
+  $include_path = $extRoot . PATH_SEPARATOR . get_include_path();
+  set_include_path($include_path);
+}
 
-  /**
-   * @var array(revisionNumber) sorted numerically
-   */
-  private $revisions;
+/**
+ * (Delegated) Implements hook_civicrm_xmlMenu().
+ *
+ * @param $files array(string)
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_xmlMenu
+ */
+function _nihrbackbone_civix_civicrm_xmlMenu(&$files) {
+  foreach (_nihrbackbone_civix_glob(__DIR__ . '/xml/Menu/*.xml') as $file) {
+    $files[] = $file;
+  }
+}
 
-  /**
-   * @var boolean
-   *   Flag to clean up extension revision data in civicrm_setting
-   */
-  private $revisionStorageIsDeprecated = FALSE;
+/**
+ * Implements hook_civicrm_install().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_install
+ */
+function _nihrbackbone_civix_civicrm_install() {
+  _nihrbackbone_civix_civicrm_config();
+  if ($upgrader = _nihrbackbone_civix_upgrader()) {
+    $upgrader->onInstall();
+  }
+}
 
-  /**
-   * Obtain a reference to the active upgrade handler.
-   */
-  static public function instance() {
-    if (!self::$instance) {
-      // FIXME auto-generate
-      self::$instance = new CRM_Nihrbackbone_Upgrader(
-        'nihrbackbone',
-        realpath(__DIR__ . '/../../../')
-      );
+/**
+ * Implements hook_civicrm_postInstall().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postInstall
+ */
+function _nihrbackbone_civix_civicrm_postInstall() {
+  _nihrbackbone_civix_civicrm_config();
+  if ($upgrader = _nihrbackbone_civix_upgrader()) {
+    if (is_callable([$upgrader, 'onPostInstall'])) {
+      $upgrader->onPostInstall();
     }
-    return self::$instance;
   }
+}
 
-  /**
-   * Adapter that lets you add normal (non-static) member functions to the queue.
-   *
-   * Note: Each upgrader instance should only be associated with one
-   * task-context; otherwise, this will be non-reentrant.
-   *
-   * @code
-   * CRM_Nihrbackbone_Upgrader_Base::_queueAdapter($ctx, 'methodName', 'arg1', 'arg2');
-   * @endcode
-   */
-  static public function _queueAdapter() {
-    $instance = self::instance();
-    $args = func_get_args();
-    $instance->ctx = array_shift($args);
-    $instance->queue = $instance->ctx->queue;
-    $method = array_shift($args);
-    return call_user_func_array(array($instance, $method), $args);
+/**
+ * Implements hook_civicrm_uninstall().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_uninstall
+ */
+function _nihrbackbone_civix_civicrm_uninstall() {
+  _nihrbackbone_civix_civicrm_config();
+  if ($upgrader = _nihrbackbone_civix_upgrader()) {
+    $upgrader->onUninstall();
   }
+}
 
-  public function __construct($extensionName, $extensionDir) {
-    $this->extensionName = $extensionName;
-    $this->extensionDir = $extensionDir;
-  }
-
-  // ******** Task helpers ********
-
-  /**
-   * Run a CustomData file.
-   *
-   * @param string $relativePath the CustomData XML file path (relative to this extension's dir)
-   * @return bool
-   */
-  public function executeCustomDataFile($relativePath) {
-    $xml_file = $this->extensionDir . '/' . $relativePath;
-    return $this->executeCustomDataFileByAbsPath($xml_file);
-  }
-
-  /**
-   * Run a CustomData file
-   *
-   * @param string $xml_file  the CustomData XML file path (absolute path)
-   *
-   * @return bool
-   */
-  protected static function executeCustomDataFileByAbsPath($xml_file) {
-    $import = new CRM_Utils_Migrate_Import();
-    $import->run($xml_file);
-    return TRUE;
-  }
-
-  /**
-   * Run a SQL file.
-   *
-   * @param string $relativePath the SQL file path (relative to this extension's dir)
-   *
-   * @return bool
-   */
-  public function executeSqlFile($relativePath) {
-    CRM_Utils_File::sourceSQLFile(
-      CIVICRM_DSN,
-      $this->extensionDir . DIRECTORY_SEPARATOR . $relativePath
-    );
-    return TRUE;
-  }
-
-  /**
-   * @param string $tplFile
-   *   The SQL file path (relative to this extension's dir).
-   *   Ex: "sql/mydata.mysql.tpl".
-   * @return bool
-   */
-  public function executeSqlTemplate($tplFile) {
-    // Assign multilingual variable to Smarty.
-    $upgrade = new CRM_Upgrade_Form();
-
-    $tplFile = CRM_Utils_File::isAbsolute($tplFile) ? $tplFile : $this->extensionDir . DIRECTORY_SEPARATOR . $tplFile;
-    $smarty = CRM_Core_Smarty::singleton();
-    $smarty->assign('domainID', CRM_Core_Config::domainID());
-    CRM_Utils_File::sourceSQLFile(
-      CIVICRM_DSN, $smarty->fetch($tplFile), NULL, TRUE
-    );
-    return TRUE;
-  }
-
-  /**
-   * Run one SQL query.
-   *
-   * This is just a wrapper for CRM_Core_DAO::executeSql, but it
-   * provides syntatic sugar for queueing several tasks that
-   * run different queries
-   */
-  public function executeSql($query, $params = array()) {
-    // FIXME verify that we raise an exception on error
-    CRM_Core_DAO::executeQuery($query, $params);
-    return TRUE;
-  }
-
-  /**
-   * Syntatic sugar for enqueuing a task which calls a function in this class.
-   *
-   * The task is weighted so that it is processed
-   * as part of the currently-pending revision.
-   *
-   * After passing the $funcName, you can also pass parameters that will go to
-   * the function. Note that all params must be serializable.
-   */
-  public function addTask($title) {
-    $args = func_get_args();
-    $title = array_shift($args);
-    $task = new CRM_Queue_Task(
-      array(get_class($this), '_queueAdapter'),
-      $args,
-      $title
-    );
-    return $this->queue->createItem($task, array('weight' => -1));
-  }
-
-  // ******** Revision-tracking helpers ********
-
-  /**
-   * Determine if there are any pending revisions.
-   *
-   * @return bool
-   */
-  public function hasPendingRevisions() {
-    $revisions = $this->getRevisions();
-    $currentRevision = $this->getCurrentRevision();
-
-    if (empty($revisions)) {
-      return FALSE;
+/**
+ * (Delegated) Implements hook_civicrm_enable().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_enable
+ */
+function _nihrbackbone_civix_civicrm_enable() {
+  _nihrbackbone_civix_civicrm_config();
+  if ($upgrader = _nihrbackbone_civix_upgrader()) {
+    if (is_callable([$upgrader, 'onEnable'])) {
+      $upgrader->onEnable();
     }
-    if (empty($currentRevision)) {
-      return TRUE;
-    }
-
-    return ($currentRevision < max($revisions));
   }
+}
 
-  /**
-   * Add any pending revisions to the queue.
-   */
-  public function enqueuePendingRevisions(CRM_Queue_Queue $queue) {
-    $this->queue = $queue;
+/**
+ * (Delegated) Implements hook_civicrm_disable().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_disable
+ * @return mixed
+ */
+function _nihrbackbone_civix_civicrm_disable() {
+  _nihrbackbone_civix_civicrm_config();
+  if ($upgrader = _nihrbackbone_civix_upgrader()) {
+    if (is_callable([$upgrader, 'onDisable'])) {
+      $upgrader->onDisable();
+    }
+  }
+}
 
-    $currentRevision = $this->getCurrentRevision();
-    foreach ($this->getRevisions() as $revision) {
-      if ($revision > $currentRevision) {
-        $title = ts('Upgrade %1 to revision %2', array(
-          1 => $this->extensionName,
-          2 => $revision,
-        ));
+/**
+ * (Delegated) Implements hook_civicrm_upgrade().
+ *
+ * @param $op string, the type of operation being performed; 'check' or 'enqueue'
+ * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
+ *
+ * @return mixed
+ *   based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
+ *   for 'enqueue', returns void
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_upgrade
+ */
+function _nihrbackbone_civix_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
+  if ($upgrader = _nihrbackbone_civix_upgrader()) {
+    return $upgrader->onUpgrade($op, $queue);
+  }
+}
 
-        // note: don't use addTask() because it sets weight=-1
+/**
+ * @return CRM_Nihrbackbone_Upgrader
+ */
+function _nihrbackbone_civix_upgrader() {
+  if (!file_exists(__DIR__ . '/CRM/Nihrbackbone/Upgrader.php')) {
+    return NULL;
+  }
+  else {
+    return CRM_Nihrbackbone_Upgrader_Base::instance();
+  }
+}
 
-        $task = new CRM_Queue_Task(
-          array(get_class($this), '_queueAdapter'),
-          array('upgrade_' . $revision),
-          $title
-        );
-        $this->queue->createItem($task);
+/**
+ * Search directory tree for files which match a glob pattern.
+ *
+ * Note: Dot-directories (like "..", ".git", or ".svn") will be ignored.
+ * Note: Delegate to CRM_Utils_File::findFiles(), this function kept only
+ * for backward compatibility of extension code that uses it.
+ *
+ * @param string $dir base dir
+ * @param string $pattern , glob pattern, eg "*.txt"
+ *
+ * @return array
+ */
+function _nihrbackbone_civix_find_files($dir, $pattern) {
+  return CRM_Utils_File::findFiles($dir, $pattern);
+}
 
-        $task = new CRM_Queue_Task(
-          array(get_class($this), '_queueAdapter'),
-          array('setCurrentRevision', $revision),
-          $title
-        );
-        $this->queue->createItem($task);
+/**
+ * (Delegated) Implements hook_civicrm_managed().
+ *
+ * Find any *.mgd.php files, merge their content, and return.
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_managed
+ */
+function _nihrbackbone_civix_civicrm_managed(&$entities) {
+  $mgdFiles = _nihrbackbone_civix_find_files(__DIR__, '*.mgd.php');
+  sort($mgdFiles);
+  foreach ($mgdFiles as $file) {
+    $es = include $file;
+    foreach ($es as $e) {
+      if (empty($e['module'])) {
+        $e['module'] = E::LONG_NAME;
       }
+      if (empty($e['params']['version'])) {
+        $e['params']['version'] = '3';
+      }
+      $entities[] = $e;
     }
   }
+}
 
-  /**
-   * Get a list of revisions.
-   *
-   * @return array(revisionNumbers) sorted numerically
-   */
-  public function getRevisions() {
-    if (!is_array($this->revisions)) {
-      $this->revisions = array();
+/**
+ * (Delegated) Implements hook_civicrm_caseTypes().
+ *
+ * Find any and return any files matching "xml/case/*.xml"
+ *
+ * Note: This hook only runs in CiviCRM 4.4+.
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_caseTypes
+ */
+function _nihrbackbone_civix_civicrm_caseTypes(&$caseTypes) {
+  if (!is_dir(__DIR__ . '/xml/case')) {
+    return;
+  }
 
-      $clazz = new ReflectionClass(get_class($this));
-      $methods = $clazz->getMethods();
-      foreach ($methods as $method) {
-        if (preg_match('/^upgrade_(.*)/', $method->name, $matches)) {
-          $this->revisions[] = $matches[1];
+  foreach (_nihrbackbone_civix_glob(__DIR__ . '/xml/case/*.xml') as $file) {
+    $name = preg_replace('/\.xml$/', '', basename($file));
+    if ($name != CRM_Case_XMLProcessor::mungeCaseType($name)) {
+      $errorMessage = sprintf("Case-type file name is malformed (%s vs %s)", $name, CRM_Case_XMLProcessor::mungeCaseType($name));
+      throw new CRM_Core_Exception($errorMessage);
+    }
+    $caseTypes[$name] = [
+      'module' => E::LONG_NAME,
+      'name' => $name,
+      'file' => $file,
+    ];
+  }
+}
+
+/**
+ * (Delegated) Implements hook_civicrm_angularModules().
+ *
+ * Find any and return any files matching "ang/*.ang.php"
+ *
+ * Note: This hook only runs in CiviCRM 4.5+.
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_angularModules
+ */
+function _nihrbackbone_civix_civicrm_angularModules(&$angularModules) {
+  if (!is_dir(__DIR__ . '/ang')) {
+    return;
+  }
+
+  $files = _nihrbackbone_civix_glob(__DIR__ . '/ang/*.ang.php');
+  foreach ($files as $file) {
+    $name = preg_replace(':\.ang\.php$:', '', basename($file));
+    $module = include $file;
+    if (empty($module['ext'])) {
+      $module['ext'] = E::LONG_NAME;
+    }
+    $angularModules[$name] = $module;
+  }
+}
+
+/**
+ * (Delegated) Implements hook_civicrm_themes().
+ *
+ * Find any and return any files matching "*.theme.php"
+ */
+function _nihrbackbone_civix_civicrm_themes(&$themes) {
+  $files = _nihrbackbone_civix_glob(__DIR__ . '/*.theme.php');
+  foreach ($files as $file) {
+    $themeMeta = include $file;
+    if (empty($themeMeta['name'])) {
+      $themeMeta['name'] = preg_replace(':\.theme\.php$:', '', basename($file));
+    }
+    if (empty($themeMeta['ext'])) {
+      $themeMeta['ext'] = E::LONG_NAME;
+    }
+    $themes[$themeMeta['name']] = $themeMeta;
+  }
+}
+
+/**
+ * Glob wrapper which is guaranteed to return an array.
+ *
+ * The documentation for glob() says, "On some systems it is impossible to
+ * distinguish between empty match and an error." Anecdotally, the return
+ * result for an empty match is sometimes array() and sometimes FALSE.
+ * This wrapper provides consistency.
+ *
+ * @link http://php.net/glob
+ * @param string $pattern
+ *
+ * @return array
+ */
+function _nihrbackbone_civix_glob($pattern) {
+  $result = glob($pattern);
+  return is_array($result) ? $result : [];
+}
+
+/**
+ * Inserts a navigation menu item at a given place in the hierarchy.
+ *
+ * @param array $menu - menu hierarchy
+ * @param string $path - path to parent of this item, e.g. 'my_extension/submenu'
+ *    'Mailing', or 'Administer/System Settings'
+ * @param array $item - the item to insert (parent/child attributes will be
+ *    filled for you)
+ *
+ * @return bool
+ */
+function _nihrbackbone_civix_insert_navigation_menu(&$menu, $path, $item) {
+  // If we are done going down the path, insert menu
+  if (empty($path)) {
+    $menu[] = [
+      'attributes' => array_merge([
+        'label'      => CRM_Utils_Array::value('name', $item),
+        'active'     => 1,
+      ], $item),
+    ];
+    return TRUE;
+  }
+  else {
+    // Find an recurse into the next level down
+    $found = FALSE;
+    $path = explode('/', $path);
+    $first = array_shift($path);
+    foreach ($menu as $key => &$entry) {
+      if ($entry['attributes']['name'] == $first) {
+        if (!isset($entry['child'])) {
+          $entry['child'] = [];
         }
-      }
-      sort($this->revisions, SORT_NUMERIC);
-    }
-
-    return $this->revisions;
-  }
-
-  public function getCurrentRevision() {
-    $revision = CRM_Core_BAO_Extension::getSchemaVersion($this->extensionName);
-    if (!$revision) {
-      $revision = $this->getCurrentRevisionDeprecated();
-    }
-    return $revision;
-  }
-
-  private function getCurrentRevisionDeprecated() {
-    $key = $this->extensionName . ':version';
-    if ($revision = CRM_Core_BAO_Setting::getItem('Extension', $key)) {
-      $this->revisionStorageIsDeprecated = TRUE;
-    }
-    return $revision;
-  }
-
-  public function setCurrentRevision($revision) {
-    CRM_Core_BAO_Extension::setSchemaVersion($this->extensionName, $revision);
-    // clean up legacy schema version store (CRM-19252)
-    $this->deleteDeprecatedRevision();
-    return TRUE;
-  }
-
-  private function deleteDeprecatedRevision() {
-    if ($this->revisionStorageIsDeprecated) {
-      $setting = new CRM_Core_BAO_Setting();
-      $setting->name = $this->extensionName . ':version';
-      $setting->delete();
-      CRM_Core_Error::debug_log_message("Migrated extension schema revision ID for {$this->extensionName} from civicrm_setting (deprecated) to civicrm_extension.\n");
-    }
-  }
-
-  // ******** Hook delegates ********
-
-  /**
-   * @see https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
-   */
-  public function onInstall() {
-    $files = glob($this->extensionDir . '/sql/*_install.sql');
-    if (is_array($files)) {
-      foreach ($files as $file) {
-        CRM_Utils_File::sourceSQLFile(CIVICRM_DSN, $file);
+        $found = _nihrbackbone_civix_insert_navigation_menu($entry['child'], implode('/', $path), $item);
       }
     }
-    $files = glob($this->extensionDir . '/sql/*_install.mysql.tpl');
-    if (is_array($files)) {
-      foreach ($files as $file) {
-        $this->executeSqlTemplate($file);
-      }
+    return $found;
+  }
+}
+
+/**
+ * (Delegated) Implements hook_civicrm_navigationMenu().
+ */
+function _nihrbackbone_civix_navigationMenu(&$nodes) {
+  if (!is_callable(['CRM_Core_BAO_Navigation', 'fixNavigationMenu'])) {
+    _nihrbackbone_civix_fixNavigationMenu($nodes);
+  }
+}
+
+/**
+ * Given a navigation menu, generate navIDs for any items which are
+ * missing them.
+ */
+function _nihrbackbone_civix_fixNavigationMenu(&$nodes) {
+  $maxNavID = 1;
+  array_walk_recursive($nodes, function($item, $key) use (&$maxNavID) {
+    if ($key === 'navID') {
+      $maxNavID = max($maxNavID, $item);
     }
-    $files = glob($this->extensionDir . '/xml/*_install.xml');
-    if (is_array($files)) {
-      foreach ($files as $file) {
-        $this->executeCustomDataFileByAbsPath($file);
-      }
+  });
+  _nihrbackbone_civix_fixNavigationMenuItems($nodes, $maxNavID, NULL);
+}
+
+function _nihrbackbone_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $parentID) {
+  $origKeys = array_keys($nodes);
+  foreach ($origKeys as $origKey) {
+    if (!isset($nodes[$origKey]['attributes']['parentID']) && $parentID !== NULL) {
+      $nodes[$origKey]['attributes']['parentID'] = $parentID;
     }
-    if (is_callable(array($this, 'install'))) {
-      $this->install();
+    // If no navID, then assign navID and fix key.
+    if (!isset($nodes[$origKey]['attributes']['navID'])) {
+      $newKey = ++$maxNavID;
+      $nodes[$origKey]['attributes']['navID'] = $newKey;
+      $nodes[$newKey] = $nodes[$origKey];
+      unset($nodes[$origKey]);
+      $origKey = $newKey;
+    }
+    if (isset($nodes[$origKey]['child']) && is_array($nodes[$origKey]['child'])) {
+      _nihrbackbone_civix_fixNavigationMenuItems($nodes[$origKey]['child'], $maxNavID, $nodes[$origKey]['attributes']['navID']);
     }
   }
+}
 
-  /**
-   * @see https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_postInstall
-   */
-  public function onPostInstall() {
-    $revisions = $this->getRevisions();
-    if (!empty($revisions)) {
-      $this->setCurrentRevision(max($revisions));
-    }
-    if (is_callable(array($this, 'postInstall'))) {
-      $this->postInstall();
-    }
+/**
+ * (Delegated) Implements hook_civicrm_alterSettingsFolders().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_alterSettingsFolders
+ */
+function _nihrbackbone_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
+  $settingsDir = __DIR__ . DIRECTORY_SEPARATOR . 'settings';
+  if (!in_array($settingsDir, $metaDataFolders) && is_dir($settingsDir)) {
+    $metaDataFolders[] = $settingsDir;
   }
+}
 
-  /**
-   * @see https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
-   */
-  public function onUninstall() {
-    $files = glob($this->extensionDir . '/sql/*_uninstall.mysql.tpl');
-    if (is_array($files)) {
-      foreach ($files as $file) {
-        $this->executeSqlTemplate($file);
-      }
-    }
-    if (is_callable(array($this, 'uninstall'))) {
-      $this->uninstall();
-    }
-    $files = glob($this->extensionDir . '/sql/*_uninstall.sql');
-    if (is_array($files)) {
-      foreach ($files as $file) {
-        CRM_Utils_File::sourceSQLFile(CIVICRM_DSN, $file);
-      }
-    }
-  }
-
-  /**
-   * @see https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
-   */
-  public function onEnable() {
-    // stub for possible future use
-    if (is_callable(array($this, 'enable'))) {
-      $this->enable();
-    }
-  }
-
-  /**
-   * @see https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
-   */
-  public function onDisable() {
-    // stub for possible future use
-    if (is_callable(array($this, 'disable'))) {
-      $this->disable();
-    }
-  }
-
-  public function onUpgrade($op, CRM_Queue_Queue $queue = NULL) {
-    switch ($op) {
-      case 'check':
-        return array($this->hasPendingRevisions());
-
-      case 'enqueue':
-        return $this->enqueuePendingRevisions($queue);
-
-      default:
-    }
-  }
-
+/**
+ * (Delegated) Implements hook_civicrm_entityTypes().
+ *
+ * Find any *.entityType.php files, merge their content, and return.
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_entityTypes
+ */
+function _nihrbackbone_civix_civicrm_entityTypes(&$entityTypes) {
+  $entityTypes = array_merge($entityTypes, [
+    'CRM_Nihrbackbone_DAO_NbrCounty' => [
+      'name' => 'NbrCounty',
+      'class' => 'CRM_Nihrbackbone_DAO_NbrCounty',
+      'table' => 'civicrm_nbr_county',
+    ],
+    'CRM_Nihrbackbone_DAO_NbrImportLog' => [
+      'name' => 'NbrImportLog',
+      'class' => 'CRM_Nihrbackbone_DAO_NbrImportLog',
+      'table' => 'civicrm_nbr_import_log',
+    ],
+    'CRM_Nihrbackbone_DAO_NbrMailing' => [
+      'name' => 'NbrMailing',
+      'class' => 'CRM_Nihrbackbone_DAO_NbrMailing',
+      'table' => 'civicrm_nbr_mailing',
+    ],
+    'CRM_Nihrbackbone_DAO_NbrStudyResearcher' => [
+      'name' => 'NbrStudyResearcher',
+      'class' => 'CRM_Nihrbackbone_DAO_NbrStudyResearcher',
+      'table' => 'civicrm_nbr_study_researcher',
+    ],
+  ]);
 }

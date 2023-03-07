@@ -499,7 +499,6 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
   /**
    * Upgrade 1170 - add entity NbrStudyResearcher table (see https://www.wrike.com/open.htm?id=933254901)
    *              - migrate existing study researchers
-   *              - remove existing custom field
    *
    * @return bool
    * @throws
@@ -517,26 +516,9 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
       // migrate existing researchers
       $dao = CRM_Core_DAO::executeQuery("SELECT nsd_researcher, entity_id AS study_id FROM civicrm_value_nbr_study_data WHERE nsd_researcher IS NOT NULL");
       while ($dao->fetch()) {
-        if ($dao->study_id && $dao->nsd_researcher) {
+        if (!empty($dao->study_id) && !empty($dao->nsd_researcher)) {
           CRM_Nihrbackbone_BAO_NbrStudyResearcher::createStudyResearcher((int) $dao->study_id, (int) $dao->nsd_researcher);
         }
-      }
-      // disable existing custom field (to be removed once all is done on live)
-      try {
-        $customFieldId = \Civi\Api4\CustomField::get()
-          ->addSelect('id')
-          ->addWhere('custom_group_id:name', '=', 'nbr_study_data')
-          ->addWhere('name', '=', 'nsd_researcher')
-          ->setLimit(1)
-          ->execute()->first();
-        if ($customFieldId) {
-          \Civi\Api4\CustomField::update()
-            ->addWhere('id', '=', $customFieldId)
-            ->addValue('is_active', FALSE)
-            ->execute();
-        }
-      }
-      catch (API_Exception $ex) {
       }
     }
     return TRUE;
