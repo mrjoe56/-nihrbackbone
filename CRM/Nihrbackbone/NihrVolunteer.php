@@ -940,7 +940,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
   public static function hasMaxTotalInvitesNow($volunteerId) {
     $max = (int) Civi::settings()->get('nbr_max_total_invitations');
     $count = self::getCountVolunteerStudyInvitesInPeriod($volunteerId, "total");
-    if ($count >= $max) {
+    if ($count > $max) {
       return TRUE;
     }
     else {

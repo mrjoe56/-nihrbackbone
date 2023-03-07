@@ -59,10 +59,11 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       ]);
     $this->add('datepicker', 'start_date', E::ts('Start Date'), [],TRUE, ['time' => FALSE]);
     $this->add('datepicker', 'end_date', E::ts('End Date'), [],FALSE, ['time' => FALSE]);
-    $this->addEntityRef('nsd_researcher', E::ts('Researcher'), [
+    $this->addEntityRef('researcher_id', E::ts('Researcher(s)'), [
+      'multiple' => TRUE,
+      'placeholder' => '- select researcher(s)',
       'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
-      'placeholder' => '- select researcher -',
-    ], FALSE);
+      ]);
     $this->addEntityRef('nsd_centre_origin', E::ts('Centre of Origin'), [
       'api' => ['params' => ['contact_sub_type' => 'nbr_centre']],
       'placeholder' => '- select centre -',
@@ -116,8 +117,8 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     $this->add('text', 'nsc_age_to', E::ts("Age to"), [], FALSE);
     $this->add('text', 'nsc_bmi_from', E::ts("BMI from"), [], FALSE);
     $this->add('text', 'nsc_bmi_to', E::ts("BMI to"), [], FALSE);
-
   }
+
   /**
    * Add elements for view action
    */
@@ -130,11 +131,12 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     ]);
     $this->add('datepicker', 'start_date', E::ts('Start Date'), ['disabled' => 'disabled'],TRUE, ['time' => FALSE]);
     $this->add('datepicker', 'end_date', E::ts('End Date'), ['disabled' => 'disabled'],FALSE, ['time' => FALSE]);
-    $this->addEntityRef('nsd_researcher', E::ts('Researcher'), [
-      'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
-      'placeholder' => '- select researcher -',
+    $this->addEntityRef('researcher_id', E::ts('Researcher(s)'), [
+      'multiple' => TRUE,
+      'placeholder' => '- select researcher(s)',
       'disabled' => 'disabled',
-    ], FALSE);
+      'api' => ['params' => ['contact_sub_type' => 'nihr_researcher']],
+    ]);
     $this->add('textarea', 'nsd_scientific_info', E::ts('Scientific Information'), [
       'rows' => 4,
       'cols' => 100,
@@ -241,6 +243,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
           }
           $defaults[$key] = $value;
         }
+        $defaults['researcher_id'] = implode(",", CRM_Nihrbackbone_BAO_NbrStudyResearcher::getStudyResearchers($this->_studyId));
         break;
     }
     return $defaults;
@@ -493,6 +496,11 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
     try {
       $createdCampaign = civicrm_api3('Campaign', 'create', $this->setCampaignParameters());
       $this->_studyId = $createdCampaign['id'];
+      $researcherIds = [];
+      if (isset($this->_submitValues['researcher_id'])) {
+        $researcherIds = explode(",", $this->_submitValues['researcher_id']);
+      }
+      CRM_Nihrbackbone_BAO_NbrStudyResearcher::saveStudyResearchers($this->_studyId, $researcherIds, $this->_action);
       $studyNumber = CRM_Nihrbackbone_NbrStudy::getStudyNumberWithId($this->_studyId);
       CRM_Core_Session::setStatus(E::ts("Saved study ") . $studyNumber, E::ts('Saved'), 'success');
     }
