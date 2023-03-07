@@ -227,6 +227,7 @@ class CRM_Nihrbackbone_Form_NbrStudy extends CRM_Core_Form {
       // status pending when adding
       case CRM_Core_Action::ADD:
         $defaults['status_id'] = CRM_Nihrbackbone_BackboneConfig::singleton()->getPendingStudyStatus();
+        $defaults['nsd_prevent_upload_portal'] = TRUE;
         break;
       case CRM_Core_Action::UPDATE:
       case CRM_Core_Action::VIEW:

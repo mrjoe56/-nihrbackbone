@@ -1,3 +1,9 @@
+## 2.43
+* set study prevent upload to portal field to default TRUE when adding on the study form
+
+## 2.42
+* Add phone number validation to participant summary screen
+
 ## 2.41
 * added getVolunteerLifeQualityCustomGroup/Field and getParticipationInStudiesCustomGroup/Field
 
