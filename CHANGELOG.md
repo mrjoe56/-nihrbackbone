@@ -1,4 +1,4 @@
-## 2.44
+## 2.45
 * allow multiple researcher for study (see https://www.wrike.com/open.htm?id=933254901)
 >* add new entity NbrStudyResearcher
 >* cater for new entity in study form
