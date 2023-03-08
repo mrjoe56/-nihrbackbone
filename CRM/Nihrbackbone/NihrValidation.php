@@ -31,27 +31,11 @@ class CRM_Nihrbackbone_NihrValidation {
 
     if ($duplicateCount>0) {$errors[$errorField] = $alias_type." - This identity already exists or has not been updated - please cancel or update";}
 
-    if ($alias_type == 'cih_type_packid') {                                                                            # pack ID validation
-      $msg = 'Error in Pack ID - ';
-      $first = $alias_value[0];                                                                                        #  get first character
-      $last = substr($alias_value, -1);                                                                                #  last character
-      $n_string = substr($alias_value, 1, 6);                                                                          #  numeric part
-      $mod = $n_string % 23;                                                                                           #  and modulus
-      $mod2chk = ['0' => 'Z','1' => 'A','2' => 'B','3' => 'C','4' => 'D','5' => 'E','6' => 'F',
-        '7' => 'G','8' => 'H','9' => 'J','10' => 'K','11' => 'L','12' => 'M','13' => 'N','14' => 'P',
-        '15' => 'Q','16' => 'R','17' => 'S','18' => 'T','19' => 'V','20' => 'W','21' => 'X','22' => 'Y'];
-      $chk_chr = $mod2chk[$mod];                                                                                       # VALIDATION:
-      if (! preg_match( '/[A-Z]/', $first)) {                                                                          #  first char is alpha
-        $errors[$errorField] = $msg."first character must be 'A' to 'Z'";
-      }
-      elseif (strlen($alias_value) != 8) {                                                                             #  length of input is 8
-        $errors[$errorField] = $msg."must be 8 characters long";
-      }
-      elseif (! preg_match( '/[0-9]{6}/', $n_string)) {                                                                # chars 2-7 are numeric
-        $errors[$errorField] = $msg."2nd to 7th characters must be numeric";
-      }
-      elseif ($chk_chr != $last) {                                                                                     # check digit is correct
-                $errors[$errorField] = "Pack ID is invalid";
+    if ($alias_type == 'cih_type_packid') {
+      # pack ID validation
+      $packIdErrors = CRM_Nihrbackbone_NbrPackId::isValidPackId($alias_value);
+      foreach ($packIdErrors as $packIdError) {
+        $errors[$errorField] = $packIdError;
       }
     }
 

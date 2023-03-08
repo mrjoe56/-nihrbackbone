@@ -465,5 +465,10 @@ function _nihrbackbone_civix_civicrm_entityTypes(&$entityTypes) {
       'class' => 'CRM_Nihrbackbone_DAO_NbrMailing',
       'table' => 'civicrm_nbr_mailing',
     ],
+    'CRM_Nihrbackbone_DAO_NbrStudyResearcher' => [
+      'name' => 'NbrStudyResearcher',
+      'class' => 'CRM_Nihrbackbone_DAO_NbrStudyResearcher',
+      'table' => 'civicrm_nbr_study_researcher',
+    ],
   ]);
 }

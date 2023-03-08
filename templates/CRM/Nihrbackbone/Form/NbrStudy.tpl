@@ -1,4 +1,14 @@
 <div class="crm-block crm-form-block">
+    {if !empty($clone_of)}
+      <div class="help-block" id="help">
+        This study is a clone of {$clone_of}
+      </div>
+    {/if}
+    {if !empty($has_clones)}
+      <div class="help-block" id="help">
+        This study has clones: <br />{$has_clones}
+      </div>
+    {/if}
   <div class="crm-submit-buttons">
   {include file="CRM/common/formButtons.tpl" location="top"}
   </div>
@@ -18,8 +28,10 @@
       <div class="content">{$form.$elementName.html}</div>
       <div class="clear"></div>
     </div>
-  {/foreach}
+    {if $elementName eq "nsd_data_only" or $elementName eq "nsc_bmi_to"}
         </div></div>
+    {/if}
+  {/foreach}
   <div class="crm-submit-buttons">
   {include file="CRM/common/formButtons.tpl" location="bottom"}
   </div>

@@ -40,6 +40,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
         $contacts = \Civi\Api4\Contact::get()
           ->addSelect('contact_sub_type')
           ->addWhere('id', '=', (int) $contactId)
+          ->setCheckPermissions(FALSE)
           ->execute();
         if ($type == "bioresource") {
           $validTypes = Civi::settings()->get('nbr_bioresource_subtypes');
@@ -939,7 +940,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
   public static function hasMaxTotalInvitesNow($volunteerId) {
     $max = (int) Civi::settings()->get('nbr_max_total_invitations');
     $count = self::getCountVolunteerStudyInvitesInPeriod($volunteerId, "total");
-    if ($count >= $max) {
+    if ($count > $max) {
       return TRUE;
     }
     else {

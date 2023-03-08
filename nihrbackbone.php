@@ -218,6 +218,9 @@ function nihrbackbone_civicrm_buildForm($formName, &$form) {  # jb2
   if ($form instanceof CRM_Case_Form_CaseView) {
     CRM_Nihrbackbone_NbrVolunteerCase::buildFormCaseView($form);
   }
+  if($form instanceof CRM_Contact_Form_Inline_Phone) {
+    CRM_Core_Resources::singleton()->addScriptFile('nihrbackbone', 'templates/CRM/Nihrbackbone/nbr_phone.js');
+  }
 
   if ($formName == 'CRM_Contact_Form_CustomData') {
     // validate custom data form
@@ -402,14 +405,14 @@ function nihrbackbone_civicrm_entityTypes(&$entityTypes) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
  *
 function nihrbackbone_civicrm_navigationMenu(&$menu) {
-  _nihrbackbone_civix_insert_navigation_menu($menu, 'Mailings', array(
-    'label' => E::ts('New subliminal message'),
-    'name' => 'mailing_subliminal_message',
-    'url' => 'civicrm/mailing/subliminal',
-    'permission' => 'access CiviMail',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _nihrbackbone_civix_navigationMenu($menu);
+_nihrbackbone_civix_insert_navigation_menu($menu, 'Mailings', array(
+'label' => E::ts('New subliminal message'),
+'name' => 'mailing_subliminal_message',
+'url' => 'civicrm/mailing/subliminal',
+'permission' => 'access CiviMail',
+'operator' => 'OR',
+'separator' => 0,
+));
+_nihrbackbone_civix_navigationMenu($menu);
 } // */
 

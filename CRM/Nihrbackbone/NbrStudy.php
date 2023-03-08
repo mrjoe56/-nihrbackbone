@@ -403,6 +403,7 @@ class CRM_Nihrbackbone_NbrStudy {
           ->addSelect('nbr_study_data.nsd_recall')
           ->addWhere('id', '=', $studyId)
           ->setLimit(1)
+          ->setCheckPermissions(FALSE)
           ->execute();
         $campaign = $campaigns->first();
         if ($campaign['nbr_study_data.nsd_recall']) {
@@ -428,6 +429,7 @@ class CRM_Nihrbackbone_NbrStudy {
           ->addSelect('nbr_study_data.nsd_online_study')
           ->addWhere('id', '=', $studyId)
           ->setLimit(1)
+          ->setCheckPermissions(FALSE)
           ->execute();
         $campaign = $campaigns->first();
         if ($campaign['nbr_study_data.nsd_online_study']) {
@@ -452,6 +454,7 @@ class CRM_Nihrbackbone_NbrStudy {
         $campaigns = \Civi\Api4\Campaign::get()
           ->addSelect('nbr_study_data.nsd_data_only')
           ->addWhere('id', '=', $studyId)
+          ->setCheckPermissions(FALSE)
           ->execute();
         $study = $campaigns->first();
         if ($study['nbr_study_data.nsd_data_only']) {
@@ -479,6 +482,7 @@ class CRM_Nihrbackbone_NbrStudy {
           ->addSelect('status_id')
           ->addWhere('id', '=', (int) $studyId)
           ->setLimit(1)
+          ->setCheckPermissions(FALSE)
           ->execute();
         $campaign = $campaigns->first();
         if (in_array((string) $campaign['status_id'], $noActionStatuses)) {
@@ -504,6 +508,7 @@ class CRM_Nihrbackbone_NbrStudy {
         ->addSelect('value')
         ->addWhere('option_group_id:name', '=', 'campaign_status')
         ->addWhere('name', '=', 'Not Progressed')
+        ->setCheckPermissions(FALSE)
         ->execute();
       $notProgressed = $optionValues->first();
     }

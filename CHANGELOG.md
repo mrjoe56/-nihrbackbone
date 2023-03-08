@@ -1,3 +1,32 @@
+## 2.45
+* allow multiple researcher for study (see https://www.wrike.com/open.htm?id=933254901)
+>* add new entity NbrStudyResearcher
+>* cater for new entity in study form
+>
+## 2.44
+* Fix for issue https://www.wrike.com/open.htm?id=933291855: merging of recruitment cases is possible now
+
+## 2.43
+* set study prevent upload to portal field to default TRUE when adding on the study form
+
+## 2.42
+* Add phone number validation to participant summary screen
+
+## 2.41
+* added getVolunteerLifeQualityCustomGroup/Field and getParticipationInStudiesCustomGroup/Field
+
+## 2.40
+* create separate class and functin for pack id validation (validation itself has not changed)
+
+## 2.39
+* add study clone processing to nbrstudy form (see https://www.wrike.com/open.htm?id=952816806)
+
+## 2.37
+* set permissions check to false in API4 calls
+
+## 2.36
+* add new study field for study outcome (see https://www.wrike.com/open.htm?id=1013253659)
+
 ## 2.35
 * 5118 update distance calculation
 
