@@ -63,7 +63,7 @@ class CRM_Nihrbackbone_NihrValidation {
       }
       // Check digit calculations
       elseif ($calc_cd == 10 || $cd !== $calc_cd ) {                                                                                        #  invalid check digit
-        $errors[$errorField] = "NHS Number is invalid";
+        $errors[$errorField] = $msg."NHS Number is invalid";
       }
 
     }

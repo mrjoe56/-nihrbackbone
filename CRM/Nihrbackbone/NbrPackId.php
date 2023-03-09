@@ -37,7 +37,7 @@ class CRM_Nihrbackbone_NbrPackId {
       $messages[] = "Error in Pack ID - 2nd to 7th characters must be numeric";
     }
     elseif ($chkChr != $last) {                                                                                     # check digit is correct
-      $messages[] = "Error in Pack ID - Check character incorrect (" . $chkChr . ")";
+      $messages[] = "Error in Pack ID - Pack ID is invalid";
     }
     return $messages;
   }
