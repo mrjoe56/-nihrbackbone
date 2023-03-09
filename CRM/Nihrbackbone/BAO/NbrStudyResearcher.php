@@ -6,10 +6,10 @@ class CRM_Nihrbackbone_BAO_NbrStudyResearcher extends CRM_Nihrbackbone_DAO_NbrSt
   /**
    * Method to get researchers for a study
    *
-   * @param int $studyId
+   * @param int|NULL $studyId
    * @return array
    */
-  public static function getStudyResearchers(int $studyId): array {
+  public static function getStudyResearchers(?int $studyId): array {
     $studyResearchers = [];
     if ($studyId) {
       try {
