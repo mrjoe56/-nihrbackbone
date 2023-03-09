@@ -27,7 +27,7 @@ class CRM_Nihrbackbone_NihrValidation {
     $sqlParams = [1 => [$alias_type, 'String'], 2 => [intval($contact_id), 'Integer'], 3 => [$alias_value, 'String'], ];
     $query = "select count(*) as dup from civicrm_value_contact_id_history where identifier_type = %1 and entity_id = %2 and identifier = %3";
     $duplicateCount = CRM_Core_DAO::singleValueQuery($query, $sqlParams);                                                                  #
-    if ($duplicateCount>0) {$errors[$errorField] = $msg."This identity already exists or has not been updated - please cancel or update";}
+    if ($duplicateCount>0) {$errors[$errorField] = $alias_type." - This identity already exists or has not been updated - please cancel or update";}
 
     if ($alias_type == 'cih_type_packid') {
       # pack ID validation
