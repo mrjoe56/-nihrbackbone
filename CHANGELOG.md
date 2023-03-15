@@ -1,3 +1,7 @@
+
+## 2.46
+* Rename NHS number error messages for ease of user readability (https://www.wrike.com/open.htm?id=858839407)
+
 ## 2.45
 * allow multiple researcher for study (see https://www.wrike.com/open.htm?id=933254901)
 >* add new entity NbrStudyResearcher
