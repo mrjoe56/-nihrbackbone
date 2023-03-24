@@ -52,6 +52,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_bulkMailActivityTypeId = NULL;
   private $_consentActivityTypeId = NULL;
   private $_consentStage2ActivityTypeId = NULL;
+  private $_assentActivityTypeId = NULL;
   private $_emailActivityTypeId = NULL;
   private $_followUpActivityTypeId = NULL;
   private $_incomingCommunicationActivityTypeId = NULL;
@@ -76,6 +77,7 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_contactIdentityTableName = NULL;
   private $_consentStage2TableName = NULL;
   private $_consentTableName = NULL;
+  private $_assentTableName = NULL;
   private $_diseaseTableName = NULL;
   private $_medicationTableName = NULL;
   private $_participationDataTableName = NULL;
@@ -96,6 +98,8 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_collectedByCustomFieldId = NULL;
   private $_consentVersionColumnName = NULL;
   private $_consentVersionStage2CustomFieldId = NULL;
+  private $_assentVersionColumnName = NULL;
+  private $_assentPisVersionColumnName = NULL;
   private $_diagnosisAgeColumnName = NULL;
   private $_diagnosisYearColumnName = NULL;
   private $_diseaseColumnName = NULL;
@@ -160,6 +164,8 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_campaignStatusOptionGroupId = NULL;
   private $_participationConsentVersionOptionGroupId = NULL;
   private $_consentVersionOptionGroupId = NULL;
+  private $_assentVersionOptionGroupId = NULL;
+  private $_assentPisVersionOptionGroupId = NULL;
   private $_diseaseOptionGroupId = NULL;
   private $_drugFamilyOptionGroupId = NULL;
   private $_ethnicityOptionGroupId = NULL;
@@ -760,11 +766,19 @@ class CRM_Nihrbackbone_NbrConfig {
     $this->_consentActivityTypeId = $id;
   }
 
+  public function setAssentActivityTypeId($id) {
+    $this->_assentActivityTypeId = $id;
+  }
+
   /**
    * @return int
    */
   public function getConsentActivityTypeId() {
     return $this->_consentActivityTypeId;
+  }
+
+  public function getAssentActivityTypeId() {
+    return $this->_assentActivityTypeId;
   }
 
   /**
@@ -2027,6 +2041,22 @@ class CRM_Nihrbackbone_NbrConfig {
     return $this->_consentVersionOptionGroupId;
   }
 
+  public function setAssentVersionOptionGroupId($id) {
+    $this->_assentVersionOptionGroupId = $id;
+  }
+
+  public function getAssentVersionOptionGroupId() {
+    return $this->_assentVersionOptionGroupId;
+  }
+
+  public function setAssentPisVersionOptionGroupId($id) {
+    $this->_assentPisVersionOptionGroupId = $id;
+  }
+
+  public function getAssentPisVersionOptionGroupId() {
+    return $this->_assentPisVersionOptionGroupId;
+  }
+
   /**
    * @param int
    */
@@ -2503,6 +2533,14 @@ class CRM_Nihrbackbone_NbrConfig {
     return $this->_consentTableName  ;
   }
 
+  public function setAssentTableName($name) {
+    $this->_assentTableName = $name;
+  }
+
+  public function getAssentTableName() {
+    return $this->_assentTableName  ;
+  }
+
   /**
    * @param string
    */
@@ -2599,6 +2637,23 @@ class CRM_Nihrbackbone_NbrConfig {
    */
   public function getLeafletVersionColumnName() {
     return $this->_leafletVersionColumnName  ;
+  }
+
+
+  public function setAssentVersionColumnName($name) {
+    $this->_assentVersionColumnName = $name;
+  }
+
+  public function getAssentVersionColumnName() {
+    return $this->_assentVersionColumnName  ;
+  }
+
+  public function setAssentPisVersionColumnName($name) {
+    $this->_assentPisVersionColumnName = $name;
+  }
+
+  public function getAssentPisVersionColumnName() {
+    return $this->_assentPisVersionColumnName  ;
   }
 
   /**

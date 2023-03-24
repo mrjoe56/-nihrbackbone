@@ -22,6 +22,8 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_ethnicityOptionGroupId = NULL;
   private $_consentStatusOptionGroupId = NULL;
   private $_consentVersionOptionGroupId = NULL;
+  private $_assentVersionOptionGroupId = NULL;
+  private $_assentPisVersionOptionGroupId = NULL;
   private $_caseStatusOptionGroupId = NULL;
 
   // property for study campaign type
@@ -52,6 +54,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_volunteerPanelCustomGroup = [];
   private $_volunteerConsentCustomGroup = [];
   private $_siteAliasCustomGroup = [];
+  private $_nbrAssentDataCustomGroup = [];
 
   // properties for case types ids
   private $_participationCaseTypeId = NULL;
@@ -140,6 +143,16 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function getConsentVersionOptionGroupId() {
     return $this->_consentVersionOptionGroupId;
+
+  }
+
+  public function getAssentVersionOptionGroupId() {
+    return $this->_assentVersionOptionGroupId;
+
+  }
+
+  public function getAssentPisVersionOptionGroupId() {
+    return $this->_assentPisVersionOptionGroupId;
 
   }
   /**
@@ -349,6 +362,15 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
   }
 
+  public function getNbrAssentDataCustomGroup($key = NULL) {
+    if ($key && isset($this->_nbrAssentDataCustomGroup[$key])) {
+      return $this->_nbrAssentDataCustomGroup[$key];
+    }
+    else {
+      return $this->_nbrAssentDataCustomGroup;
+    }
+  }
+
   /**
    * Getter for volunteer status custom group
    *
@@ -448,6 +470,20 @@ class CRM_Nihrbackbone_BackboneConfig {
    */
   public function getVolunteerConsentCustomField($customFieldName, $key = NULL) {
     foreach ($this->_volunteerConsentCustomGroup['custom_fields'] as $customField) {
+      if ($customField['name'] == $customFieldName) {
+        if ($key && isset($customField[$key])) {
+          return $customField[$key];
+        }
+        else {
+          return $customField;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  public function getNbrAssentDataCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_nbrAssentDataCustomGroup['custom_fields'] as $customField) {
       if ($customField['name'] == $customFieldName) {
         if ($key && isset($customField[$key])) {
           return $customField[$key];
@@ -774,6 +810,10 @@ class CRM_Nihrbackbone_BackboneConfig {
     return $this->_consentStatusOptionGroupId;
   }
 
+  public function getAssentStatusOptionGroupId() {
+    return $this->_assentStatusOptionGroupId;
+  }
+
   /**
    * Getter for volunteer study status option group id
    *
@@ -859,7 +899,9 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nbr_life_quality_happiness',
       'nbr_life_quality_overall',
       'nbr_type_of_study',
-      'nbr_yes_no_dontknow'
+      'nbr_yes_no_dontknow',
+      'nbr_assent_version',
+      'nbr_assent_pis_version'
     ];
     try {
       $foundOptionGroups = civicrm_api3('OptionGroup', 'get', [
@@ -1078,7 +1120,8 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nihr_volunteer_panel',
       'nihr_volunteer_consent',
       'nihr_volunteer_disease',
-      'nbr_site_alias'
+      'nbr_site_alias',
+      'nbr_assent_data'
       ];
     try {
       $customGroups = civicrm_api3('CustomGroup', 'get', [
