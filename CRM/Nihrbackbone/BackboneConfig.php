@@ -901,7 +901,8 @@ class CRM_Nihrbackbone_BackboneConfig {
       'nbr_type_of_study',
       'nbr_yes_no_dontknow',
       'nbr_assent_version',
-      'nbr_assent_pis_version'
+      'nbr_assent_pis_version',
+      'nbr_assent_status'
     ];
     try {
       $foundOptionGroups = civicrm_api3('OptionGroup', 'get', [
