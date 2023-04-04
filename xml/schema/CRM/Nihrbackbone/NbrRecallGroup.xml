@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Nihrbackbone</base>
+  <class>NbrRecallGroup</class>
+  <name>civicrm_nbr_recall_group</name>
+  <comment>NIHR Bioresource specific table for Recall Group - Participation</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique NbrRecallGroup ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>case_id</name>
+    <type>int unsigned</type>
+    <comment>FK to Case</comment>
+  </field>
+  <foreignKey>
+    <name>case_id</name>
+    <table>civicrm_case</table>
+    <key>id</key>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>recall_group</name>
+    <type>varchar</type>
+    <length>128</length>
+    <comment>Recall Group</comment>
+  </field>
+
+</table>

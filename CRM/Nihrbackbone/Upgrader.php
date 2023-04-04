@@ -525,6 +525,36 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
   }
 
   /**
+   * Upgrade 1500:
+   * - create table for recall group if not exists yet
+   * - migrate old data for single recall group into new table
+   * - disable old recall group custom field
+   *
+   * @return true
+   */
+  public function upgrade_1500() {
+    $this->ctx->log->info(E::ts('Applying update 1500 - make recall group multiple'));
+    // create new table for entity
+    if (!CRM_Core_DAO::checkTableExists('civicrm_nbr_recall_group')) {
+      $this->executeSqlFile('sql/createNbrRecallGroup.sql');
+      // migrate data from old custom field to new table
+      $query = "SELECT pd.nvpd_recall_group, pd.entity_id AS case_id
+        FROM civicrm_value_nbr_participation_data pd JOIN civicrm_case cc ON pd.entity_id = cc.id
+        WHERE nvpd_recall_group IS NOT NULL AND cc.is_deleted = FALSE";
+      $dao = CRM_Core_DAO::executeQuery($query);
+      while ($dao->fetch()) {
+        if (!CRM_Nihrbackbone_BAO_NbrRecallGroup::isExistingRecallGroupOnCase((int) $dao->case_id, $dao->nvpd_recall_group)) {
+          CRM_Nihrbackbone_BAO_NbrRecallGroup::addRecallGroupForCase((int) $dao->case_id, $dao->nvpd_recall_group);
+        }
+      }
+      // disable old custom field (to be removed at later stage when we are convinced all is well)
+      $update = "UPDATE civicrm_custom_field SET is_active = FALSE WHERE name = %1";
+      CRM_Core_DAO::executeQuery($update, [1 => ["nvpd_recall_group", "String"]]);
+    }
+    return TRUE;
+  }
+
+  /**
    * Swap values for unable to willing columns
    *
    * @param $columns
