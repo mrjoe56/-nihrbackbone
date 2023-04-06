@@ -165,11 +165,11 @@ class CRM_Nihrbackbone_NihrImportCsv
                 'contact_id' => $contactId,
                 'case_type' => 'participation',
               ];
-              if ($recallGroup) {
-                $volunteerCaseParams['recall_group'] = $recallGroup;
-              }
               try {
-                civicrm_api3('NbrVolunteerCase', 'create', $volunteerCaseParams);
+                $newCaseId = civicrm_api3('NbrVolunteerCase', 'create', $volunteerCaseParams);
+                if ($newCaseId['case_id'] && $recallGroup) {
+                  CRM_Nihrbackbone_BAO_NbrRecallGroup::addRecallGroupForCase($newCaseId['case_id'], $recallGroup);
+                }
                 $this->_imported++;
                 $message = E::ts('Volunteer with participantID ') . $data[0] . E::ts(' succesfully added to study ') . $studyNumber;
                 CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
