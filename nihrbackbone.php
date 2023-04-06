@@ -38,6 +38,17 @@ function nihrbackbone_civicrm_postMailing($mailingId) {
     CRM_Nihrbackbone_BAO_NbrMailing::postMailing($mailingId);
   }
 }
+/**
+ * Implements hook_civicrm_postProcess
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postProcess/
+ */
+
+function nihrbackbone_civicrm_postProcess($formName, &$form) {
+  if ($form instanceof CRM_Case_Form_CustomData) {
+    CRM_Nihrbackbone_BAO_NbrRecallGroup::postProcess($form);
+  }
+}
 
 /**
  * Implements hook_civicrm_links()

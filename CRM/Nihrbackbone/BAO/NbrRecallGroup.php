@@ -77,26 +77,140 @@ class CRM_Nihrbackbone_BAO_NbrRecallGroup extends CRM_Nihrbackbone_DAO_NbrRecall
     }
     return $recallGroups;
   }
-  public static function addRecallGroupsToForm(int $caseId, CRM_Core_Form $form): void {
+
+  /**
+   * Method to add the recall groups to the Case View Form
+   *
+   * @param int|null $caseId
+   * @param CRM_Core_Form $form
+   * @return void
+   */
+  public static function addRecallGroupsToCaseView(?int $caseId, CRM_Core_Form $form): void {
     if ($caseId) {
-      $defaults = [];
-      $recallGroups = self::getRecallGroupsForCase($caseId);
       $counter = 0;
+      $recallGroups = self::getRecallGroupsForCase($caseId);
+      $defaults = [];
+      if (empty($recallGroups)) {
+        $form->add('text', 'recall_group_empty', E::ts("Recall Group"));
+      }
       foreach ($recallGroups as $recallGroup) {
         $counter++;
         $elementName = "recall_group_" . $counter;
-        $form->add('text', $elementName, E::ts("Recall Group"));
+        $form->add('text', $elementName, E::ts("Recall Group ") . $counter);
         $defaults[$elementName] = $recallGroup;
       }
       if (!empty($defaults)) {
-        $form->setDefaultValues($defaults);
+        $form->setDefaults($defaults);
       }
-      for($x=0; $x <=5; $x++) {
-        $counter++;
-        $form->add('text', 'recall_group_' . $counter, E::ts("Recall Group"));
-      }
-      $form->assign('recall_group_counter', $counter);
-      CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/Form/nbr_recall_groups.tpl',]);
+      self::addFormElements($form);
+      CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/Form/nbr_recall_groups_case_view.tpl',]);
     }
   }
+
+  /**
+   * Add recall groups to custom form
+   *
+   * @param int $caseId
+   * @param CRM_Core_Form $form
+   * @return void
+   */
+  public static function addRecallGroupsToCustomForm(int $caseId, CRM_Core_Form &$form): void {
+    if ($caseId) {
+      $counter = 0;
+      $recallGroups = self::getRecallGroupsForCase($caseId);
+      $defaults = [];
+      foreach ($recallGroups as $recallGroup) {
+        $counter++;
+        $elementName = "recall_group_" . $counter;
+        $form->add('text', $elementName, E::ts("Recall Group ") . $counter);
+        $defaults[$elementName] = $recallGroup;
+      }
+      if (!empty($defaults)) {
+        $form->setDefaults($defaults);
+      }
+      // now add 5 empty recall groups
+      for ($x=0; $x<5; $x++) {
+        $counter++;
+        $elementName = 'recall_group_' . $counter;
+        $form->add('text', $elementName, E::ts("Recall Group ") . $counter);
+      }
+      self::addFormElements($form);
+      CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/Form/nbr_recall_groups_custom_form.tpl',]);
+    }
+  }
+
+  /**
+   * Method to add all elements to form
+   *
+   * @param CRM_Core_Form $form
+   * @return void
+   */
+  private static function addFormElements(CRM_Core_Form &$form) {
+    $elementNames = [];
+    foreach ($form->_elements as $element) {
+      /** @var HTML_QuickForm_Element $element */
+      $label = $element->getLabel();
+      if (!empty($label)) {
+        $elementNames[] = $element->getName();
+      }
+    }
+    $form->assign('elementNames', $elementNames);
+  }
+
+  /**
+   * Method to process postProcess form for case custom data
+   *
+   * @param CRM_Core_Form $form
+   * @return void
+   */
+  public static function postProcess(CRM_Core_Form &$form) {
+    $submitValues = $form->getVar('_submitValues');
+    $caseId = $form->getVar('_entityID');
+    if ($caseId && $submitValues) {
+      foreach ($submitValues as $submitKey => $submitValue) {
+        if (strpos($submitKey, 'recall_group_') !== FALSE) {
+          if (!empty($submitValue)) {
+            if (!self::isExistingRecallGroupOnCase($caseId, $submitValue)) {
+              self::addRecallGroupForCase($caseId, $submitValue);
+            }
+          }
+        }
+      }
+      self::deleteRedundantRecallGroupsForCase($caseId, $submitValues);
+    }
+  }
+
+  /**
+   * Method to delete redundant recall groups for case that are still in the DB
+   *
+   * @param int $caseId
+   * @param array $submitValues
+   * @return void
+   */
+  public static function deleteRedundantRecallGroupsForCase(int $caseId, array $submitValues): void {
+    if ($caseId && !empty($submitValues)) {
+      $currentRecallGroups = self::getRecallGroupsForCase($caseId);
+      $formRecallGroups = [];
+      foreach ($submitValues as $submitKey => $submitValue) {
+        if (strpos($submitKey, 'recall_group_') !== FALSE) {
+          if (!empty($submitValue)) {
+            $formRecallGroups[] = $submitValue;
+          }
+        }
+      }
+      foreach ($currentRecallGroups as $currentRecallGroup) {
+        if (!in_array($currentRecallGroup, $formRecallGroups)) {
+          try {
+            \Civi\Api4\NbrRecallGroup::delete()
+              ->addWhere('case_id', '=', $caseId)
+              ->addWhere('recall_group', '=', $currentRecallGroup)
+              ->execute();
+          }
+          catch (API_Exception $ex) {
+          }
+        }
+      }
+    }
+  }
+
 }

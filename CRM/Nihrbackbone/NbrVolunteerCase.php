@@ -695,7 +695,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   public static function buildFormCaseView(CRM_Core_Form &$form) {
     // add recall groups to form
     $caseId = $form->getVar('_caseID');
-    CRM_Nihrbackbone_BAO_NbrRecallGroup::addRecallGroupsToForm($caseId, $form);
+    CRM_Nihrbackbone_BAO_NbrRecallGroup::addRecallGroupsToCaseView($caseId, $form);
     // add template to show or not show eligibility depending on status
     CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_show_eligible.tpl',]);
     // add template to remove merge case and reassign case links from form
@@ -766,7 +766,9 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $groupId = $form->getVar("_groupID");
     // if it is participation data
     if ($groupId == CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('id')) {
+      // add elements for recall_groups
       $caseId = (int) $form->getVar("_entityID");
+      CRM_Nihrbackbone_BAO_NbrRecallGroup::addRecallGroupsToCustomForm($caseId, $form);
       // if volunteer is not eligible, remove the invited study statuses from options
       $elementPartName = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
       $index = $form->getVar("_elementIndex");
