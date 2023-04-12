@@ -548,7 +548,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
       CRM_Core_DAO::executeQuery($alterTableQuery);
       Civi::log()->info(E::ts("Altered Table query!"));
 
-      $alterLogTableQuery="RENAME TABLE". $oldLogTableName." TO ".$newLogTableName;
+      $alterLogTableQuery="RENAME TABLE ". $oldLogTableName." TO ".$newLogTableName;
       CRM_Core_DAO::executeQuery($alterLogTableQuery);
       $customGroupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerParticipationInStudiesCustomGroup('id');
       Civi::log()->info(E::ts("custom group id is ".$customGroupId));
