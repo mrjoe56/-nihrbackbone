@@ -524,6 +524,48 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     return TRUE;
   }
 
+//
+//  /**
+//   * Upgrade 1170 - Alter name of civicrm_value_nihr_volunteer_participation_data
+//   *              - migrate existing study researchers
+//   *
+//   * @return bool
+//   * @throws
+//   */
+  public function upgrade_1180(): bool {
+    $this->ctx->log->info(E::ts('Applying update 1180 - change table name to nihr_volunteer_participation_in_studies'));
+    // create new table for entity
+    $oldTableName="civicrm_value_nihr_participation_in_studies";
+    $oldLogTableName="log_civicrm_value_nihr_participation_in_studies";
+    $newTableName="nihr_volunteer_participation_in_studies";
+    $newLogTableName="nihr_volunteer_participation_in_studies";
+
+    if (CRM_Core_DAO::checkTableExists($oldTableName) && CRM_Core_DAO::checkTableExists($oldLogTableName) ) {
+
+      $alterTableQuery="RENAME TABLE ".$oldTableName . " TO ".$newTableName ." "
+      . $oldLogTableName." TO ".$newLogTableName;
+
+      CRM_Core_DAO::executeQuery($alterTableQuery);
+
+      $customGroupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerParticipationInStudiesCustomGroup('id');
+      Civi::log()->info(E::ts("custom group id is ".$customGroupId));
+      if ($customGroupId) {
+        try {
+          \Civi\Api4\CustomGroup::update()
+            ->addWhere('id', '=', (int) $customGroupId)
+            ->addValue('table_name', $newTableName)
+            ->execute();
+        }
+        catch (API_Exception $ex) {
+          Civi::log()->error(E::ts("Could not change custom group name for volunteer participation in studies") . $ex->getMessage());
+        }
+      }
+      else {
+        Civi::log()->error(E::ts("ID for volunteer participation in studies not found. Cannot change it "));
+      }
+    }
+    return TRUE;
+  }
   /**
    * Swap values for unable to willing columns
    *
