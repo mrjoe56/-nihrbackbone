@@ -536,9 +536,10 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     $this->ctx->log->info(E::ts('Applying update 1180 - change table name to nihr_volunteer_participation_in_studies'));
     // create new table for entity
     $oldTableName="civicrm_value_nihr_participation_in_studies";
+    $newTableName="civicrm_value_nihr_volunteer_participation_in_studies";
     $oldLogTableName="log_civicrm_value_nihr_participation_in_studies";
-    $newTableName="nihr_volunteer_participation_in_studies";
-    $newLogTableName="nihr_volunteer_participation_in_studies";
+
+    $newLogTableName="log_civicrm_value_nihr_volunteer_participation_in_studies";
 
     if (CRM_Core_DAO::checkTableExists($oldTableName) && CRM_Core_DAO::checkTableExists($oldLogTableName) ) {
       Civi::log()->info(E::ts("Both tables exist!"));
