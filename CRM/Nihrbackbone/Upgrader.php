@@ -554,15 +554,10 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
       $customGroupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerParticipationInStudiesCustomGroup('id');
       Civi::log()->info(E::ts("custom group id is ".$customGroupId));
       if ($customGroupId) {
-        try {
-          \Civi\Api4\CustomGroup::update()
-            ->addWhere('id', '=', (int) $customGroupId)
-            ->addValue('table_name', $newTableName)
-            ->execute();
-        }
-        catch (API_Exception $ex) {
-          Civi::log()->error(E::ts("Could not change custom group name for volunteer participation in studies") . $ex->getMessage());
-        }
+        $queryParams=[1=>[$newTableName,"String"],
+          2=>[$customGroupId,"Integer"]];
+        $updateCustomGroupQuery="UPDATE  civicrm_custom_group SET table_name=%1 WHERE id=%2";
+        CRM_Core_DAO::executeQuery($updateCustomGroupQuery, $queryParams);
       }
       else {
         Civi::log()->error(E::ts("ID for volunteer participation in studies not found. Cannot change it "));
