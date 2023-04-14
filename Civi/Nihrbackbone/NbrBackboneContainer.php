@@ -787,7 +787,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
   private function setActivityTypes(&$definition) {
     $query = "SELECT cov.value, cov.name FROM civicrm_option_group AS cog
         JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
-        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16, %17, %18)";
+        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16, %17, %18, %19)";
     $dao = \CRM_Core_DAO::executeQuery($query, [
       1 => ["activity_type", "String"],
       2 => ["nihr_consent", "String"],
