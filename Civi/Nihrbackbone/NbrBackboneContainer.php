@@ -669,7 +669,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
    */
   private function setOptionGroups(&$definition) {
     $query = "SELECT id, name FROM civicrm_option_group WHERE name IN (%1, %2, %3, %4, %5, %6, %7, %8, %9,
-                 %10, %11, %12, %13, %14, %15, %16, %17, %18)";
+                 %10, %11, %12, %13, %14, %15, %16, %17, %18 ,%19,%20)";
     $queryParams = [
       1 => ["activity_type", "String"],
       2 => ["campaign_status", "String"],
