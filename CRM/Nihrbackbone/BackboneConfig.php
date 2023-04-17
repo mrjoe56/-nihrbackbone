@@ -54,7 +54,7 @@ class CRM_Nihrbackbone_BackboneConfig {
   private $_volunteerPanelCustomGroup = [];
   private $_volunteerConsentCustomGroup = [];
   private $_siteAliasCustomGroup = [];
-  private $_nbrAssentDataCustomGroup = [];
+  private $_assentDataCustomGroup = [];
 
   // properties for case types ids
   private $_participationCaseTypeId = NULL;
@@ -362,12 +362,12 @@ class CRM_Nihrbackbone_BackboneConfig {
     }
   }
 
-  public function getNbrAssentDataCustomGroup($key = NULL) {
-    if ($key && isset($this->_nbrAssentDataCustomGroup[$key])) {
-      return $this->_nbrAssentDataCustomGroup[$key];
+  public function getAssentDataCustomGroup($key = NULL) {
+    if ($key && isset($this->_assentDataCustomGroup[$key])) {
+      return $this->_assentDataCustomGroup[$key];
     }
     else {
-      return $this->_nbrAssentDataCustomGroup;
+      return $this->_assentDataCustomGroup;
     }
   }
 
@@ -482,8 +482,8 @@ class CRM_Nihrbackbone_BackboneConfig {
     return FALSE;
   }
 
-  public function getNbrAssentDataCustomField($customFieldName, $key = NULL) {
-    foreach ($this->_nbrAssentDataCustomGroup['custom_fields'] as $customField) {
+  public function getAssentDataCustomField($customFieldName, $key = NULL) {
+    foreach ($this->_assentDataCustomGroup['custom_fields'] as $customField) {
       if ($customField['name'] == $customFieldName) {
         if ($key && isset($customField[$key])) {
           return $customField[$key];
