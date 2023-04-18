@@ -1,3 +1,6 @@
+## 2.46
+* Updated max invite elibility test so its greater than or equals to instead of just greater than (https://www.wrike.com/open.htm?id=1050848604)
+
 ## 2.45
 * allow multiple researcher for study (see https://www.wrike.com/open.htm?id=933254901)
 >* add new entity NbrStudyResearcher
