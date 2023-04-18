@@ -289,6 +289,18 @@ class NbrBackboneContainer implements CompilerPassInterface {
           }
           break;
 
+        case "nbr_assent_data":
+          if ($dao->name == "nbr_assent_version") {
+            $definition->addMethodCall('setAssentVersionColumnName', [$dao->column_name]);
+          }
+          if ($dao->name == "nbr_assent_pis_version") {
+            $definition->addMethodCall('setAssentPisVersionColumnName', [$dao->column_name]);
+          }
+          if ($dao->name == "nbr_assent_status") {
+            $definition->addMethodCall('setAssentStatusColumnName', [$dao->column_name]);
+          }
+          break;
+
         case "nihr_volunteer_disease":
           $this->setDiseaseCustomFields($dao, $definition);
           break;
@@ -561,7 +573,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
    * @param $definition
    */
   private function setCustomGroups(&$definition) {
-    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15)";
+    $query = "SELECT id, name, table_name FROM civicrm_custom_group WHERE name IN(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16)";
     $queryParams = [
       1 => ["contact_id_history", "String"],
       2 => ["nbr_participation_data", "String"],
@@ -578,6 +590,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
       13 => ["nihr_volunteer_status", "String"],
       14 => ["nihr_volunteer_medication", "String"],
       15 => ["nihr_volunteer_selection_eligibility", "String"],
+      16 => ["nbr_assent_data", "String"]
     ];
     $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($dao->fetch()) {
@@ -597,6 +610,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
         case "nihr_volunteer_consent":
           $definition->addMethodCall('setConsentTableName', [$dao->table_name]);
+          break;
+
+        case "nbr_assent_data":
+          $definition->addMethodCall('setAssentTableName', [$dao->table_name]);
           break;
 
         case "nihr_volunteer_disease":
@@ -652,7 +669,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
    */
   private function setOptionGroups(&$definition) {
     $query = "SELECT id, name FROM civicrm_option_group WHERE name IN (%1, %2, %3, %4, %5, %6, %7, %8, %9,
-                 %10, %11, %12, %13, %14, %15, %16, %17, %18)";
+                 %10, %11, %12, %13, %14, %15, %16, %17, %18, %19,%20)";
     $queryParams = [
       1 => ["activity_type", "String"],
       2 => ["campaign_status", "String"],
@@ -672,6 +689,8 @@ class NbrBackboneContainer implements CompilerPassInterface {
       16 => ["nihr_ethnicity", "String"],
       17 => ["nbr_disease", "String"],
       18 => ["nbr_family_member", "String"],
+      19 => ["nbr_assent_version", "String"],
+      20 => ["nbr_assent_pis_version", "String"]
     ];
     $dao = \CRM_Core_DAO::executeQuery($query, $queryParams);
     while ($dao->fetch()) {
@@ -690,6 +709,14 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
         case "nbr_consent_version":
           $definition->addMethodCall('setConsentVersionOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_assent_version":
+          $definition->addMethodCall('setAssentVersionOptionGroupId', [(int) $dao->id]);
+          break;
+
+        case "nbr_assent_pis_version":
+          $definition->addMethodCall('setAssentPisVersionOptionGroupId', [(int) $dao->id]);
           break;
 
         case "nbr_disease":
@@ -760,7 +787,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
   private function setActivityTypes(&$definition) {
     $query = "SELECT cov.value, cov.name FROM civicrm_option_group AS cog
         JOIN civicrm_option_value AS cov ON cog.id = cov.option_group_id
-        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16, %17, %18)";
+        WHERE cog.name = %1 AND cov.name IN (%2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16, %17, %18, %19)";
     $dao = \CRM_Core_DAO::executeQuery($query, [
       1 => ["activity_type", "String"],
       2 => ["nihr_consent", "String"],
@@ -780,6 +807,7 @@ class NbrBackboneContainer implements CompilerPassInterface {
       16 => ["nihr_volunteer_withdrawn", "String"],
       17 => ["Open Case", "String"],
       18 => ["Bulk Email", "String"],
+      19 => ["nbr_assent", "String"]
     ]);
     while ($dao->fetch()) {
       switch ($dao->name) {
@@ -809,6 +837,10 @@ class NbrBackboneContainer implements CompilerPassInterface {
 
         case "nihr_consent":
           $definition->addMethodCall('setConsentActivityTypeId', [(int) $dao->value]);
+          break;
+
+        case "nbr_assent":
+          $definition->addMethodCall('setAssentActivityTypeId', [(int) $dao->value]);
           break;
 
         case "nihr_consent_stage2":
