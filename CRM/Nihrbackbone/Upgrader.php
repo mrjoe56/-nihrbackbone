@@ -536,29 +536,28 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     $this->ctx->log->info(E::ts('Applying update 1180 - change table name to nihr_volunteer_participation_in_studies'));
     // create new table for entity
     $oldTableName="civicrm_value_nihr_participation_in_studies";
+    $newTableName="civicrm_value_nihr_volunteer_participation_in_studies";
     $oldLogTableName="log_civicrm_value_nihr_participation_in_studies";
-    $newTableName="nihr_volunteer_participation_in_studies";
-    $newLogTableName="nihr_volunteer_participation_in_studies";
+
+    $newLogTableName="log_civicrm_value_nihr_volunteer_participation_in_studies";
 
     if (CRM_Core_DAO::checkTableExists($oldTableName) && CRM_Core_DAO::checkTableExists($oldLogTableName) ) {
+      Civi::log()->info(E::ts("Both tables exist!"));
 
-      $alterTableQuery="RENAME TABLE ".$oldTableName . " TO ".$newTableName ." "
-      . $oldLogTableName." TO ".$newLogTableName;
+      $alterTableQuery="RENAME TABLE ".$oldTableName . " TO ".$newTableName;
 
       CRM_Core_DAO::executeQuery($alterTableQuery);
+      Civi::log()->info(E::ts("Altered Table query!"));
 
+      $alterLogTableQuery="RENAME TABLE ". $oldLogTableName." TO ".$newLogTableName;
+      CRM_Core_DAO::executeQuery($alterLogTableQuery);
       $customGroupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerParticipationInStudiesCustomGroup('id');
       Civi::log()->info(E::ts("custom group id is ".$customGroupId));
       if ($customGroupId) {
-        try {
-          \Civi\Api4\CustomGroup::update()
-            ->addWhere('id', '=', (int) $customGroupId)
-            ->addValue('table_name', $newTableName)
-            ->execute();
-        }
-        catch (API_Exception $ex) {
-          Civi::log()->error(E::ts("Could not change custom group name for volunteer participation in studies") . $ex->getMessage());
-        }
+        $queryParams=[1=>[$newTableName,"String"],
+          2=>[$customGroupId,"Integer"]];
+        $updateCustomGroupQuery="UPDATE  civicrm_custom_group SET table_name=%1 WHERE id=%2";
+        CRM_Core_DAO::executeQuery($updateCustomGroupQuery, $queryParams);
       }
       else {
         Civi::log()->error(E::ts("ID for volunteer participation in studies not found. Cannot change it "));
