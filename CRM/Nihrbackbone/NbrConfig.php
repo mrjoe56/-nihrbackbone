@@ -99,6 +99,10 @@ class CRM_Nihrbackbone_NbrConfig {
   private $_consentVersionColumnName = NULL;
   private $_consentVersionStage2CustomFieldId = NULL;
   private $_assentVersionColumnName = NULL;
+
+  private $_assentStatusColumnName = NULL;
+
+
   private $_assentPisVersionColumnName = NULL;
   private $_diagnosisAgeColumnName = NULL;
   private $_diagnosisYearColumnName = NULL;
@@ -2057,6 +2061,7 @@ class CRM_Nihrbackbone_NbrConfig {
     return $this->_assentPisVersionOptionGroupId;
   }
 
+
   /**
    * @param int
    */
@@ -2655,6 +2660,16 @@ class CRM_Nihrbackbone_NbrConfig {
   public function getAssentPisVersionColumnName() {
     return $this->_assentPisVersionColumnName  ;
   }
+
+
+  public function setAssentStatusColumnName($name) {
+    $this->_assentStatusColumnName = $name;
+  }
+
+  public function getAssentStatusColumnName() {
+    return $this->_assentStatusColumnName  ;
+  }
+
 
   /**
    * @param string

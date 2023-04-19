@@ -1,3 +1,11 @@
+## 2.47
+* Updated nihrbackbone functions for assent data custom groups + assent activity info so it can be used in data uploads
+* (https://www.wrike.com/open.htm?id=714608141)
+
+
+## 2.46
+* Updated max invite elibility test so its greater than or equals to instead of just greater than (https://www.wrike.com/open.htm?id=1050848604)
+
 ## 2.45
 * allow multiple researcher for study (see https://www.wrike.com/open.htm?id=933254901)
 >* add new entity NbrStudyResearcher
