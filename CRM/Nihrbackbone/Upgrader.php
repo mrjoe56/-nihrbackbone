@@ -540,28 +540,26 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
     $oldLogTableName="log_civicrm_value_nihr_participation_in_studies";
 
     $newLogTableName="log_civicrm_value_nihr_volunteer_participation_in_studies";
+    $customGroupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerParticipationInStudiesCustomGroup('id');
+    Civi::log()->info(E::ts("custom group id is ".$customGroupId));
 
-    if (CRM_Core_DAO::checkTableExists($oldTableName) && CRM_Core_DAO::checkTableExists($oldLogTableName) ) {
+    if ( (CRM_Core_DAO::checkTableExists($oldTableName) && CRM_Core_DAO::checkTableExists($oldLogTableName)) &&
+      ( (!CRM_Core_DAO::checkTableExists($newTableName) && (!CRM_Core_DAO::checkTableExists($newLogTableName)) )
+      && $customGroupId)
+    ) {
       Civi::log()->info(E::ts("Both tables exist!"));
 
       $alterTableQuery="RENAME TABLE ".$oldTableName . " TO ".$newTableName;
-
       CRM_Core_DAO::executeQuery($alterTableQuery);
       Civi::log()->info(E::ts("Altered Table query!"));
-
       $alterLogTableQuery="RENAME TABLE ". $oldLogTableName." TO ".$newLogTableName;
       CRM_Core_DAO::executeQuery($alterLogTableQuery);
-      $customGroupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerParticipationInStudiesCustomGroup('id');
-      Civi::log()->info(E::ts("custom group id is ".$customGroupId));
-      if ($customGroupId) {
+
         $queryParams=[1=>[$newTableName,"String"],
-          2=>[$customGroupId,"Integer"]];
+                          2=>[$customGroupId,"Integer"]];
         $updateCustomGroupQuery="UPDATE  civicrm_custom_group SET table_name=%1 WHERE id=%2";
         CRM_Core_DAO::executeQuery($updateCustomGroupQuery, $queryParams);
-      }
-      else {
-        Civi::log()->error(E::ts("ID for volunteer participation in studies not found. Cannot change it "));
-      }
+
     }
     return TRUE;
   }
