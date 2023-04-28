@@ -1,3 +1,7 @@
+## 2.48
+* Renamed participation in studies to volunteer participation in studies (https://www.wrike.com/open.htm?id=1093689558)
+
+
 ## 2.47
 * Updated nihrbackbone functions for assent data custom groups + assent activity info so it can be used in data uploads
 * (https://www.wrike.com/open.htm?id=714608141)
