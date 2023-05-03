@@ -525,6 +525,47 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
   }
 
   /**
+   * Upgrade 1180 - Rename civicrm_value_nihr_participation_in_studies to civicrm_value_nihr_volunteer_participation_in_studies
+   *              - Update logging and custom group table to match this
+   *
+   * @return bool
+   * @throws
+   */
+  public function upgrade_1180(): bool {
+    $this->ctx->log->info(E::ts('Applying upgrade 1180 - change table name to nihr_volunteer_participation_in_studies'));
+
+    $oldTableName="civicrm_value_nihr_participation_in_studies";
+    $newTableName="civicrm_value_nihr_volunteer_participation_in_studies";
+    $oldLogTableName="log_civicrm_value_nihr_participation_in_studies";
+    $newLogTableName="log_civicrm_value_nihr_volunteer_participation_in_studies";
+
+    $customGroupId = CRM_Nihrbackbone_BackboneConfig::singleton()->getVolunteerParticipationInStudiesCustomGroup('id');
+
+    // Check if necessary to run this upgrade
+    if ( (CRM_Core_DAO::checkTableExists($oldTableName) && CRM_Core_DAO::checkTableExists($oldLogTableName))
+        && ( (!CRM_Core_DAO::checkTableExists($newTableName) && (!CRM_Core_DAO::checkTableExists($newLogTableName)) )
+        && $customGroupId)
+    ) {
+
+      Civi::log()->info(E::ts("Upgrade 1180: Checks have passed. Renaming tables"));
+
+      $alterTableQuery="RENAME TABLE ".$oldTableName . " TO ".$newTableName;
+      CRM_Core_DAO::executeQuery($alterTableQuery);
+
+      $alterLogTableQuery="RENAME TABLE ". $oldLogTableName." TO ".$newLogTableName;
+      CRM_Core_DAO::executeQuery($alterLogTableQuery);
+
+      // Update custom group data
+      $queryParams=[1=>[$newTableName,"String"], 2=>[$customGroupId,"Integer"]];
+      $updateCustomGroupQuery="UPDATE  civicrm_custom_group SET table_name=%1 WHERE id=%2";
+      CRM_Core_DAO::executeQuery($updateCustomGroupQuery, $queryParams);
+    }
+    else{
+      Civi::log()->info(E::ts("Cannot rename tables. Tables may already be renamed, or there may be a customgroup issue"));
+    }
+    return TRUE;
+  }
+  /**
    * Swap values for unable to willing columns
    *
    * @param $columns
