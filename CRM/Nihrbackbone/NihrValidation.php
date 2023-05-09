@@ -118,6 +118,20 @@ class CRM_Nihrbackbone_NihrValidation {
       CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_general_observations.tpl',]);   # add template to form
     }
   }
+  public static function validateUniqueCase(array $fields, CRM_Core_Form $form, array &$errors) {
+    // first check if the case type in question is one of the unique ones
+    $uniqueCaseTypeIds = explode(",", Civi::settings()->get('nbr_unique_case_types'));
+    if (isset($form->_submitValues['case_type_id'])) {
+      $caseTypeId = $form->_submitValues['case_type_id'];
+      $contactId = $form->_currentlyViewedContactId;
+      if ($caseTypeId && $contactId && in_array($caseTypeId, $uniqueCaseTypeIds)) {
+        // if yes, check if the contact already has an active case of the type
+        if (CRM_Nihrbackbone_NbrContactCase::hasActiveCaseOfType($contactId, $caseTypeId)) {
+          // if yes, error
+          $errors['case_type_id'] = "The contact already has an active case of this type and only 1 is allowed.";
+        }
+      }
+    }
+  }
 }
 
-?>
