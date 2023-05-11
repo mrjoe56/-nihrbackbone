@@ -246,6 +246,7 @@ function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form,
   // validate Case Form
   if ($form instanceof CRM_Case_Form_Case) {
     CRM_Nihrbackbone_NbrVolunteerCase::validateForm($fields, $form, $errors);
+    CRM_Nihrbackbone_NihrValidation::validateUniqueCase($fields, $form, $errors);
   }
 
   // if custom form and contact identities
