@@ -146,6 +146,7 @@ class CRM_Nihrbackbone_NihrImportCsv
   private function import($recallGroup = NULL)   {
     $studyNumber = CRM_Nihrbackbone_NbrStudy::getStudyNameWithId($this->_studyId);
     $vol = new CRM_Nihrbackbone_NihrVolunteer();
+    $dataOnly = CRM_Nihrbackbone_NbrStudy::isDataOnly((int) $this->_studyId);
     while (!feof($this->_csv)) {
       $data = fgetcsv($this->_csv, 0, $this->_separator);
       if ($data) {
@@ -169,7 +170,11 @@ class CRM_Nihrbackbone_NihrImportCsv
                 $volunteerCaseParams['recall_group'] = $recallGroup;
               }
               try {
-                civicrm_api3('NbrVolunteerCase', 'create', $volunteerCaseParams);
+                $case = civicrm_api3('NbrVolunteerCase', 'create', $volunteerCaseParams);
+                // https://www.wrike.com/open.htm?id=1011004470 - if study is data only, set status of volunteer to participated
+                if ($dataOnly) {
+                  CRM_Nihrbackbone_NbrStudy::processDataOnlyImport((int) $case['case_id']);
+                }
                 $this->_imported++;
                 $message = E::ts('Volunteer with participantID ') . $data[0] . E::ts(' succesfully added to study ') . $studyNumber;
                 CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
