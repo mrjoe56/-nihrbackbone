@@ -1,3 +1,8 @@
+## 2.50
+*  Change apiv4 permissions for NBRStudyResearcher so users can access it
+* (https://www.wrike.com/open.htm?id=933254901)
+
+
 ## 2.49
 * check if contact already has active case of unique type (see https://www.wrike.com/open.htm?id=1033735543)
 
