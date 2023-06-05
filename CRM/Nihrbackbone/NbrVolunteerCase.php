@@ -1733,5 +1733,58 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     }
   }
 
+  /**
+   * Method to check if a volunteer on a study has a specific recall group
+   *
+   * @param int $volunteerId
+   * @param int $studyId
+   * @param string $recallGroup
+   * @return bool
+   */
+  public static function hasRecallGroup(int $volunteerId, int $studyId, string $recallGroup): bool {
+    if ($volunteerId && $studyId && $recallGroup) {
+      $query = "SELECT COUNT(*)
+        FROM civicrm_nbr_recall_group a
+            JOIN civicrm_case_contact b ON a.case_id = b.case_id
+            JOIN civicrm_case c ON b.case_id = c.id
+            JOIN civicrm_value_nbr_participation_data d ON c.id = d.entity_id
+        WHERE d.nvpd_study_id = %1 AND b.contact_id = %2 AND c.is_deleted = FALSE AND c.case_type_id = %3 AND a.recall_group = %4";
+      $queryParams = [
+        1 => [$studyId, "Integer"],
+        2 => [$volunteerId, "Integer"],
+        3 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+        4 => [$recallGroup, "String"]
+      ];
+      $count = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+      if ($count > 0) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to add recall group for volunteer on study
+   *
+   * @param int $volunteerId
+   * @param int $studyId
+   * @param string $recallGroup
+   * @return void
+   */
+  public static function addRecallGroup(int $volunteerId, int $studyId, string $recallGroup): void {
+    if ($volunteerId && $studyId && $recallGroup) {
+      $caseId = self::getActiveParticipationCaseId($studyId, $volunteerId);
+      if ($caseId) {
+        try {
+          \Civi\Api4\NbrRecallGroup::create()
+            ->addValue('case_id', $caseId)
+            ->addValue('recall_group', $recallGroup)
+            ->setCheckPermissions(FALSE)->execute();
+        }
+        catch (API_Exception $ex) {
+        }
+      }
+    }
+  }
 
 }
