@@ -18,6 +18,7 @@
 SET FOREIGN_KEY_CHECKS=0;
 
 DROP TABLE IF EXISTS `civicrm_nbr_study_researcher`;
+DROP TABLE IF EXISTS `civicrm_nbr_recall_group`;
 DROP TABLE IF EXISTS `civicrm_nbr_mailing`;
 DROP TABLE IF EXISTS `civicrm_nbr_import_log`;
 DROP TABLE IF EXISTS `civicrm_nbr_county`;

@@ -159,17 +159,17 @@ class CRM_Nihrbackbone_NihrImportCsv
             CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName, 'error');
           }
           else {
-            if ($this->canImportVolunteer($contactId, $data[0])) {
+            if ($this->canImportVolunteer($contactId, $data[0], $recallGroup)) {
               $volunteerCaseParams = [
                 'study_id' => $this->_studyId,
                 'contact_id' => $contactId,
                 'case_type' => 'participation',
               ];
-              if ($recallGroup) {
-                $volunteerCaseParams['recall_group'] = $recallGroup;
-              }
               try {
-                civicrm_api3('NbrVolunteerCase', 'create', $volunteerCaseParams);
+                $newCaseId = civicrm_api3('NbrVolunteerCase', 'create', $volunteerCaseParams);
+                if ($newCaseId['case_id'] && $recallGroup) {
+                  CRM_Nihrbackbone_BAO_NbrRecallGroup::addRecallGroupForCase($newCaseId['case_id'], $recallGroup);
+                }
                 $this->_imported++;
                 $message = E::ts('Volunteer with participantID ') . $data[0] . E::ts(' succesfully added to study ') . $studyNumber;
                 CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
@@ -196,14 +196,22 @@ class CRM_Nihrbackbone_NihrImportCsv
    * - redundant
    * - deceased
    *
-   * @param $volunteerId
-   * @param $participantId
+   * @param int $volunteerId
+   * @param string $participantId
+   * @param string $recallGroup
    * @return bool
+   * @throws Exception
    */
-  private function canImportVolunteer($volunteerId, $participantId) {
+  private function canImportVolunteer(int $volunteerId, string $participantId, string $recallGroup) {
     if (CRM_Nihrbackbone_NbrVolunteerCase::isAlreadyOnStudy($volunteerId, $this->_studyId)) {
       $this->_failed++;
-      $message = E::ts('Volunteer with participantID ') . $participantId . E::ts(' is already on study ') . $studyNumber . E::ts(', not imported again.');
+      if (!CRM_Nihrbackbone_NbrVolunteerCase::hasRecallGroup($volunteerId, $this->_studyId, $recallGroup)) {
+        CRM_Nihrbackbone_NbrVolunteerCase::addRecallGroup($volunteerId, $this->_studyId, $recallGroup);
+        $message = E::ts('Volunteer with participantID ') . $participantId . E::ts(' is already on study with other recall group, not imported again but new recall group added.');
+      }
+      else {
+        $message = E::ts('Volunteer with participantID ') . $participantId . E::ts(' is already on study with the same recall group, not imported again.');
+      }
       CRM_Nihrbackbone_Utils::logMessage($this->_importId, $message, $this->_originalFileName);
       return FALSE;
     }

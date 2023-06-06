@@ -693,12 +693,14 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @param $form
    */
   public static function buildFormCaseView(CRM_Core_Form &$form) {
+    // add recall groups to form
+    $caseId = $form->getVar('_caseID');
+    CRM_Nihrbackbone_BAO_NbrRecallGroup::addRecallGroupsToCaseView($caseId, $form);
     // add template to show or not show eligibility depending on status
     CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_show_eligible.tpl',]);
     // add template to remove merge case and reassign case links from form
     CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_case_links.tpl',]);
     $caseType = $form->getVar('_caseType');
-    $caseId = $form->getVar('_caseID');
     $contactId = $form->getVar('_contactID');
     // add template to set all custom fields to readonly if study status has no action status
     $studyId = CRM_Nihrbackbone_NbrVolunteerCase::getStudyId((int) $caseId);
@@ -764,12 +766,22 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $groupId = $form->getVar("_groupID");
     // if it is participation data
     if ($groupId == CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('id')) {
-      // if volunteer is not eligible, remove the invited study statuses from options
+      // add elements for recall_groups
       $caseId = (int) $form->getVar("_entityID");
-      $elementPartName = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
+      CRM_Nihrbackbone_BAO_NbrRecallGroup::addRecallGroupsToCustomForm($caseId, $form);
+      // if volunteer is not eligible, remove the invited study statuses from options
+      $statusPartName = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
+      $studyPartName = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'id');
       $index = $form->getVar("_elementIndex");
       foreach ($index as $elementName => $elementId) {
-        if (strpos($elementName, $elementPartName) !== FALSE) {
+        // replace study ID with study number
+        if (strpos($elementName, $studyPartName) !== FALSE) {
+          $element = $form->getElement($elementName);
+          $studyId = (int) $element->getValue();
+          $element->setValue(CRM_Nihrbackbone_NbrStudy::getStudyNumberWithId($studyId));
+        }
+        // study participation status
+        if (strpos($elementName, $statusPartName) !== FALSE) {
           $element = $form->getElement($elementName);
           $options = &$element->_options;
           if (!self::shouldIncludeInvitedStatusOption($caseId)) {
@@ -1729,5 +1741,58 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     }
   }
 
+  /**
+   * Method to check if a volunteer on a study has a specific recall group
+   *
+   * @param int $volunteerId
+   * @param int|NULL $studyId
+   * @param string $recallGroup
+   * @return bool
+   */
+  public static function hasRecallGroup(int $volunteerId, ?int $studyId, string $recallGroup): bool {
+    if ($volunteerId && $studyId && $recallGroup) {
+      $query = "SELECT COUNT(*)
+        FROM civicrm_nbr_recall_group a
+            JOIN civicrm_case_contact b ON a.case_id = b.case_id
+            JOIN civicrm_case c ON b.case_id = c.id
+            JOIN civicrm_value_nbr_participation_data d ON c.id = d.entity_id
+        WHERE d.nvpd_study_id = %1 AND b.contact_id = %2 AND c.is_deleted = FALSE AND c.case_type_id = %3 AND a.recall_group = %4";
+      $queryParams = [
+        1 => [$studyId, "Integer"],
+        2 => [$volunteerId, "Integer"],
+        3 => [(int) CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCaseTypeId(), "Integer"],
+        4 => [$recallGroup, "String"]
+      ];
+      $count = CRM_Core_DAO::singleValueQuery($query, $queryParams);
+      if ($count > 0) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Method to add recall group for volunteer on study
+   *
+   * @param int $volunteerId
+   * @param int|NULL $studyId
+   * @param string $recallGroup
+   * @return void
+   */
+  public static function addRecallGroup(int $volunteerId, ?int $studyId, string $recallGroup): void {
+    if ($volunteerId && $studyId && $recallGroup) {
+      $caseId = self::getActiveParticipationCaseId($studyId, $volunteerId);
+      if ($caseId) {
+        try {
+          \Civi\Api4\NbrRecallGroup::create()
+            ->addValue('case_id', $caseId)
+            ->addValue('recall_group', $recallGroup)
+            ->setCheckPermissions(FALSE)->execute();
+        }
+        catch (API_Exception $ex) {
+        }
+      }
+    }
+  }
 
 }
