@@ -1737,11 +1737,11 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * Method to check if a volunteer on a study has a specific recall group
    *
    * @param int $volunteerId
-   * @param int $studyId
+   * @param int|NULL $studyId
    * @param string $recallGroup
    * @return bool
    */
-  public static function hasRecallGroup(int $volunteerId, int $studyId, string $recallGroup): bool {
+  public static function hasRecallGroup(int $volunteerId, ?int $studyId, string $recallGroup): bool {
     if ($volunteerId && $studyId && $recallGroup) {
       $query = "SELECT COUNT(*)
         FROM civicrm_nbr_recall_group a
@@ -1767,11 +1767,11 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * Method to add recall group for volunteer on study
    *
    * @param int $volunteerId
-   * @param int $studyId
+   * @param int|NULL $studyId
    * @param string $recallGroup
    * @return void
    */
-  public static function addRecallGroup(int $volunteerId, int $studyId, string $recallGroup): void {
+  public static function addRecallGroup(int $volunteerId, ?int $studyId, string $recallGroup): void {
     if ($volunteerId && $studyId && $recallGroup) {
       $caseId = self::getActiveParticipationCaseId($studyId, $volunteerId);
       if ($caseId) {

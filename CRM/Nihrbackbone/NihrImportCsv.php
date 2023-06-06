@@ -200,6 +200,7 @@ class CRM_Nihrbackbone_NihrImportCsv
    * @param string $participantId
    * @param string $recallGroup
    * @return bool
+   * @throws Exception
    */
   private function canImportVolunteer(int $volunteerId, string $participantId, string $recallGroup) {
     if (CRM_Nihrbackbone_NbrVolunteerCase::isAlreadyOnStudy($volunteerId, $this->_studyId)) {
