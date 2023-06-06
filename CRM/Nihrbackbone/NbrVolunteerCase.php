@@ -770,10 +770,18 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
       $caseId = (int) $form->getVar("_entityID");
       CRM_Nihrbackbone_BAO_NbrRecallGroup::addRecallGroupsToCustomForm($caseId, $form);
       // if volunteer is not eligible, remove the invited study statuses from options
-      $elementPartName = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
+      $statusPartName = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'id');
+      $studyPartName = "custom_" . CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'id');
       $index = $form->getVar("_elementIndex");
       foreach ($index as $elementName => $elementId) {
-        if (strpos($elementName, $elementPartName) !== FALSE) {
+        // replace study ID with study number
+        if (strpos($elementName, $studyPartName) !== FALSE) {
+          $element = $form->getElement($elementName);
+          $studyId = (int) $element->getValue();
+          $element->setValue(CRM_Nihrbackbone_NbrStudy::getStudyNumberWithId($studyId));
+        }
+        // study participation status
+        if (strpos($elementName, $statusPartName) !== FALSE) {
           $element = $form->getElement($elementName);
           $options = &$element->_options;
           if (!self::shouldIncludeInvitedStatusOption($caseId)) {

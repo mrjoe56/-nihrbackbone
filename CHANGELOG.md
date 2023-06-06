@@ -1,5 +1,6 @@
 ## 2.46
 * make recall group multiple -> add separate entity (see https://www.wrike.com/open.htm?id=1069401733)
+* show study number and not study id when editing participation data (findings when testing the issue mentioned above)
 
 ## 2.45
 * allow multiple researcher for study (see https://www.wrike.com/open.htm?id=933254901)
