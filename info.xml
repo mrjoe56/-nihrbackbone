@@ -32,8 +32,5 @@
     <namespace>CRM/Nihrbackbone</namespace>
     <format>22.12.1</format>
   </civix>
-  <mixins>
-    <mixin>menu-xml@1.0.0</mixin>
-  </mixins>
   <upgrader>CRM_Nihrbackbone_Upgrader</upgrader>
 </extension>
