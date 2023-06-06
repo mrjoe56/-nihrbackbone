@@ -1,5 +1,5 @@
 ## 2.50
-* set volunteer status to participated, still generate study participant number when importing into data only study (see https://www.wrike.com/open.htm?id=1011004470)
+* set volunteer status to participated respecting eligibility, still generate study participant number when importing into data only study (see https://www.wrike.com/open.htm?id=1011004470)
 
 ## 2.49
 * check if contact already has active case of unique type (see https://www.wrike.com/open.htm?id=1033735543)
