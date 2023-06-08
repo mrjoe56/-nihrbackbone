@@ -1491,6 +1491,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
    * @return bool
    */
   public static function isAvailableForDataOnly(int $volunteerId): bool {
+    Civi::log()->debug("Volunteer ID in available functie: " . $volunteerId);
     $available = TRUE;
     $deceased = Civi::service('nbrBackbone')->getDeceasedVolunteerStatus();
     $redundant = Civi::service('nbrBackbone')->getRedundantVolunteerStatus();
@@ -1503,6 +1504,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
         ->addWhere('record_type_id', '=', Civi::service('nbrBackbone')->getTargetRecordTypeId())
         ->addWhere('activity.activity_type_id', 'IN', [Civi::service('nbrBackbone')->getRedundantActivityTypeId(), Civi::service('nbrBackbone')->getWithdrawnActivityTypeId()])
         ->setCheckPermissions(FALSE)->execute()->first();
+      Civi::log()->debug('Destroy data: ' . json_encode($destroyData));
       if ($destroyData['contact.nihr_volunteer_status.nvs_volunteer_status'] == $deceased) {
         $available = FALSE;
       }
@@ -1516,6 +1518,7 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
     catch (API_Exception $ex) {
     }
+    Civi::log()->debug('De terug te geven available: ' . $available);
     return $available;
   }
 
