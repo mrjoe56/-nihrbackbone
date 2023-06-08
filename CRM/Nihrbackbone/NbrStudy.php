@@ -552,7 +552,6 @@ class CRM_Nihrbackbone_NbrStudy {
    * @return void
    */
   public static function processDataOnlyImport(int $caseId, int $volunteerId): void {
-    Civi::log()->debug('Case ID is  ' . $caseId . " en volunteer ID " . $volunteerId);
     if (CRM_Nihrbackbone_NihrVolunteer::isAvailableForDataOnly($volunteerId)) {
       $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
       $studyParticipationStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
