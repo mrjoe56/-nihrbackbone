@@ -549,14 +549,14 @@ class CRM_Nihrbackbone_NbrStudy {
    * study participant ID (which will not be done automatically as the activity is not invited -> that is when in face to face the study
    * participant ID is generated. As this only needs to happen upon import for data only it is in here rather than in the post
    * hook on an open case activity.
-   * It will only change the status of the cases where the volunteer allows data only studies.
+   * It will only change the status of the cases where the volunteer status allows data only and data is not to be destroyed
    *
    * @param int $caseId
    * @param int $volunteerId
    * @return void
    */
   public static function processDataOnlyImport(int $caseId, int $volunteerId): void {
-    if (!CRM_Nihrbackbone_NihrVolunteer::isExclOnline($volunteerId)) {
+    if (CRM_Nihrbackbone_NihrVolunteer::isAvailableForDataOnly($volunteerId)) {
       $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
       $studyParticipationStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
       $update = "UPDATE " . $table . " SET " . $studyParticipationStatusColumn . " = %1 WHERE entity_id = %2";

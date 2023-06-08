@@ -1,4 +1,4 @@
-## 2.50
+## 2.52
 * set volunteer status to participated respecting eligibility, still generate study participant number when importing into data only study (see https://www.wrike.com/open.htm?id=1011004470)
 
 ## 2.49
