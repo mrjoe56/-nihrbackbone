@@ -1,6 +1,14 @@
 ## 2.52
 * set volunteer status to participated respecting eligibility, still generate study participant number when importing into data only study (see https://www.wrike.com/open.htm?id=1011004470)
 
+## 2.51
+* make recall group multiple -> add separate entity (see https://www.wrike.com/open.htm?id=1069401733)
+* show study number and not study id when editing participation data (findings when testing the issue mentioned above)
+
+## 2.50
+*  Change apiv4 permissions for NBRStudyResearcher so users can access it
+* (https://www.wrike.com/open.htm?id=933254901)
+
 ## 2.49
 * check if contact already has active case of unique type (see https://www.wrike.com/open.htm?id=1033735543)
 
@@ -11,15 +19,15 @@
 * Updated nihrbackbone functions for assent data custom groups + assent activity info so it can be used in data uploads
 * (https://www.wrike.com/open.htm?id=714608141)
 
-
 ## 2.46
 * Updated max invite elibility test so its greater than or equals to instead of just greater than (https://www.wrike.com/open.htm?id=1050848604)
+*
 
 ## 2.45
 * allow multiple researcher for study (see https://www.wrike.com/open.htm?id=933254901)
 >* add new entity NbrStudyResearcher
 >* cater for new entity in study form
->
+
 ## 2.44
 * Fix for issue https://www.wrike.com/open.htm?id=933291855: merging of recruitment cases is possible now
 

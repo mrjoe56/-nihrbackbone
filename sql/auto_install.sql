@@ -31,6 +31,7 @@
 SET FOREIGN_KEY_CHECKS=0;
 
 DROP TABLE IF EXISTS `civicrm_nbr_study_researcher`;
+DROP TABLE IF EXISTS `civicrm_nbr_recall_group`;
 DROP TABLE IF EXISTS `civicrm_nbr_mailing`;
 DROP TABLE IF EXISTS `civicrm_nbr_import_log`;
 DROP TABLE IF EXISTS `civicrm_nbr_county`;
@@ -108,6 +109,26 @@ CREATE TABLE `civicrm_nbr_mailing` (
  
  
 ,          CONSTRAINT FK_civicrm_nbr_mailing_mailing_id FOREIGN KEY (`mailing_id`) REFERENCES `civicrm_mailing`(`id`) ON DELETE CASCADE,          CONSTRAINT FK_civicrm_nbr_mailing_group_id FOREIGN KEY (`group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE SET NULL,          CONSTRAINT FK_civicrm_nbr_mailing_study_id FOREIGN KEY (`study_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE CASCADE  
+)  ENGINE=InnoDB  ;
+
+-- /*******************************************************
+-- *
+-- * civicrm_nbr_recall_group
+-- *
+-- * NIHR Bioresource specific table for Recall Group - Participation
+-- *
+-- *******************************************************/
+CREATE TABLE `civicrm_nbr_recall_group` (
+
+
+     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique NbrRecallGroup ID',
+     `case_id` int unsigned    COMMENT 'FK to Case',
+     `recall_group` varchar(128)    COMMENT 'Recall Group' 
+,
+        PRIMARY KEY (`id`)
+ 
+ 
+,          CONSTRAINT FK_civicrm_nbr_recall_group_case_id FOREIGN KEY (`case_id`) REFERENCES `civicrm_case`(`id`) ON DELETE CASCADE  
 )  ENGINE=InnoDB  ;
 
 -- /*******************************************************

@@ -154,22 +154,18 @@ class CRM_Nihrbackbone_NbrStudy {
    * @param $studyId
    * @return array
    */
-  public static function getRecallGroupList($studyId = NULL) {
+  public static function getRecallGroupList($studyId = NULL): array {
     $result = [];
-    $partTable = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
-    $studyColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
-    $recallColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'column_name');
     if ($studyId) {
-      $query = "SELECT DISTINCT(" . $recallColumn . ") as recall FROM " . $partTable
-        . " WHERE " . $studyColumn . " = %1";
-      $dao = CRM_Core_DAO::executeQuery($query, [1 => [(int) $studyId, 'Integer']]);
-    }
-    else {
-      $query = "SELECT DISTINCT(" . $recallColumn . ") as recall FROM " . $partTable;
-      $dao = CRM_Core_DAO::executeQuery($query);
-    }
-    while ($dao->fetch()) {
-      $result[$dao->recall] = $dao->recall;
+      $query = "SELECT DISTINCT(c.recall_group)
+        FROM civicrm_value_nbr_participation_data a
+        JOIN civicrm_case b ON a.entity_id = b.id
+        JOIN civicrm_nbr_recall_group c ON b.id = c.case_id
+        WHERE a.nvpd_study_id = %1 AND b.is_deleted = FALSE";
+      $dao = CRM_Core_DAO::executeQuery($query, [1 => [$studyId, "Integer"]]);
+      while ($dao->fetch()) {
+        $result[$dao->recall_group] = $dao->recall_group;
+      }
     }
     return $result;
   }
