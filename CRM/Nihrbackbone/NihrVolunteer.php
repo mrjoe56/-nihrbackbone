@@ -1485,4 +1485,38 @@ class CRM_Nihrbackbone_NihrVolunteer {
     }
   }
 
+  /**
+   * Method to determine if volunteer is available for data only
+   * @param int $volunteerId
+   * @return bool
+   */
+  public static function isAvailableForDataOnly(int $volunteerId): bool {
+    $available = TRUE;
+    $deceased = Civi::service('nbrBackbone')->getDeceasedVolunteerStatus();
+    $redundant = Civi::service('nbrBackbone')->getRedundantVolunteerStatus();
+    $withdrawn = Civi::service('nbrBackbone')->getWithdrawnVolunteerStatus();
+    try {
+      $destroyData = \Civi\Api4\ActivityContact::get()
+        ->addSelect('activity.nihr_volunteer_redundant.avr_request_to_destroy_data:name',
+          'activity.nihr_volunteer_withdrawn.avw_request_to_destroy_data:name', 'contact.nihr_volunteer_status.nvs_volunteer_status')
+        ->addWhere('contact_id', '=', $volunteerId)
+        ->addWhere('record_type_id', '=', Civi::service('nbrBackbone')->getTargetRecordTypeId())
+        ->addWhere('activity.activity_type_id', 'IN', [Civi::service('nbrBackbone')->getRedundantActivityTypeId(), Civi::service('nbrBackbone')->getWithdrawnActivityTypeId()])
+        ->setCheckPermissions(FALSE)->execute()->first();
+      if ($destroyData['contact.nihr_volunteer_status.nvs_volunteer_status'] == $deceased) {
+        $available = FALSE;
+      }
+      else {
+        if ($destroyData['contact.nihr_volunteer_status.nvs_volunteer_status'] == $redundant || $destroyData['contact.nihr_volunteer_status.nvs_volunteer_status'] == $withdrawn) {
+          if ($destroyData['activity.nihr_volunteer_redundant.avr_request_to_destroy_data:name'] || $destroyData['activity.nihr_volunteer_withdrawn.avw_request_to_destroy_data:name']) {
+            $available = FALSE;
+          }
+        }
+      }
+    }
+    catch (API_Exception $ex) {
+    }
+    return $available;
+  }
+
 }

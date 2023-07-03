@@ -1370,7 +1370,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
   }
 
   /**
-   * Method to generate study particpant id for relevant volunteers on data only study
+   * Method to generate study participant id for relevant volunteers on data only study
    *
    * @param string $studyNumber
    * @return array
