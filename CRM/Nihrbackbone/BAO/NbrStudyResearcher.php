@@ -16,7 +16,7 @@ class CRM_Nihrbackbone_BAO_NbrStudyResearcher extends CRM_Nihrbackbone_DAO_NbrSt
         $nbrStudyResearchers = \Civi\Api4\NbrStudyResearcher::get()
           ->addSelect('researcher_contact_id')
           ->addWhere('nbr_study_id', '=', $studyId)
-          ->execute();
+          ->setCheckPermissions(FALSE)->execute();
         foreach ($nbrStudyResearchers as $nbrStudyResearcher) {
           if ($nbrStudyResearcher['researcher_contact_id']) {
             $studyResearchers[] = $nbrStudyResearcher['researcher_contact_id'];
@@ -65,7 +65,7 @@ class CRM_Nihrbackbone_BAO_NbrStudyResearcher extends CRM_Nihrbackbone_DAO_NbrSt
         \Civi\Api4\NbrStudyResearcher::create()
           ->addValue('researcher_contact_id', $researcherId)
           ->addValue('nbr_study_id', $studyId)
-          ->execute();
+          ->setCheckPermissions(FALSE)->execute();
       }
       catch (API_Exception $ex) {
         CRM_Core_Session::setStatus("Could not save the Study Researcher, contact the system administrator", "Study Researcher not saved", "alert");
@@ -89,12 +89,12 @@ class CRM_Nihrbackbone_BAO_NbrStudyResearcher extends CRM_Nihrbackbone_DAO_NbrSt
         $studyResearchers = \Civi\Api4\NbrStudyResearcher::get()
           ->addSelect('*')
           ->addWhere('nbr_study_id', '=', $studyId)
-          ->execute();
+          ->setCheckPermissions(FALSE)->execute();
         foreach ($studyResearchers as $studyResearcher) {
           if (!in_array($studyResearcher['researcher_contact_id'], $researcherIds)) {
             \Civi\Api4\NbrStudyResearcher::delete()
               ->addWhere('id', '=', $studyResearcher['id'])
-              ->execute();
+              ->setCheckPermissions(FALSE)->execute();
           }
           else {
             $currentResearcherIds[] = $studyResearcher['researcher_contact_id'];
