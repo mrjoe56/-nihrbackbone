@@ -297,6 +297,46 @@ function _nihrbackbone_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $parent
 }
 
 /**
+ * Search directory tree for files which match a glob pattern.
+ *
+ * Note: Dot-directories (like "..", ".git", or ".svn") will be ignored.
+ * Note: Delegate to CRM_Utils_File::findFiles(), this function kept only
+ * for backward compatibility of extension code that uses it.
+ *
+ * @param string $dir base dir
+ * @param string $pattern , glob pattern, eg "*.txt"
+ *
+ * @return array
+ */
+function _nihrbackbone_civix_find_files($dir, $pattern) {
+  return CRM_Utils_File::findFiles($dir, $pattern);
+}
+
+/**
+ * (Delegated) Implements hook_civicrm_managed().
+ *
+ * Find any *.mgd.php files, merge their content, and return.
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_managed
+ */
+function _nihrbackbone_civix_civicrm_managed(&$entities) {
+  $mgdFiles = _nihrbackbone_civix_find_files(__DIR__, '*.mgd.php');
+  sort($mgdFiles);
+  foreach ($mgdFiles as $file) {
+    $es = include $file;
+    foreach ($es as $e) {
+      if (empty($e['module'])) {
+        $e['module'] = E::LONG_NAME;
+      }
+      if (empty($e['params']['version'])) {
+        $e['params']['version'] = '3';
+      }
+      $entities[] = $e;
+    }
+  }
+}
+
+/**
  * (Delegated) Implements hook_civicrm_entityTypes().
  *
  * Find any *.entityType.php files, merge their content, and return.
