@@ -355,6 +355,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
         ->addSelect('COUNT(*) AS count')
         ->addWhere('option_group_id', '=', (int) CRM_Nihrbackbone_BackboneConfig::singleton()->getEligibleStatusOptionGroupId())
         ->addWhere('name', '=', $exclOnlineName)
+        ->setCheckPermissions(FALSE)
         ->execute();
       $optionValue = $optionValues->first();
       if ($optionValue['count'] == 0) {
@@ -364,6 +365,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
           ->addValue('name', $exclOnlineName)
           ->addValue('is_reserved', TRUE)
           ->addValue('is_active', TRUE)
+          ->setCheckPermissions(FALSE)
           ->execute();
       }
     }
@@ -429,6 +431,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
         \Civi\Api4\CustomField::delete()
           ->addWhere('custom_group_id', '=', $customGroupId)
           ->addWhere('name', '=', $customFieldName)
+          ->setCheckPermissions(FALSE)
           ->execute();
       }
       catch (API_Exception $ex) {
@@ -462,6 +465,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
           ->addValue('in_selector', TRUE)
           ->addValue('name', 'nsd_lay_title')
           ->addValue('column_name', 'nsd_lay_title')
+          ->setCheckPermissions(FALSE)
           ->execute();
       }
     }
@@ -490,6 +494,7 @@ class CRM_Nihrbackbone_Upgrader extends CRM_Nihrbackbone_Upgrader_Base {
           ->addValue('in_selector', TRUE)
           ->addValue('name', 'nsd_study_outcome')
           ->addValue('column_name', 'nsd_study_outcome')
+          ->setCheckPermissions(FALSE)
           ->execute();
       }
     }

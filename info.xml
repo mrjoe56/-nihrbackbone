@@ -14,8 +14,8 @@
     <url desc="Support">https://civicoop.org</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2023-06-08</releaseDate>
-  <version>2.52</version>
+  <releaseDate>2023-10-08</releaseDate>
+  <version>2.53</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>5.38</ver>
@@ -24,6 +24,9 @@
     <psr4 prefix="Civi\" path="Civi"/>
     <psr0 prefix="CRM_" path="."/>
   </classloader>
+  <mixins>
+    <mixin>menu-xml@1.0.0</mixin>
+  </mixins>
   <requires>
     <ext>de.systopia.identitytracker</ext>
   </requires>

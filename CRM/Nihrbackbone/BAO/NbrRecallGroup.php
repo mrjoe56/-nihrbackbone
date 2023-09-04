@@ -16,7 +16,7 @@ class CRM_Nihrbackbone_BAO_NbrRecallGroup extends CRM_Nihrbackbone_DAO_NbrRecall
           ->addSelect('*')
           ->addWhere('case_id', '=', $caseId)
           ->addWhere('recall_group', '=', $recallGroup)
-          ->execute()->count();
+          ->setCheckPermissions(FALSE)->execute()->count();
         if ($count > 0) {
           return TRUE;
         }
@@ -41,7 +41,7 @@ class CRM_Nihrbackbone_BAO_NbrRecallGroup extends CRM_Nihrbackbone_DAO_NbrRecall
         $created = \Civi\Api4\NbrRecallGroup::create()
           ->addValue('case_id', $caseId)
           ->addValue('recall_group', $recallGroup)
-          ->execute()->first();
+          ->setCheckPermissions(FALSE)->execute()->first();
         if ($created['id']) {
           $createdId = (int) $created['id'];
         }
@@ -65,7 +65,7 @@ class CRM_Nihrbackbone_BAO_NbrRecallGroup extends CRM_Nihrbackbone_DAO_NbrRecall
         $results = \Civi\Api4\NbrRecallGroup::get()
           ->addSelect('*')
           ->addWhere('case_id', '=', $caseId)
-          ->execute();
+          ->setCheckPermissions(FALSE)->execute();
         foreach ($results as $result) {
           if (isset($result['recall_group'])) {
             $recallGroups[] = $result['recall_group'];
@@ -204,7 +204,7 @@ class CRM_Nihrbackbone_BAO_NbrRecallGroup extends CRM_Nihrbackbone_DAO_NbrRecall
             \Civi\Api4\NbrRecallGroup::delete()
               ->addWhere('case_id', '=', $caseId)
               ->addWhere('recall_group', '=', $currentRecallGroup)
-              ->execute();
+              ->setCheckPermissions(FALSE)->execute();
           }
           catch (API_Exception $ex) {
           }
