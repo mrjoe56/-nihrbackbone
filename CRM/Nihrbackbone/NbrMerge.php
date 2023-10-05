@@ -24,7 +24,7 @@ class CRM_Nihrbackbone_NbrMerge {
       try {
         CRM_Core_DAO::executeQuery($query);
       }
-      catch (Exception $ex) {
+      catch (mysqli_sql_exception $ex) {
         Civi::log()->error("Error in merge process with query: " . $query . " in " . __METHOD__ . ", error message: " . $ex->getMessage());
       }
       unset ($queries[$queryId]);
