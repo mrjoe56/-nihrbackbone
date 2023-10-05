@@ -21,13 +21,27 @@ class CRM_Nihrbackbone_NbrMerge {
    */
   public static function merge(array &$queries, int $remainingId, int $removeId): void {
     foreach ($queries as $queryId => $query) {
-      try {
-        CRM_Core_DAO::executeQuery($query);
+      if (stripos($query, "UPDATE civicrm_acl_contact_cache") !== FALSE) {
+        CRM_Core_DAO::executeQuery("DELETE FROM civicrm_acl_contact_cache WHERE contact_id = %1", [1 => [$removeId, 'Integer']]);
+        unset ($queries[$queryId]);
       }
-      catch (mysqli_sql_exception $ex) {
-        Civi::log()->error("Error in merge process with query: " . $query . " in " . __METHOD__ . ", error message: " . $ex->getMessage());
+      elseif (stripos($query, "UPDATE civicrm_acl_cache") !== FALSE) {
+        CRM_Core_DAO::executeQuery("DELETE FROM civicrm_acl_cache WHERE contact_id = %1", [1 => [$removeId, 'Integer']]);
+        unset ($queries[$queryId]);
       }
-      unset ($queries[$queryId]);
+      elseif (stripos($query, "UPDATE civicrm_group_contact_cache") !== FALSE) {
+        CRM_Core_DAO::executeQuery("DELETE FROM civicrm_group_contact_cache WHERE contact_id = %1", [1 => [$removeId, 'Integer']]);
+        unset ($queries[$queryId]);
+      }
+      elseif (stripos($query, "UPDATE civicrm_value_nihr_volunteer_general_observations") !== FALSE) {
+        // make sure the record does not already exist!
+        $countQry = "SELECT COUNT(*) FROM civicrm_value_nihr_volunteer_general_observations WHERE entity_id = %1";
+        $count = CRM_Core_DAO::singleValueQuery($countQry, [1 => [$remainingId, 'Integer']]);
+        if ($count > 0) {
+          CRM_Core_Session::setStatus("General observations could not be updated automatically, please check manually.", "General observations not merged");
+          unset ($queries[$queryId]);
+        }
+      }
     }
   }
 }
