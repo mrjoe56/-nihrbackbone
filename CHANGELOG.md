@@ -1,3 +1,6 @@
+## 2.54
+* fix for merge error, see https://www.wrike.com/open.htm?id=1167119117
+
 ## 2.53
 * check all calls to API4 for setCheckPermission and fix if needed
 

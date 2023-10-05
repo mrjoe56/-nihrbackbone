@@ -131,6 +131,34 @@ function nihrbackbone_civicrm_post_case_merge($mainContactId, $mainCaseId, $othe
   }
 }
 
+/** Implements hook_civicrm_merge */
+function nihrbackbone_civicrm_merge($type, &$queries, $contactId, $mergedId) {
+  // issue with merge on civicrm_acl_contact_cache, see https://www.wrike.com/open.htm?id=1167119117
+  if ($type == 'sqls') {
+    $deleteParams = [
+      1 => [$contactId, 'Integer'],
+      2 => [$mergedId, 'Integer'],
+    ];
+    foreach ($queries as $queryId => $query) {
+      if (strpos($query, "UPDATE civicrm_acl_contact_cache") !== FALSE) {
+        unset($queries[$queryId]);
+        $delete = "DELETE FROM civicrm_acl_contact_cache WHERE contact_id = %1 OR contact_id = %2";
+        CRM_Core_DAO::executeQuery($delete, $deleteParams);
+      }
+      if (strpos($query, "UPDATE civicrm_acl_cache") !== FALSE) {
+        unset($queries[$queryId]);
+        $delete = "DELETE FROM civicrm_acl_cache WHERE contact_id = %1 OR contact_id = %2";
+        CRM_Core_DAO::executeQuery($delete, $deleteParams);
+      }
+      if (strpos($query, "UPDATE civicrm_group_contact_cache") !== FALSE) {
+        unset($queries[$queryId]);
+        $delete = "DELETE FROM civicrm_group_contact_cache WHERE contact_id = %1 OR contact_id = %2";
+        CRM_Core_DAO::executeQuery($delete, $deleteParams);
+      }
+    }
+  }
+}
+
 /** Implements hook_civicrm_summary  27/01/20 */
 function nihrbackbone_civicrm_summary($contactID, &$content, &$contentPlacement) {
   CRM_Nihrbackbone_NihrContactSummary::nihrbackbone_civicrm_summary($contactID);
