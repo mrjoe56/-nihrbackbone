@@ -1206,10 +1206,9 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
     $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
     $studyParticipantIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participant_id', 'column_name');
     $eligibleStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
-    $recallGroupColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'column_name');
     $dateInvitedColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_date_invited', 'column_name');
     $query = "SELECT DISTINCT(a.case_id), c." . $studyIdColumn . " AS study_id, c.". $studyParticipantIdColumn . " AS study_participant_id, c."
-      . $eligibleStatusColumn . " AS eligible_status, c." . $recallGroupColumn ." AS recall_group, c." . $dateInvitedColumn . " AS date_invited,
+      . $eligibleStatusColumn . " AS eligible_status, c." . $dateInvitedColumn . " AS date_invited,
        b.start_date, b.subject, b.created_date
         FROM civicrm_case_contact a
             JOIN civicrm_case b ON a.case_id = b.id
@@ -1271,6 +1270,7 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
    * @return bool
    */
   public static function fixParticipationData(int $oldCaseId, int $newCaseId, array $caseData) {
+    $fixed = FALSE;
     if (!empty($oldCaseId) && !empty($newCaseId)) {
       $table = Civi::service('nbrBackbone')->getParticipationDataTableName();
       // first check if there already is a record in participation data for case and if so, update with data from old case. If not, update old
@@ -1284,13 +1284,12 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
           2 => [$oldCaseId, "Integer"],
         ];
         CRM_Core_DAO::executeQuery($fixQuery, $fixParams);
-        return TRUE;
+        $fixed =  TRUE;
       }
       else {
         $studyIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_id', 'column_name');
         $studyParticipantIdColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participant_id', 'column_name');
         $eligibleStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_eligible_status_id', 'column_name');
-        $recallGroupColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_recall_group', 'column_name');
         $dateInvitedColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_date_invited', 'column_name');
         $fixParams = [];
         $fixElements = [];
@@ -1310,11 +1309,6 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
           $fixElements[] = $eligibleStatusColumn . " = %" . $i;
           $fixParams[$i] = [$caseData['eligible_status'], "String"];
         }
-        if (isset($caseData['recall_group']) && !empty($caseData['recall_group'])) {
-          $i++;
-          $fixElements[] = $recallGroupColumn . " = %" . $i;
-          $fixParams[$i] = [$caseData['recall_group'], "String"];
-        }
         if (isset($caseData['date_invited']) && !empty($caseData['date_invited'])) {
           $i++;
           $fixElements[] = $dateInvitedColumn . " = %" . $i;
@@ -1325,11 +1319,13 @@ class CRM_Nihrbackbone_NbrVolunteerCase {
           $fixQuery = "UPDATE " . $table . " SET " . implode(', ', $fixElements) . " WHERE entity_id = %" . $i;
           $fixParams[$i] = [$newCaseId, "Integer"];
           CRM_Core_DAO::executeQuery($fixQuery, $fixParams);
-          return TRUE;
+          $fixed = TRUE;
         }
       }
+      // finally also fix the recall groups
+      CRM_Nihrbackbone_BAO_NbrRecallGroup::merge($oldCaseId, $newCaseId);
     }
-    return FALSE;
+    return $fixed;
   }
 
   /**

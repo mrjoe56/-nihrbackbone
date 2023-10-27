@@ -131,6 +131,14 @@ function nihrbackbone_civicrm_post_case_merge($mainContactId, $mainCaseId, $othe
   }
 }
 
+/** Implements hook_civicrm_merge */
+function nihrbackbone_civicrm_merge($type, &$queries, $contactId, $mergedId) {
+  // issue with merge on civicrm_acl_contact_cache, see https://www.wrike.com/open.htm?id=1167119117
+  if ($type == 'sqls') {
+    CRM_Nihrbackbone_NbrMerge::merge($queries, $contactId, $mergedId);
+  }
+}
+
 /** Implements hook_civicrm_summary  27/01/20 */
 function nihrbackbone_civicrm_summary($contactID, &$content, &$contentPlacement) {
   CRM_Nihrbackbone_NihrContactSummary::nihrbackbone_civicrm_summary($contactID);

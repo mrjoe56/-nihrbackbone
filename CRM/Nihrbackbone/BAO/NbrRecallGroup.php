@@ -213,4 +213,22 @@ class CRM_Nihrbackbone_BAO_NbrRecallGroup extends CRM_Nihrbackbone_DAO_NbrRecall
     }
   }
 
+  /**
+   * Method to merge recall groups (https://www.wrike.com/open.htm?id=1167119117)
+   *
+   * @param int $oldCaseId
+   * @param $newCaseId
+   * @return void
+   */
+  public static function merge (int $oldCaseId, $newCaseId): void {
+    // first get all the recall groups from the old case
+    $oldRecalls = self::getRecallGroupsForCase($oldCaseId);
+    // then for each recall group: add to new case if not already on new case
+    foreach ($oldRecalls as $oldRecall) {
+      if (!self::isExistingRecallGroupOnCase($newCaseId, $oldRecall)) {
+        self::addRecallGroupForCase($newCaseId, $oldRecall);
+      }
+    }
+  }
+
 }

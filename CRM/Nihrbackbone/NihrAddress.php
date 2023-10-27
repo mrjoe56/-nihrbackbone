@@ -172,7 +172,7 @@ class CRM_Nihrbackbone_NihrAddress {
     $query = "INSERT INTO civicrm_value_fcd_former_comm_data (entity_id, fcd_communication_type, fcd_location_type, fcd_date_deactivated, fcd_deactivated_by, fcd_details)
         VALUES(%1, %2, %3, %4, %5, %6)";
     $locType = CRM_Formercommunicationdata_Utils::getLocationTypeLabelWithId($address['location_type_id']) . " ( id: " . $address['location_type_id'] . ")";
-    $nowDate = CRM_DateTime('now');
+    $nowDate = new DateTime('now');
     $addressDetails = [];
     foreach ($address as $field => $value) {
       $addressDetails[] = $field . ":&nbsp;".$value;
