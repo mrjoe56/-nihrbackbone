@@ -11,6 +11,7 @@ use CRM_Nihrbackbone_ExtensionUtil as E;
  */
 
 class CRM_Nihrbackbone_NbrMerge {
+
   /**
    * Process on hook merge
    *
@@ -38,7 +39,6 @@ class CRM_Nihrbackbone_NbrMerge {
         $countQry = "SELECT COUNT(*) FROM civicrm_value_nihr_volunteer_general_observations WHERE entity_id = %1";
         $count = CRM_Core_DAO::singleValueQuery($countQry, [1 => [$remainingId, 'Integer']]);
         if ($count > 0) {
-          CRM_Core_Session::setStatus("General observations could not be updated automatically, please check manually.", "General observations not merged");
           unset ($queries[$queryId]);
         }
       }
