@@ -163,9 +163,17 @@ class CRM_Nihrbackbone_NbrStudy {
         JOIN civicrm_nbr_recall_group c ON b.id = c.case_id
         WHERE a.nvpd_study_id = %1 AND b.is_deleted = FALSE";
       $dao = CRM_Core_DAO::executeQuery($query, [1 => [$studyId, "Integer"]]);
-      while ($dao->fetch()) {
-        $result[$dao->recall_group] = $dao->recall_group;
-      }
+    }
+    else {
+      $query = "SELECT DISTINCT(c.recall_group)
+        FROM civicrm_value_nbr_participation_data a
+        JOIN civicrm_case b ON a.entity_id = b.id
+        JOIN civicrm_nbr_recall_group c ON b.id = c.case_id
+        WHERE b.is_deleted = FALSE";
+      $dao = CRM_Core_DAO::executeQuery($query);
+    }
+    while ($dao->fetch()) {
+      $result[$dao->recall_group] = $dao->recall_group;
     }
     return $result;
   }

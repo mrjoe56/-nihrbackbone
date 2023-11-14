@@ -1,3 +1,6 @@
+## 2.55
+* fix for empty recall group list when no study ID provided, see https://www.wrike.com/open.htm?id=1069401733
+
 ## 2.54
 * fix for merge error, see https://www.wrike.com/open.htm?id=1167119117
   including merge for recall groups
