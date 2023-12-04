@@ -169,6 +169,7 @@ class CRM_Nihrbackbone_NihrImportCsv
               try {
                 $newCase = civicrm_api3('NbrVolunteerCase', 'create', $volunteerCaseParams);
                 // https://www.wrike.com/open.htm?id=1011004470 - if study is data only, set status of volunteer to participated
+                // and set invite date to today (see https://www.wrike.com/open.htm?id=1253792329)
                 if ($dataOnly) {
                   CRM_Nihrbackbone_NbrStudy::processDataOnlyImport($newCase['case_id'], $contactId);
                 }

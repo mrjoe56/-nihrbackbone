@@ -1,3 +1,6 @@
+## 2.56
+* fix for invite date when importing DAA study, see https://www.wrike.com/open.htm?id=1253792329
+
 ## 2.55
 * fix for empty recall group list when no study ID provided, see https://www.wrike.com/open.htm?id=1069401733
 

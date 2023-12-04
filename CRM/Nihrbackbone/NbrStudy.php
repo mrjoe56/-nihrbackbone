@@ -563,10 +563,13 @@ class CRM_Nihrbackbone_NbrStudy {
     if (CRM_Nihrbackbone_NihrVolunteer::isAvailableForDataOnly($volunteerId)) {
       $table = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationDataCustomGroup('table_name');
       $studyParticipationStatusColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_study_participation_status', 'column_name');
-      $update = "UPDATE " . $table . " SET " . $studyParticipationStatusColumn . " = %1 WHERE entity_id = %2";
+      $inviteDateColumn = CRM_Nihrbackbone_BackboneConfig::singleton()->getParticipationCustomField('nvpd_date_invited', 'column_name');
+      $nowDate = new DateTime();
+      $update = "UPDATE " . $table . " SET " . $studyParticipationStatusColumn . " = %1, " . $inviteDateColumn . " = %2 WHERE entity_id = %3";
       $updateParams = [
         1 => [Civi::service('nbrBackbone')->getParticipatedParticipationStatusValue(), "String"],
-        2 => [$caseId, "Integer"],
+        2 => [$nowDate->format("Y-m-d"), "String"],
+        3 => [$caseId, "Integer"],
       ];
       CRM_Core_DAO::executeQuery($update, $updateParams);
       // and now create the study participant id for the case as there will never be an invite activity
