@@ -273,7 +273,7 @@ function nihrbackbone_civicrm_validateForm($formName, &$fields, &$files, &$form,
     $groupId = $form->getVar("_groupID");
     if ($groupId == Civi::service('nbrBackbone')->getContactIdentityCustomGroupID()) {
       CRM_Nihrbackbone_NbrContactIdentity::validateForm($fields, $form, $errors);
-      CRM_Nihrbackbone_NihrValidation::validateAlias($formName, $fields, $files, $form, $errors);
+      CRM_Nihrbackbone_NihrValidation::validateAlias($fields, $files, $form, $errors);
     }
   }
 }
