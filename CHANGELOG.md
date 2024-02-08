@@ -1,3 +1,7 @@
+## 2.57
+* Added phone validation checks for orcaweb and participant portal
+
+
 ## 2.56
 * fix for invite date when importing DAA study, see https://www.wrike.com/open.htm?id=1253792329
 
