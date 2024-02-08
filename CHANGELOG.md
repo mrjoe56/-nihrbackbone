@@ -1,5 +1,5 @@
 ## 2.57
-* Added phone validation checks for orcaweb and participant portal
+* Added phone validation checks for orcaweb and participant portal. Also made check nhs number its own function so it can be used elsewhere
 
 
 ## 2.56
