@@ -1,9 +1,44 @@
 <?php
 class CRM_Nihrbackbone_NihrValidation {
 
-  public static function validateAlias($formName, &$fields, &$files, &$form, &$errors) {
+
+    public static function validateNHSNumber($nhsValue){
+        //  length of input is 10
+        if (strlen($nhsValue) != 10) {
+            return "Invalid format - NHS Number must be 10 characters long";
+        }
+        // all chars are numeric
+        elseif (! preg_match( '/[0-9]{10}/', $nhsValue)) {
+            return "Invalid format- All characters in NHS number must be numeric";
+        }
+        $cd = intval(substr($nhsValue, 9, 1));                                                                        #   get check digit
+        $multiply=10;
+        $offset=0;
+        $sum=0;
+        while($multiply>=2 && $offset<=8){
+            $sum+=intval(substr($nhsValue, $offset, 1)) * $multiply;
+            $offset++;
+            $multiply--;
+        }
+        //calc check digit : 11 - modulus 11 of weighted sum
+        $calc_cd = 11 - ($sum % 11);
+        // map 11 > 0
+        if ($calc_cd == 11) {
+            $calc_cd = 0;
+        }
+        //  invalid check digit
+        if ($calc_cd == 10) {
+            return "Invalid format- Check digit in NHS number cannot be calculated";
+        }
+        elseif ($cd !== $calc_cd) {                                                                                      # check digit is correct
+            return "Invalid format- Check digit in NHS number is incorrect (".strval($calc_cd).")";
+        }
+    }
+
+  public static function validateAlias( &$fields, &$files, &$form, &$errors) {
 
     $contact_id = CRM_Utils_Request::retrieve('entityID', 'String');
+    $errorField=NULL;
 
     # get contact id history custom field IDs
     $query = "select id from civicrm_custom_field where name = 'id_history_entry_type'";  #
@@ -27,7 +62,7 @@ class CRM_Nihrbackbone_NihrValidation {
     $sqlParams = [1 => [$alias_type, 'String'], 2 => [intval($contact_id), 'Integer'], 3 => [$alias_value, 'String'], ];
     $query = "select count(*) as dup from civicrm_value_contact_id_history where identifier_type = %1 and entity_id = %2 and identifier = %3";
     $duplicateCount = CRM_Core_DAO::singleValueQuery($query, $sqlParams);                                                                  #
-    if ($duplicateCount>0) {$errors[$errorField] = $msg."This identity already exists or has not been updated - please cancel or update";}
+    if ($duplicateCount>0) {$errors[$errorField] = "Error in ".$alias_type." - This identity already exists or has not been updated - please cancel or update";}
 
     if ($alias_type == 'cih_type_packid') {
       # pack ID validation
@@ -38,36 +73,10 @@ class CRM_Nihrbackbone_NihrValidation {
     }
 
     if ($alias_type == 'cih_type_nhs_number') {                                                                        # NHS number validation
-
-      $msg = 'Error in NHS Number - ';
-      $cd = intval(substr($alias_value, 9, 1));                                                                        #   get check digit
-      $sum =                                                                                                           #   + weighted sum of first 9 digits
-        intval(substr($alias_value, 0, 1)) * 10 +
-        intval(substr($alias_value, 1, 1)) * 9 +
-        intval(substr($alias_value, 2, 1)) * 8 +
-        intval(substr($alias_value, 3, 1)) * 7 +
-        intval(substr($alias_value, 4, 1)) * 6 +
-        intval(substr($alias_value, 5, 1)) * 5 +
-        intval(substr($alias_value, 6, 1)) * 4 +
-        intval(substr($alias_value, 7, 1)) * 3 +
-        intval(substr($alias_value, 8, 1)) * 2;
-      $calc_cd = 11 - ($sum % 11);                                                                                     # calc check digit :
-      # 11 - modulus 11 of weighted sum
-      if ($calc_cd == 11) {$calc_cd = 0;}                                                                              # map 11 > 0
-
-      if (strlen($alias_value) != 10) {                                                                                # VALIDATION:
-        $errors[$errorField] = $msg."must be 10 characters long";                                                      #  length of input is 10
-      }
-      elseif (! preg_match( '/[0-9]{10}/', $alias_value)) {                                                            #  all chars are numeric
-        $errors[$errorField] = $msg."all characters must be numeric";
-      }
-      elseif ($calc_cd == 10) {                                                                                        #  invalid check digit
-        $errors[$errorField] = $msg."Check digit cannot be calculated";
-      }
-      elseif ($cd !== $calc_cd) {                                                                                      # check digit is correct
-        $errors[$errorField] = $msg."Check digit incorrect (".strval($calc_cd).")";
-      }
-
+        $nhsNumberError= CRM_Nihrbackbone_NihrValidation::validateNHSNumber($alias_value);
+        if($nhsNumberError && $errorField) {
+            $errors[$errorField]=$nhsNumberError;
+        }
     }
 
   } # /validateAlias
@@ -118,6 +127,7 @@ class CRM_Nihrbackbone_NihrValidation {
       CRM_Core_Region::instance('page-body')->add(['template' => 'CRM/Nihrbackbone/nbr_general_observations.tpl',]);   # add template to form
     }
   }
+
   public static function validateUniqueCase(array $fields, CRM_Core_Form $form, array &$errors) {
     // first check if the case type in question is one of the unique ones
     $uniqueCaseTypeIds = explode(",", Civi::settings()->get('nbr_unique_case_types'));
