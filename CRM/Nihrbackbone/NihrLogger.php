@@ -40,11 +40,6 @@ class CRM_Nihrbackbone_NihrLogger {
    * @param $message
    */
   private function addMessage($type, $message) {
-    fputs($this->_logFile, date('Y-m-d h:i:s'));
-    fputs($this->_logFile, ' ');
-    fputs($this->_logFile, $type);
-    fputs($this->_logFile, ' ');
-    fputs($this->_logFile, $message);
-    fputs($this->_logFile, "\n");
+    fputs($this->_logFile, date('Y-m-d h:i:s').' '.$type.' '.$message."\n");
   }
 }
